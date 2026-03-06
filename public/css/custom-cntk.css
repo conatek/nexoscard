@@ -1,0 +1,81 @@
+table.dataTable {
+    border-collapse: collapse !important;
+    border: 1px solid #e9ecef !important;
+}
+
+table.dataTable td,
+table.dataTable th {
+    border: 1px solid #e9ecef !important;
+}
+
+table.dataTable .td-actions {
+    display: flex;
+    border: none !important;
+    justify-content: end;
+}
+
+/* SIDEBAR */
+/* .app-sidebar {
+    background-color: #12b338 !important;
+} */
+
+.app-theme-green.app-container {
+    background: #ffffff; }
+
+.app-theme-green .app-sidebar {
+    /* background: #12b338; */
+    background: linear-gradient(to bottom, #12b338 60%, white 100%);
+}
+
+.app-theme-green .app-page-title {
+background: rgba(255, 255, 255, 0.45); }
+
+.app-theme-green .app-footer .app-footer__inner,
+.app-theme-green .app-header {
+background: #fafbfc; }
+
+.app-theme-green.fixed-header .app-header__logo {
+background: rgba(250, 251, 252, 0.1); }
+
+.app-theme-green .vertical-nav-menu li a {
+    color: #ffffff;
+    background: #12b338;
+    font-weight: normal;
+}
+
+.app-theme-green .vertical-nav-menu li a:hover {
+    color: #12b338;
+    background: #fff;
+    font-weight: normal;
+}
+
+.app-theme-green .vertical-nav-menu li a.mm-active {
+    color: #12b338;
+    background: #ffffff;
+    font-weight: bold;
+}
+
+/* FIN SIDEBAR */
+
+
+.scrollbar-sidebar {
+    position: relative; /* Necesario para que el logo se posicione en la parte inferior del div */
+    padding-bottom: 20px; /* Espacio extra para el logo en la parte inferior */
+}
+
+.scrollbar-sidebar .btn-sidebar {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+}
+
+.logo-mh-sidebar {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50%; /* Ajusta el tamaño del logo según sea necesario */
+}
+
