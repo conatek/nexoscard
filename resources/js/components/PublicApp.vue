@@ -1,5 +1,6 @@
 <template>
-    <div class="app-container app-theme-dark fixed-header fixed-sidebar fixed-footer"
+    <!-- Layout con sidebar/header para usuarios autenticados -->
+    <div v-if="isAuthenticated" class="app-container app-theme-dark fixed-header fixed-sidebar fixed-footer"
         :class="{
             'closed-sidebar': !isCollapsed,
             'sidebar-mobile-open': isOpenSidebarMobile
@@ -51,9 +52,14 @@
 
         <div @click="closeRightDrawer()" class="app-drawer-overlay animated fadeIn" :class="{ 'd-none': !isOpenRightDrawer }"></div>
     </div>
+
+    <!-- Sin layout para páginas de auth (login/register) -->
+    <router-view v-else />
 </template>
 
 <script>
+import { useAuth } from '@/stores/auth';
+
 export default {
     data() {
         return {
@@ -63,6 +69,12 @@ export default {
             isOpenRightSettings: false,
             isOpenSidebarMobile: false,
         };
+    },
+    computed: {
+        isAuthenticated() {
+            const auth = useAuth();
+            return auth.isAuthenticated.value;
+        },
     },
     methods: {
         sidebarVisualization() {

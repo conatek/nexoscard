@@ -2,78 +2,44 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class RoleHasPermissionSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
     public function run()
     {
-        // Master [1]
-        $master_permissions = Permission::all()->filter(function($permission) {
-            return $permission->name != 'home_super' &&
-                $permission->name != 'home_admin' &&
-                $permission->name != 'home_generic';
+        // Master — todos los permisos excepto home_super, home_admin, home_generic
+        $master_permissions = Permission::all()->filter(function ($permission) {
+            return !in_array($permission->name, ['home_super', 'home_admin', 'home_generic']);
         });
-        Role::findOrFail(1)->permissions()->sync($master_permissions->pluck('id'));
+        Role::findByName('Master')->permissions()->sync($master_permissions->pluck('id'));
 
-        // Super [2]
+        // Super — todo excepto home_master, home_admin, home_generic, role_*, permission_*
         $super_permissions = Permission::all()->filter(function ($permission) {
-            return $permission->name != 'home_master' &&
-                $permission->name != 'home_admin' &&
-                $permission->name != 'home_generic' &&
-                substr($permission->name, 0,5) != 'role_' &&
-                substr($permission->name, 0,11) != 'permission_';
+            return !in_array($permission->name, ['home_master', 'home_admin', 'home_generic'])
+                && !str_starts_with($permission->name, 'role_')
+                && !str_starts_with($permission->name, 'permission_');
         });
-        Role::findOrFail(2)->permissions()->sync($super_permissions);
+        Role::findByName('Super')->permissions()->sync($super_permissions->pluck('id'));
 
-        // Admin [3]
+        // Admin — todo excepto home_master, home_super, home_generic, role_*, permission_*, user_*
         $admin_permissions = Permission::all()->filter(function ($permission) {
-            return $permission->name != 'home_master' &&
-                $permission->name != 'home_super' &&
-                $permission->name != 'home_generic' &&
-                substr($permission->name, 0,5) != 'role_' &&
-                substr($permission->name, 0,11) != 'permission_' &&
-                $permission->name != 'user_index' &&
-                $permission->name != 'user_create' &&
-                $permission->name != 'user_show' &&
-                $permission->name != 'user_edit' &&
-                $permission->name != 'user_destroy';
+            return !in_array($permission->name, ['home_master', 'home_super', 'home_generic'])
+                && !str_starts_with($permission->name, 'role_')
+                && !str_starts_with($permission->name, 'permission_')
+                && !str_starts_with($permission->name, 'user_');
         });
-        Role::findOrFail(3)->permissions()->sync($admin_permissions);
+        Role::findByName('Admin')->permissions()->sync($admin_permissions->pluck('id'));
 
-        // Editor [4]
-        $editor_permissions = $admin_permissions;
-        Role::findOrFail(4)->permissions()->sync($editor_permissions);
+        // Editor, Analyst, User — mismos permisos que Admin
+        foreach (['Editor', 'Analyst', 'User'] as $roleName) {
+            Role::findByName($roleName)->permissions()->sync($admin_permissions->pluck('id'));
+        }
 
-        // Analyst [5]
-        $analyst_permissions = $admin_permissions;
-        Role::findOrFail(5)->permissions()->sync($analyst_permissions);
-
-        // Collaborator [6]
-        $collaborator_permissions = $admin_permissions;
-        Role::findOrFail(6)->permissions()->sync($collaborator_permissions);
-
-        // Guest [7]
-        $guest_permissions = Permission::all()->filter(function ($permission) {
-            return $permission->name != 'home_master' &&
-                $permission->name != 'home_super' &&
-                $permission->name != 'home_admin' &&
-                substr($permission->name, 0,5) != 'role_' &&
-                substr($permission->name, 0,11) != 'permission_' &&
-                substr($permission->name, 0,5) != 'user_' &&
-                substr($permission->name, 0,8) != 'company_' &&
-                substr($permission->name, 0,5) != 'area_' &&
-                substr($permission->name, 0,9) != 'position_' &&
-                substr($permission->name, 0,7) != 'campus_';
-        });
-        Role::findOrFail(7)->permissions()->sync($guest_permissions);
+        // Guest — solo home_generic
+        $guest_permissions = Permission::where('name', 'home_generic')->get();
+        Role::findByName('Guest')->permissions()->sync($guest_permissions->pluck('id'));
     }
 }

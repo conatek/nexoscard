@@ -87,8 +87,13 @@
                                 </div>
                             </div>
                             <div class="widget-content-left  ms-3 header-user-info">
-                                <div class="widget-heading"> Antonio Contreras</div>
-                                <div class="widget-subheading"> Rol: ADMINISTRADOR</div>
+                                <div class="widget-heading">{{ userName }}</div>
+                                <div class="widget-subheading">{{ userEmail }}</div>
+                            </div>
+                            <div class="widget-content-right header-user-info ms-3">
+                                <button @click="handleLogout" class="btn btn-sm btn-outline-danger">
+                                    <i class="fa fa-sign-out-alt me-1"></i> Salir
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -106,6 +111,8 @@
 </template>
 
 <script>
+import { useAuth } from '@/stores/auth';
+
 export default {
     props: {
         isCollapsed: {
@@ -122,6 +129,16 @@ export default {
             sidebarStatus: false,
         };
     },
+    computed: {
+        userName() {
+            const auth = useAuth();
+            return auth.state.user?.name || '';
+        },
+        userEmail() {
+            const auth = useAuth();
+            return auth.state.user?.email || '';
+        },
+    },
     methods: {
         changeSidebarStatus() {
             this.sidebarStatus = !this.sidebarStatus;
@@ -132,6 +149,11 @@ export default {
         },
         openSidebarMobile() {
             this.$emit('openSidebarMobile');
+        },
+        async handleLogout() {
+            const auth = useAuth();
+            await auth.logout();
+            this.$router.push({ name: 'login' });
         },
     },
 };

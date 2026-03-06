@@ -31,14 +31,16 @@ class AuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type'   => 'Bearer',
-            'user'         => $user,
+            'user'         => $user->load('roles:id,name'),
         ]);
     }
 
     // Obtener usuario autenticado
     public function me(Request $request)
     {
-        return response()->json($request->user());
+        return response()->json(
+            $request->user()->load('roles:id,name')
+        );
     }
 
     // Logout (revocar token actual)
@@ -78,13 +80,15 @@ class AuthController extends Controller
             'password' => bcrypt($request->password),
         ]);
 
+        $user->assignRole('Guest');
+
         // Crear token
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'access_token' => $token,
             'token_type'   => 'Bearer',
-            'user'         => $user,
+            'user'         => $user->load('roles:id,name'),
         ], 201);
     }
 
