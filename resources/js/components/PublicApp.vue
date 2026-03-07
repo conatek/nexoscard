@@ -1,6 +1,9 @@
 <template>
+    <!-- Vistas públicas de tarjetas: sin layout de admin, siempre bare -->
+    <router-view v-if="isPublicLayout" />
+
     <!-- Layout con sidebar/header para usuarios autenticados -->
-    <div v-if="isAuthenticated" class="app-container app-theme-dark fixed-header fixed-sidebar fixed-footer"
+    <div v-else-if="isAuthenticated" class="app-container app-theme-dark fixed-header fixed-sidebar fixed-footer"
         :class="{
             'closed-sidebar': !isCollapsed,
             'sidebar-mobile-open': isOpenSidebarMobile
@@ -74,6 +77,9 @@ export default {
         isAuthenticated() {
             const auth = useAuth();
             return auth.isAuthenticated.value;
+        },
+        isPublicLayout() {
+            return this.$route.meta?.layout === 'public';
         },
     },
     methods: {
@@ -198,5 +204,7 @@ export default {
 
 .fixed-footer .app-main .app-main__outer {
     padding-bottom: 60px;
+    height: calc(100vh - 60px);  /* 60px = altura del header */
+    overflow-y: auto;
 }
 </style>

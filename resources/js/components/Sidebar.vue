@@ -5,17 +5,16 @@
             <div class="app-sidebar__inner">
                 <ul class="vertical-nav-menu">
                     <li :class="{ 'mm-active': $route.path === '/' }">
-                        <router-link to="/" class="vertical-nav-menu" :class="{ 'mm-active': $route.path === '/' }">
+                        <router-link to="/" :class="{ 'mm-active': $route.path === '/' }">
                             <i class="metismenu-icon fa fa-chart-line"></i>
                             <span>Panel de Control</span>
                         </router-link>
                     </li>
 
-                    <li :class="{ 'mm-active': $route.path === '/about' }">
-                        <router-link to="/about" class="vertical-nav-menu" :class="{ 'mm-active': $route.path === '/about' }">
-                            <i class="metismenu-icon fa fa-chart-line"></i>
-                            <span>Sobre Nosotros</span>
-
+                    <li :class="{ 'mm-active': $route.path.startsWith('/empresas') }">
+                        <router-link to="/empresas" :class="{ 'mm-active': $route.path.startsWith('/empresas') }">
+                            <i class="metismenu-icon fa fa-building"></i>
+                            <span>Mis Empresas</span>
                         </router-link>
                     </li>
                 </ul>
