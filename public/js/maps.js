@@ -4,8 +4,7 @@ $(document).ready(() => {
   //MapBox-GL
 
   if (document.getElementById("map")) {
-    mapboxgl.accessToken =
-      "MAPBOX_TOKEN_REMOVED";
+    mapboxgl.accessToken = window.mapboxToken;
     var map = new mapboxgl.Map({
       container: "map",
       zoom: 9,

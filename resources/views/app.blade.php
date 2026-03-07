@@ -83,5 +83,7 @@
     <script type="text/javascript" src="{{ asset('js/app.js') }}"></script>
 
     @vite('resources/js/app.js')
+
+    <script>window.mapboxToken = "{{ env('MAPBOX_TOKEN') }}";</script>
 </body>
 </html>
