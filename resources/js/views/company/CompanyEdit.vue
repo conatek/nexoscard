@@ -19,9 +19,8 @@
       </div>
     </div>
 
-    <div style="max-width: 760px">
+    <div style="max-width: 540px">
       <form @submit.prevent="submit">
-
         <div class="card mb-4">
           <div class="card-header fw-semibold">Información general</div>
           <div class="card-body row g-3">
@@ -32,7 +31,7 @@
               <div class="invalid-feedback">{{ errors.name?.[0] }}</div>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-12">
               <label class="form-label">Slug *</label>
               <div class="input-group">
                 <span class="input-group-text text-muted">dominio.com/</span>
@@ -42,108 +41,22 @@
               <div class="invalid-feedback d-block" v-if="errors.slug">{{ errors.slug[0] }}</div>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-12">
               <label class="form-label">Logotipo</label>
-              <input type="file" class="form-control" accept="image/*" @change="onLogoChange" />
-              <img v-if="logoPreview" :src="logoPreview" class="mt-2 rounded" style="height: 70px; object-fit: contain" />
-              <img v-else-if="form.logo_path" :src="form.logo_path" class="mt-2 rounded" style="height: 70px; object-fit: contain" />
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label">Teléfono</label>
-              <input v-model="form.phone" type="text" class="form-control" />
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label">Email</label>
-              <input v-model="form.email" type="email" class="form-control" :class="errorClass('email')" />
-              <div class="invalid-feedback">{{ errors.email?.[0] }}</div>
-            </div>
-
-            <div class="col-12">
-              <label class="form-label">Dirección</label>
-              <input v-model="form.address" type="text" class="form-control" />
-            </div>
-
-            <div class="col-12">
-              <label class="form-label">Descripción</label>
-              <textarea v-model="form.description" class="form-control" rows="3"></textarea>
-            </div>
-          </div>
-        </div>
-
-        <div class="card mb-4">
-          <div class="card-header fw-semibold">Redes sociales</div>
-          <div class="card-body row g-3">
-            <div class="col-md-6" v-for="red in redesSociales" :key="red.key">
-              <label class="form-label">{{ red.label }}</label>
-              <input v-model="form[red.key]" type="url" class="form-control" :placeholder="red.placeholder" />
-            </div>
-          </div>
-        </div>
-
-        <div class="card mb-4">
-          <div class="card-header fw-semibold">Diseño de tarjeta</div>
-          <div class="card-body row g-3">
-
-            <div class="col-md-6">
-              <label class="form-label">Plantilla</label>
-              <select v-model="form.design_settings.template" class="form-select">
-                <option value="modern">Modern</option>
-                <option value="classic">Classic</option>
-                <option value="minimal">Minimal</option>
-                <option value="bold">Bold</option>
-              </select>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label">Fuente</label>
-              <select v-model="form.design_settings.font_family" class="form-select">
-                <option v-for="f in fonts" :key="f" :value="f">{{ f }}</option>
-              </select>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label">Border Radius: {{ form.design_settings.border_radius }}px</label>
-              <input v-model.number="form.design_settings.border_radius" type="range" class="form-range" min="0" max="50" />
-            </div>
-
-            <div class="col-12">
-              <label class="form-label d-block mb-2">Colores</label>
-              <div class="d-flex flex-wrap gap-4">
-                <div v-for="c in colorFields" :key="c.key" class="d-flex flex-column align-items-center gap-1">
-                  <input type="color" class="form-control form-control-color"
-                    v-model="form.design_settings[c.key]" :title="c.label" />
-                  <small class="text-muted">{{ c.label }}</small>
-                </div>
+              <input ref="fileInput" type="file" class="form-control" accept="image/*" @change="onFileSelected" />
+              <div v-if="logoPreview || form.logo_path" class="mt-2 d-flex align-items-center gap-2">
+                <img :src="logoPreview || form.logo_path" class="rounded border"
+                     style="height:72px;width:auto;max-width:220px;object-fit:contain;background:#f8f9fa;padding:4px" />
+                <button type="button" class="btn btn-sm btn-outline-secondary" @click="openCropper">
+                  <i class="fa fa-crop me-1"></i> Recortar
+                </button>
               </div>
             </div>
 
-            <div class="col-12 d-flex gap-4">
-              <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" v-model="form.design_settings.show_services" id="showServices" />
-                <label class="form-check-label" for="showServices">Mostrar servicios</label>
-              </div>
-              <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" v-model="form.design_settings.show_products" id="showProducts" />
-                <label class="form-check-label" for="showProducts">Mostrar productos</label>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Preview -->
-        <div class="card mb-4" :style="themePreviewStyle">
-          <div class="card-body text-center py-4">
-            <p class="fw-bold mb-1" :style="{ color: form.design_settings.text_color }">Vista previa del tema</p>
-            <p class="mb-0" :style="{ color: form.design_settings.accent_color, fontFamily: form.design_settings.font_family }">
-              {{ form.name }}
-            </p>
           </div>
         </div>
 
         <div v-if="generalError" class="alert alert-danger">{{ generalError }}</div>
-        <div v-if="success" class="alert alert-success">Empresa actualizada correctamente.</div>
 
         <div class="d-flex justify-content-end gap-2 mb-4">
           <router-link :to="{ name: 'companies.show', params: { id: $route.params.id } }"
@@ -155,20 +68,58 @@
         </div>
       </form>
     </div>
+
+    <!-- Modal de recorte -->
+    <div v-if="cropperOpen" class="cropper-overlay">
+      <div class="cropper-dialog">
+        <div class="cropper-dialog__header">
+          <span class="fw-semibold">Recortar logotipo</span>
+          <button type="button" class="btn-close" @click="cancelCrop"></button>
+        </div>
+
+        <div class="mb-3 d-flex gap-2 flex-wrap">
+          <button
+            v-for="r in ratios"
+            :key="r.label"
+            type="button"
+            :class="['btn btn-sm', selectedRatio === r.value ? 'btn-primary' : 'btn-outline-secondary']"
+            @click="selectedRatio = r.value"
+          >
+            {{ r.label }}
+          </button>
+        </div>
+
+        <div class="cropper-wrapper">
+          <Cropper
+            ref="cropper"
+            :src="cropperSrc"
+            :stencil-props="{ aspectRatio: selectedRatio }"
+            class="cropper"
+          />
+        </div>
+
+        <div class="d-flex gap-2 mt-3">
+          <button type="button" class="btn btn-primary" @click="confirmCrop">
+            <i class="fa fa-check me-1"></i> Aplicar recorte
+          </button>
+          <button type="button" class="btn btn-outline-secondary" @click="cancelCrop">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
   </template>
 </template>
 
 <script>
+import { Cropper } from 'vue-advanced-cropper';
+import 'vue-advanced-cropper/dist/style.css';
 import companyService from '@/services/companyService.js';
-
-const defaultDesign = {
-  template: 'modern', primary_color: '#3B82F6', secondary_color: '#1E40AF',
-  background_color: '#FFFFFF', text_color: '#111827', accent_color: '#F59E0B',
-  font_family: 'Inter', border_radius: 8, show_services: true, show_products: true,
-};
 
 export default {
   name: 'CompanyEdit',
+
+  components: { Cropper },
 
   data() {
     return {
@@ -176,45 +127,25 @@ export default {
       saving: false,
       errors: {},
       generalError: null,
-      success: false,
       logoPreview: null,
       logoFile: null,
-      form: { design_settings: { ...defaultDesign } },
-      fonts: ['Inter', 'Roboto', 'Poppins', 'Montserrat', 'Lato', 'Playfair Display'],
-      colorFields: [
-        { key: 'primary_color', label: 'Principal' },
-        { key: 'secondary_color', label: 'Secundario' },
-        { key: 'background_color', label: 'Fondo' },
-        { key: 'text_color', label: 'Texto' },
-        { key: 'accent_color', label: 'Acento' },
-      ],
-      redesSociales: [
-        { key: 'facebook',  label: 'Facebook',  placeholder: 'https://facebook.com/...' },
-        { key: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/...' },
-        { key: 'twitter',   label: 'Twitter/X', placeholder: 'https://twitter.com/...' },
-        { key: 'youtube',   label: 'YouTube',   placeholder: 'https://youtube.com/...' },
-        { key: 'website',   label: 'Sitio web', placeholder: 'https://...' },
+      form: { name: '', slug: '', logo_path: null },
+      // Cropper
+      cropperOpen: false,
+      cropperSrc: null,
+      selectedRatio: 1,
+      ratios: [
+        { label: '1:1', value: 1 },
+        { label: '2:1', value: 2 },
+        { label: '3:1', value: 3 },
+        { label: '4:1', value: 4 },
       ],
     };
-  },
-
-  computed: {
-    themePreviewStyle() {
-      const s = this.form.design_settings;
-      return {
-        backgroundColor: s.background_color,
-        borderRadius: s.border_radius + 'px',
-        border: `2px solid ${s.primary_color}`,
-      };
-    },
   },
 
   async created() {
     const { data } = await companyService.get(this.$route.params.id);
-    this.form = {
-      ...data,
-      design_settings: { ...defaultDesign, ...(data.design_settings ?? {}) },
-    };
+    this.form = { name: data.name, slug: data.slug, logo_path: data.logo_path };
     this.loading = false;
   },
 
@@ -223,11 +154,34 @@ export default {
       return v.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-_]/g, '');
     },
 
-    onLogoChange(e) {
+    onFileSelected(e) {
       const file = e.target.files[0];
       if (!file) return;
-      this.logoFile = file;
-      this.logoPreview = URL.createObjectURL(file);
+      this.cropperSrc = URL.createObjectURL(file);
+      this.cropperOpen = true;
+    },
+
+    openCropper() {
+      this.cropperSrc = this.logoPreview || this.form.logo_path;
+      this.cropperOpen = true;
+    },
+
+    confirmCrop() {
+      const { canvas } = this.$refs.cropper.getResult();
+      canvas.toBlob((blob) => {
+        this.logoFile = new File([blob], 'logo.png', { type: 'image/png' });
+        if (this.logoPreview) URL.revokeObjectURL(this.logoPreview);
+        this.logoPreview = URL.createObjectURL(blob);
+        this.cropperOpen = false;
+      }, 'image/png');
+    },
+
+    cancelCrop() {
+      this.cropperOpen = false;
+      if (!this.logoFile && !this.form.logo_path) {
+        this.cropperSrc = null;
+        this.$refs.fileInput.value = '';
+      }
     },
 
     errorClass(field) {
@@ -238,27 +192,15 @@ export default {
       this.saving = true;
       this.errors = {};
       this.generalError = null;
-      this.success = false;
 
       const payload = new FormData();
-
-      const fields = ['name', 'slug', 'phone', 'email', 'address', 'address_notes',
-                      'description', 'facebook', 'instagram', 'twitter', 'youtube', 'website'];
-
-      fields.forEach(key => {
-        if (this.form[key] != null) payload.append(key, this.form[key]);
-      });
-
-      Object.entries(this.form.design_settings).forEach(([k, v]) => {
-        payload.append(`design_settings[${k}]`, v);
-      });
-
-      if (this.logoFile) payload.append('logo', this.logoFile);
+      payload.append('name', this.form.name);
+      payload.append('slug', this.form.slug);
+      if (this.logoFile) payload.append('logo', this.logoFile, 'logo.png');
 
       try {
         await companyService.update(this.$route.params.id, payload);
-        this.success = true;
-        window.scrollTo(0, 0);
+        this.$router.push({ name: 'companies.show', params: { id: this.$route.params.id } });
       } catch (err) {
         if (err.response?.status === 422) {
           this.errors = err.response.data.errors;
@@ -272,3 +214,42 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.cropper-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1060;
+}
+
+.cropper-dialog {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  width: min(680px, 95vw);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.cropper-dialog__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.cropper-wrapper {
+  height: 380px;
+  background: #1a1a1a;
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+.cropper {
+  height: 100%;
+}
+</style>

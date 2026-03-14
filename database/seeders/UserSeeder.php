@@ -2,97 +2,69 @@
 
 namespace Database\Seeders;
 
+use App\Models\Company;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
-    public function run()
+    public function run(): void
     {
-        $user = User::create([
-            'company_id' => 1,
-            'name' => 'Antonio Contreras',
-            'email' => 'conatekpro@gmail.com',
-            'password' => bcrypt('29405014'),
-        ]);
-        $user->assignRole('Master');
+        $conatek   = Company::where('slug', 'conatek')->first();
+        $muyhumano = Company::where('slug', 'muy-humano')->first();
 
-        $user_master_test_conatek = User::create([
-            'company_id' => 1,
-            'name' => 'Test Master',
-            'email' => 'master@test.com',
-            'password' => bcrypt('29405014'),
+        // ── CONATEK ──────────────────────────────────────────────
+        $master1 = User::create([
+            'company_id' => $conatek->id,
+            'name'       => 'Antonio Contreras',
+            'email'      => 'master@conatek.com',
+            'password'   => Hash::make('password'),
         ]);
-        $user_master_test_conatek->assignRole('Master');
+        $master1->assignRole('Master');
+        $conatek->update(['user_id' => $master1->id]);
 
-        $user_super_test_conatek = User::create([
-            'company_id' => 1,
-            'name' => 'Test Super',
-            'email' => 'super@test.com',
-            'password' => bcrypt('29405014'),
+        $admin1 = User::create([
+            'company_id' => $conatek->id,
+            'name'       => 'Admin Conatek',
+            'email'      => 'admin@conatek.com',
+            'password'   => Hash::make('password'),
         ]);
-        $user_super_test_conatek->assignRole('Super');
+        $admin1->assignRole('Admin');
 
-        $user_admin_test_conatek = User::create([
-            'company_id' => 1,
-            'name' => 'Test Admin',
-            'email' => 'admin@test.com',
-            'password' => bcrypt('29405014'),
+        // ── MUY HUMANO ───────────────────────────────────────────
+        $master2 = User::create([
+            'company_id' => $muyhumano->id,
+            'name'       => 'Master Muy Humano',
+            'email'      => 'master@muyhumano.com',
+            'password'   => Hash::make('password'),
         ]);
-        $user_admin_test_conatek->assignRole('Admin');
+        $master2->assignRole('Master');
+        $muyhumano->update(['user_id' => $master2->id]);
 
-        $user_editor_test_conatek = User::create([
-            'company_id' => 1,
-            'name' => 'Test Editor',
-            'email' => 'editor@test.com',
-            'password' => bcrypt('29405014'),
+        $admin2 = User::create([
+            'company_id' => $muyhumano->id,
+            'name'       => 'Admin Muy Humano',
+            'email'      => 'admin@muyhumano.com',
+            'password'   => Hash::make('password'),
         ]);
-        $user_editor_test_conatek->assignRole('Editor');
+        $admin2->assignRole('Admin');
 
-        $user_analyst_test_conatek = User::create([
-            'company_id' => 1,
-            'name' => 'Test Analyst',
-            'email' => 'analyst@test.com',
-            'password' => bcrypt('29405014'),
+        $guest2 = User::create([
+            'company_id' => $muyhumano->id,
+            'name'       => 'Guest Muy Humano',
+            'email'      => 'guest@muyhumano.com',
+            'password'   => Hash::make('password'),
         ]);
-        $user_analyst_test_conatek->assignRole('Analyst');
+        $guest2->assignRole('Guest');
 
-        $user_collaborator_test_conatek = User::create([
-            'company_id' => 1,
-            'name' => 'Test Collaborator',
-            'email' => 'collaborator@test.com',
-            'password' => bcrypt('29405014'),
+        // ── CONATEK (guest) ───────────────────────────────────────
+        $guest1 = User::create([
+            'company_id' => $conatek->id,
+            'name'       => 'Guest Conatek',
+            'email'      => 'guest@conatek.com',
+            'password'   => Hash::make('password'),
         ]);
-        $user_collaborator_test_conatek->assignRole('Collaborator');
-
-        $user_guest_test_conatek = User::create([
-            'company_id' => 1,
-            'name' => 'Test Guest',
-            'email' => 'guest@test.com',
-            'password' => bcrypt('29405014'),
-        ]);
-        $user_guest_test_conatek->assignRole('Guest');
-
-        $user_admin_guest_test_mh = User::create([
-            'company_id' => 2,
-            'name' => 'MH Admin',
-            'email' => 'mh_admin@test.com',
-            'password' => bcrypt('29405014'),
-        ]);
-        $user_admin_guest_test_mh->assignRole('Admin');
-
-        $user_guest_test_mh = User::create([
-            'company_id' => 2,
-            'name' => 'MH Collaborator',
-            'email' => 'mh_collaborator@test.com',
-            'password' => bcrypt('29405014'),
-        ]);
-        $user_guest_test_mh->assignRole('Collaborator');
+        $guest1->assignRole('Guest');
     }
 }

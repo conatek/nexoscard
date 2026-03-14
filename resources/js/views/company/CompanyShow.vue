@@ -8,9 +8,13 @@
     <div class="app-page-title">
       <div class="page-title-wrapper">
         <div class="page-title-heading">
-          <div class="page-title-icon">
-            <img v-if="company.logo_path" :src="company.logo_path"
-                 style="width:40px; height:40px; object-fit:contain; border-radius:6px" />
+          <div class="page-title-icon"
+               :style="company.logo_path
+                 ? 'width:auto;min-width:60px;height:60px;padding:6px'
+                 : ''">
+            <img v-if="company.logo_path"
+                 :src="company.logo_path"
+                 style="height:48px;width:auto;max-width:200px;display:block;border-radius:4px;object-fit:contain" />
             <i v-else class="fa fa-building icon-gradient bg-mean-fruit"></i>
           </div>
           <div>

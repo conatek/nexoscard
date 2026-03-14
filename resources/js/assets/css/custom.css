@@ -1,24 +1,35 @@
 /* BOTONES PERSONALIZADOS */
 .btn-mh-white {
     background-color: #fff;
-    color: #127cb3;
+    color: #e288f9;
     border: none;
 }
 
 .btn-mh-white:hover {
-    background-color: #0dacff;
-    color: #fff;
+    background-color: #81e8ef;
+    color: #000;
 }
 
-.btn-mh-dark-blue {
-    background-color: #127cb3;
+.btn-mh-fucsia {
+    background-color: #e288f9;
     color: #fff;
     border: none;
 }
 
-.btn-mh-dark-blue:hover {
-    background-color: #0dacff;
+.btn-mh-fucsia:hover {
+    background-color: #c05dd9;
     color: #fff;
+}
+
+.btn-mh-cyan {
+    background-color: #81e8ef;
+    color: #000;
+    border: none;
+}
+
+.btn-mh-cyan:hover {
+    background-color: #59bcc4;
+    color: #000;
 }
 /* FIN BOTONES PERSONALIZADOS */
 
@@ -60,7 +71,7 @@
 .card-profile .title {
     padding: 1rem;
     text-align: right;
-    color: #12b338;
+    color: #e288f9;
     font-weight: bold;
     font-size: 12px;
 }
@@ -121,23 +132,18 @@
     height: 100%;
     border-top-left-radius: 5px;
     border-bottom-left-radius: 5px;
-    /* border-right: 2px dotted #127cb3; */
-    /* background-image: url("/images/card-image-bk.png");
-    background-position: bottom center;
-    background-size: cover; */
-    /* background: linear-gradient(0deg, #fff, #ff4600); */
-    background: linear-gradient(0deg, #fff, #0dacff);
+    background: linear-gradient(0deg, #fff, #81e8ef);
 }
 
 .actions>button {
     border: none;
     background: none;
     font-size: 24px;
-    color: #12b338;
+    color: #e288f9;
     cursor: pointer;
     transition:.5s;
     &:hover{
-        color: #0d7726  ;
+        color: #c05dd9;
         transform: rotate(22deg)
     }
 }

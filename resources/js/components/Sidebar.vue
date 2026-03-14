@@ -86,7 +86,7 @@ html, body {
     width: inherit;
     min-width: inherit;
     transition: width 0.3s ease;
-    background-color: #12b338;
+    background-color: #e288f9;
     height: calc(100vh - 60px);
     display: flex;
     flex-direction: column;
@@ -124,7 +124,7 @@ html, body {
     padding: 0 1.5rem 0 45px;
     position: relative;
     border-radius: 0.25rem;
-    color: #fff;
+    color: #000;
     text-decoration: none;
     transition: all 0.3s;
     margin: 0.1rem 0;
@@ -136,9 +136,14 @@ html, body {
     font-size: 1.2rem;
 }
 
+.vertical-nav-menu li a:hover {
+    background: rgba(255, 255, 255, 0.18);
+    color: #c05dd9;
+}
+
 .vertical-nav-menu li a.mm-active {
-    color: #127cb3;
-    background: #e0f3ff;
+    color: #c05dd9;
+    background: #ffffff;
     font-weight: bold;
 }
 

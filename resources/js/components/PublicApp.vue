@@ -18,7 +18,7 @@
         />
 
         <div class="ui-theme-settings" :class="{ 'settings-open': isOpenRightSettings }">
-            <button @click="openRightSettings()" type="button" id="TooltipDemo" class="btn-open-options btn" style="background-color: #ff4600">
+            <button @click="openRightSettings()" type="button" id="TooltipDemo" class="btn-open-options btn" style="background-color: #e288f9">
                 <i class="fa fa-cog fa-w-16 fa-spin fa-2x" style="color: black;"></i>
             </button>
             <div class="theme-settings__inner">

@@ -34,21 +34,19 @@
 
     <!-- Lista de empresas -->
     <div v-else class="col-md-4 mb-4" v-for="company in companies" :key="company.id">
-      <div class="card h-100">
-        <!-- Logo o placeholder -->
-        <div class="card-img-top d-flex align-items-center justify-content-center bg-light"
-             style="height: 140px; overflow: hidden;">
-          <img v-if="company.logo_path" :src="company.logo_path"
-               class="img-fluid" style="max-height: 140px; object-fit: contain;" />
-          <i v-else class="fa fa-building fa-3x text-muted"></i>
+      <div class="card">
+        <!-- Logo (solo si existe) -->
+        <div v-if="company.logo_path"
+             class="card-img-top d-flex align-items-center justify-content-center bg-light"
+             style="height: 100px; overflow: hidden;">
+          <img :src="company.logo_path" class="img-fluid" style="max-height: 100px; object-fit: contain;" />
         </div>
 
-        <div class="card-body">
+        <div class="card-body py-3">
           <h5 class="card-title mb-1">{{ company.name }}</h5>
-          <p class="text-muted small mb-2">
+          <p class="text-muted small mb-0">
             <i class="fa fa-link me-1"></i>/{{ company.slug }}
           </p>
-          <p class="card-text text-muted small text-truncate">{{ company.description }}</p>
 
           <div class="d-flex gap-3 text-center mt-3">
             <div class="flex-fill">
