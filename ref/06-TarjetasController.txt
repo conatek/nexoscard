@@ -1,0 +1,235 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Empresa;
+use App\Tarjeta;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
+use App\Http\Controllers\Controller;
+use Carbon\Carbon;
+use Intervention\Image\Facades\Image;
+use Illuminate\Support\Facades\Storage;
+use JD\Cloudder\Facades\Cloudder;
+use Illuminate\Validation\Rule;
+
+class TarjetasController extends Controller
+{
+    public function index(){
+
+        $tarjetas = Tarjeta::all();
+        return view('admin.tarjetas.index', compact('tarjetas'));
+    }
+
+    public function create($id){
+        $empresa = Empresa::where('id', $id)->first();
+
+        return view('admin.tarjetas.create', compact('empresa'));
+    }
+
+    public function store(Request $request, $id){
+
+//        dd($request);
+
+        // Validación
+        $this->validate($request, [
+            'nombres' => 'required',
+            'apellidos' => 'required',
+            'url' => ['required', Rule::unique('tarjetas', 'url')->where('empresa_id', $id)],
+            'cargo' => 'required',
+            'celular_visible' => 'required',
+            'celular_enlace' => 'required',
+            'whatsapp' => 'required',
+            'email' => 'required|email',
+            'descripcion' => 'required'
+        ], [
+            'email.email' => 'El correo ingresado no es válido',
+        ]);
+
+        $tarjeta = new Tarjeta();
+        $tarjeta->empresa_id = $request->get('empresa_id');
+        $tarjeta->nombres = $request->get('nombres');    // Tambien: $request->nombre;
+        $tarjeta->apellidos = $request->get('apellidos');
+        $tarjeta->url = $request->get('url');
+        $tarjeta->cargo = $request->get('cargo');
+        if($request->get('extension')){
+            $tarjeta->extension = $request->get('extension');
+        }
+        $tarjeta->celular_visible = $request->get('celular_visible');
+        $tarjeta->celular_enlace = $request->get('celular_enlace');
+        $tarjeta->whatsapp = $request->get('whatsapp');
+        if($request->get('mensaje')){
+            $tarjeta->mensaje = urlencode($request->get('mensaje'));
+        }
+        if($request->get('linkedin')){
+            $tarjeta->linkedin = $request->get('linkedin');
+        }
+        $tarjeta->email = $request->get('email');
+        if($request->get('descripcion')){
+            $tarjeta->descripcion = $request->get('descripcion');
+        }
+
+        $foto = $request->file('foto');
+        if($foto != ''){
+            // Validación
+            $this->validate($request, [
+                'foto' => 'image|max:200'
+            ]);
+
+            $foto_path = $foto->getRealPath();
+            Cloudder::upload($foto_path, null);
+            $resultado = Cloudder::getResult();
+            $tarjeta->foto = $resultado['url'];
+            $tarjeta->fotoId = $resultado['public_id'];
+        }
+
+        $miniatura = $request->file('miniatura');
+        if($miniatura != ''){
+            // Validación
+            $this->validate($request, [
+                'miniatura' => 'image|max:200',
+            ]);
+
+            $miniatura_path = $miniatura->getRealPath();
+            Cloudder::upload($miniatura_path, null);
+            $resultado = Cloudder::getResult();
+            $tarjeta->miniatura = $resultado['url'];
+            $tarjeta->miniaturaId = $resultado['public_id'];
+        }
+
+        $tarjeta->save();
+
+        return redirect()->route('admin.empresas.show', ['id' => $id])->with('flash', 'La tarjeta ha sido ingresada con exito.');
+    }
+
+    public function show($id){
+
+        $tarjeta = Tarjeta::findOrFail($id);
+        return view('admin.tarjetas.show', compact('tarjeta'));
+    }
+
+    public function edit($id){
+        $tarjeta = Tarjeta::findOrfail($id);
+        $empresa = Empresa::findOrfail($tarjeta->empresa_id);
+
+        return view('admin.tarjetas.edit', compact('tarjeta', 'empresa'));
+    }
+
+//    public function update(Tarjeta $tarjeta, Request $request){
+    public function update(Request $request, $id){
+
+        $tarjeta = Tarjeta::where('id', $id)->first();
+
+        // Validación
+        $this->validate($request, [
+            'nombres' => 'required',
+            'apellidos' => 'required',
+            //url es validado mas abajo
+            'cargo' => 'required',
+            'celular_visible' => 'required',
+            'celular_enlace' => 'required',
+            'whatsapp' => 'required',
+            'email' => 'required|email',
+            'descripcion' => 'required'
+        ]);
+
+        $datos = array(
+            'empresa_id' => $request->get('empresa_id'),
+            'nombres' => $request->get('nombres'),
+            'apellidos' => $request->get('apellidos'),
+            'cargo' => $request->get('cargo'),
+            'extension' => $request->get('extension'),
+            'celular_visible' => $request->get('celular_visible'),
+            'celular_enlace' => $request->get('celular_enlace'),
+            'whatsapp' => $request->get('whatsapp'),
+            'mensaje' => urlencode($request->get('mensaje')),
+            'linkedin' => $request->get('linkedin'),
+            'email' => $request->get('email'),
+            'descripcion' => $request->get('descripcion'),
+        );
+
+        if($request->get('url') == $tarjeta->url){
+            // No hacer nada
+        }else{
+            $this->validate($request, [
+                'url' => ['required', Rule::unique('tarjetas', 'url')->where('empresa_id', $id)],
+            ], [
+                // Mensajes de error de validación
+            ]);
+            $datos['url'] = $request->get('url');
+        }
+
+        if($request->input('estadoFoto') !== null){
+            $datos['estadoFoto'] = 1;
+        }else{
+            $datos['estadoFoto'] = 0;
+        }
+
+        $foto_id = $request->hidden_fotoId;
+        $fotoTarjeta = $request->file('foto');
+        if($fotoTarjeta != ''){
+            // Validación
+            $this->validate($request, [
+                'foto' => 'image|max:200',
+            ]);
+
+            if($foto_id != ''){
+                Cloudder::destroyImage($foto_id);
+                Cloudder::delete($foto_id);
+            }
+
+            $foto_path = $fotoTarjeta->getRealPath();
+            Cloudder::upload($foto_path, null);
+            $resultado = Cloudder::getResult();
+            $datos['foto'] = $resultado['url'];
+            $datos['fotoId'] = $resultado['public_id'];
+        }
+
+        $miniatura_id = $request->hidden_miniaturaId;
+        $miniaturaTarjeta = $request->file('miniatura');
+        if($miniaturaTarjeta != ''){
+            // Validación
+            $this->validate($request, [
+                'miniatura' => 'image|max:200',
+            ]);
+
+            if($miniatura_id != ''){
+                Cloudder::destroyImage($miniatura_id);
+                Cloudder::delete($miniatura_id);
+            }
+
+            $miniatura_path = $miniaturaTarjeta->getRealPath();
+            Cloudder::upload($miniatura_path, null);
+            $resultado = Cloudder::getResult();
+            $datos['miniatura'] = $resultado['url'];
+            $datos['miniaturaId'] = $resultado['public_id'];
+        }
+
+        Tarjeta::whereId($id)->update($datos);
+        return redirect()->route('admin.empresas.show', ['id' => $datos['empresa_id']])->with('flash', 'La tarjeta ha sido actualizada con exito.');
+    }
+
+    public function destroy($id){
+
+        $datos = Tarjeta::findOrFail($id);
+
+        $foto_id = $datos->fotoId;
+        $miniatura_id = $datos->miniaturaId;
+
+        if($foto_id != ''){
+            Cloudder::destroyImage($foto_id);
+            Cloudder::delete($foto_id);
+        }
+
+        if($miniatura_id != ''){
+            Cloudder::destroyImage($miniatura_id);
+            Cloudder::delete($miniatura_id);
+        }
+
+        $datos->delete();
+
+        return back()->with('flash', 'La tarjeta ha sido eliminada con éxito.');
+
+    }
+}

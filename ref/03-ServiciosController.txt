@@ -1,0 +1,127 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Empresa;
+use App\Servicio;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
+use JD\Cloudder\Facades\Cloudder;
+
+class ServiciosController extends Controller
+{
+    public function create($id){
+        $empresa = Empresa::where('id', $id)->first();
+
+        return view('admin.servicios.create', compact('empresa'));
+    }
+
+    public function show($id){
+
+        $servicio = Servicio::findOrFail($id);
+        $empresa = Empresa::findOrfail($servicio->empresa_id);
+
+        return view('admin.servicios.show', compact('servicio', 'empresa'));
+    }
+
+    public function store(Request $request, $id)
+    {
+        // Validación
+        $this->validate($request, [
+            'empresa_id' => 'required',
+            'nombre' => 'required',
+            'descripcionCorta' => 'required',
+            'descripcion' => 'required',
+        ]);
+
+        $servicio = new Servicio();
+        $servicio->empresa_id = $request->get('empresa_id');
+        $servicio->nombre = $request->get('nombre');    // Tambien: $request->nombre;
+        $servicio->descripcionCorta = $request->get('descripcionCorta');
+        $servicio->descripcion = $request->get('descripcion');
+
+        $imagen = $request->file('imagen');
+        if($imagen != ''){
+            // Validación
+            $this->validate($request, [
+                'imagen' => 'image|max:500'
+            ]);
+
+            $imagen_path = $imagen->getRealPath();
+            Cloudder::upload($imagen_path, null);
+            $resultado = Cloudder::getResult();
+            $servicio->imagen = $resultado['url'];
+            $servicio->imagenId = $resultado['public_id'];
+        }
+
+        $servicio->save();
+
+        return redirect()->route('admin.empresas.show', ['id' => $id])->with('flash', 'El servicio ha sido ingresado con exito.');
+    }
+
+    public function edit($id){
+        $servicio = Servicio::findOrfail($id);
+        $empresa = Empresa::findOrfail($servicio->empresa_id);
+
+        return view('admin.servicios.edit', compact('servicio', 'empresa'));
+    }
+
+    public function update(Request $request, $id){
+
+        // Validación
+        $this->validate($request, [
+            'empresa_id' => 'required',
+            'nombre' => 'required',
+            'descripcionCorta' => 'required',
+            'descripcion' => 'required',
+        ]);
+
+        $datos = array(
+            'empresa_id' => $request->get('empresa_id'),
+            'nombre' => $request->get('nombre'),
+            'descripcionCorta' => $request->get('descripcionCorta'),
+            'descripcion' => $request->get('descripcion'),
+        );
+
+        $imagen_id = $request->hidden_imagenId;
+        $imagenServicio = $request->file('imagen');
+        if($imagenServicio != ''){
+            // Validación
+            $this->validate($request, [
+                'imagen' => 'image|max:200',
+            ]);
+
+            if($imagen_id != ''){
+                Cloudder::destroyImage($imagen_id);
+                Cloudder::delete($imagen_id);
+            }
+
+            $imagen_path = $imagenServicio->getRealPath();
+            Cloudder::upload($imagen_path, null);
+            $resultado = Cloudder::getResult();
+            $datos['imagen'] = $resultado['url'];
+            $datos['imagenId'] = $resultado['public_id'];
+        }
+
+        Servicio::whereId($id)->update($datos);
+        return redirect()->route('admin.empresas.show', ['id' => $datos['empresa_id']])->with('flash', 'El servicio ha sido actualizado con exito.');
+    }
+
+    public function destroy($id){
+
+        $datos = Servicio::findOrFail($id);
+
+        $imagen_id = $datos->imagenId;
+
+        if($imagen_id != ''){
+            Cloudder::destroyImage($imagen_id);
+            Cloudder::delete($imagen_id);
+        }
+
+        $datos->delete();
+
+        return back()->with('flash', 'El servicio ha sido eliminado con éxito.');
+
+    }
+}

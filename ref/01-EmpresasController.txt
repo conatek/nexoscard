@@ -1,0 +1,543 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Empresa;
+use App\Foto;
+use App\Slider;
+use App\Servicio;
+use App\Producto;
+use App\Setting;
+use App\SettingEmpresa;
+use App\Tarjeta;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
+use JD\Cloudder\Facades\Cloudder;
+use Illuminate\Validation\Rule;
+
+class EmpresasController extends Controller
+{
+    public function index(){
+        $empresas = Empresa::all();
+        return view('admin.empresas.index', compact('empresas'));
+    }
+
+    public function create(){
+        return view('admin.empresas.create');
+    }
+
+    public function store(Request $request)
+    {
+        // Validación
+        $this->validate($request, [
+            'nombre' => 'required|unique:empresas',
+            'url' => 'required|unique:empresas',
+            'direccion' => 'required',
+            'telefono' => 'required',
+            'descripcion' => 'required',
+            'web' => 'required',
+            'email' => 'required|email',
+        ]);
+
+        $empresa = new Empresa();
+        $empresa->nombre = $request->get('nombre');    // Tambien: $request->nombre;
+        $empresa->url = $request->get('url');
+
+        if($request->input('estadoLogo') !== null){
+            $empresa->estadoLogo = 1;
+        }else{
+            $empresa->estadoLogo = 0;
+        }
+
+        if($request->input('estadoFondo') !== null){
+            $empresa->estadoFondo = 1;
+        }else{
+            $empresa->estadoFondo = 0;
+        }
+
+        if($request->input('estadoFondoFoto') !== null){
+            $empresa->estadoFondoFoto = 1;
+        }else{
+            $empresa->estadoFondoFoto = 0;
+        }
+
+        if($request->input('estadoImagenVideo') !== null){
+            $empresa->estadoImagenVideo = 1;
+        }else{
+            $empresa->estadoImagenVideo = 0;
+        }
+
+        if($request->input('estadoMinisitio') !== null){
+            $empresa->estadoMinisitio = 1;
+        }else{
+            $empresa->estadoMinisitio = 0;
+        }
+
+        $empresa->direccion = $request->get('direccion');
+        $empresa->adicional = $request->get('adicional');
+        $empresa->telefono = $request->get('telefono');
+        $empresa->facebook = $request->get('facebook');
+        $empresa->instagram = $request->get('instagram');
+        $empresa->twitter = $request->get('twitter');
+        $empresa->youtube = $request->get('youtube');
+        $empresa->web = $request->get('web');
+        $empresa->email = $request->get('email');
+        $empresa->my_business = $request->get('my_business');
+        $empresa->urlVideo = $request->get('urlVideo');
+        $empresa->descripcion = $request->get('descripcion');
+        $empresa->tituloParte1 = $request->get('tituloParte1');
+        $empresa->tituloParte2 = $request->get('tituloParte2');
+        $empresa->subtitulo = $request->get('subtitulo');
+
+        $logo = $request->file('logo');
+        if($logo != ''){
+            // Validación
+            $this->validate($request, [
+                'logo' => 'image|max:200'
+            ]);
+
+            $logo_path = $logo->getRealPath();
+            Cloudder::upload($logo_path, null);
+            $resultado = Cloudder::getResult();
+            $empresa->logo = $resultado['url'];
+            $empresa->logoId = $resultado['public_id'];
+        }
+
+        $fondo = $request->file('fondo');
+        if($fondo != ''){
+            // Validación
+            $this->validate($request, [
+                'fondo' => 'image|max:200'
+            ]);
+
+            $fondo_path = $fondo->getRealPath();
+            Cloudder::upload($fondo_path, null);
+            $resultado = Cloudder::getResult();
+            $empresa->fondo = $resultado['url'];
+            $empresa->fondoId = $resultado['public_id'];
+        }
+
+        $fondoFoto = $request->file('fondoFoto');
+        if($fondoFoto != ''){
+            // Validación
+            $this->validate($request, [
+                'fondoFoto' => 'image|max:200'
+            ]);
+
+            $fondoFoto_path = $fondoFoto->getRealPath();
+            Cloudder::upload($fondoFoto_path, null);
+            $resultado = Cloudder::getResult();
+            $empresa->fondoFoto = $resultado['url'];
+            $empresa->fondoFotoId = $resultado['public_id'];
+        }
+
+        $imagenVideo = $request->file('imagenVideo');
+        if($imagenVideo != ''){
+            // Validación
+            $this->validate($request, [
+                'imagenVideo' => 'image|max:200'
+            ]);
+
+            $imagenVideo_path = $imagenVideo->getRealPath();
+            Cloudder::upload($imagenVideo_path, null);
+            $resultado = Cloudder::getResult();
+            $empresa->imagenVideo = $resultado['url'];
+            $empresa->imagenVideoId = $resultado['public_id'];
+        }
+
+        $empresa->save();
+
+        $id = Empresa::all()->last()->id;
+
+        // AJUSTES POR DEFECTO TARJETA DIGITAL //////////////////////////////////////////////////////////
+        $configuracion = new Setting;
+        $configuracion->empresa_id = $id;
+        $configuracion->tj_ag_colorFondoSuperior = "#ffffff";
+        $configuracion->tj_ag_colorFondoInferior = "#939393";
+        $configuracion->tj_ag_colorFuente = "#000000";
+
+        $configuracion->tj_cb_anchoLogo = "180";
+        $configuracion->tj_cb_tamanoFuente = "1.8";
+        $configuracion->tj_cb_colorBorde = "#000000";
+        $configuracion->tj_cb_tipoBorde = "solid";
+        $configuracion->tj_cb_colorFuente = "#000000";
+        $configuracion->tj_cb_tamanoBorde = "1";
+
+        $configuracion->tj_fp_colorBorde = "#000000";
+        $configuracion->tj_fp_tipoBorde = "solid";
+        $configuracion->tj_fp_tamanoBorde = "1";
+        $configuracion->tj_fp_altura = "135";
+        $configuracion->tj_fp_radio = "50";
+//        $configuracion->tj_fp_sombraFoto = "";
+
+        $configuracion->tj_dp_colorFondo = null;
+        $configuracion->tj_dp_colorBorde = "#005DD5";
+        $configuracion->tj_dp_tipoBorde = "solid";
+        $configuracion->tj_dp_tamanoBorde = "2";
+        $configuracion->tj_dp_radio = "50";
+        $configuracion->tj_dp_tamanoFuenteNombre = "1.5";
+        $configuracion->tj_dp_tamanoFuenteApellido = "1.5";
+        $configuracion->tj_dp_tamanoFuenteCargo = "1.2";
+        $configuracion->tj_dp_colorFuenteNombre = "#000000";
+        $configuracion->tj_dp_colorFuenteApellido = "#005DD5";
+        $configuracion->tj_dp_colorFuenteCargo = "#000000";
+        $configuracion->tj_dp_pesoFuenteNombre = "700";
+        $configuracion->tj_dp_pesoFuenteApellido = "700";
+        $configuracion->tj_dp_pesoFuenteCargo = "300";
+
+        $configuracion->tj_sc_colorFuente = "#ffffff";
+        $configuracion->tj_sc_radio = "0";
+        $configuracion->tj_sc_fondoFacebook = "#3b5998";
+        $configuracion->tj_sc_fondoInstagram = "#008080";
+        $configuracion->tj_sc_fondoTwitter = "#00acee";
+        $configuracion->tj_sc_fondoLinkedin = "#0e76a8";
+        $configuracion->tj_sc_fondoYoutube = "#c4302b";
+        $configuracion->tj_sc_fondoCelular = "#323232";
+        $configuracion->tj_sc_fondoWhatsapp = "#323232";
+        $configuracion->tj_sc_fondoWeb = "#323232";
+        $configuracion->tj_sc_fondoEmail = "#323232";
+        $configuracion->tj_sc_fondoLocation = "#323232";
+
+        $configuracion->tj_ac_colorFuente = "#000000";
+        $configuracion->tj_ac_colorFuenteEnlace = "#ffffff";
+        $configuracion->tj_ac_pesoFuenteEnlace = "400";
+        $configuracion->tj_ac_colorCuerpo = "#ffffff";
+        $configuracion->tj_ac_tamanoFuenteEnlace = "1.2";
+        $configuracion->tj_ac_tamanoBorde = "1";
+        $configuracion->tj_ac_tipoBorde = "solid";
+        $configuracion->tj_ac_colorBorde = "#ffffff";
+        $configuracion->tj_ac_colorCH01 = "#005dd5";
+        $configuracion->tj_ac_colorCH02 = "#004aaa";
+        $configuracion->tj_ac_colorCH03 = "#003880";
+        $configuracion->tj_ac_colorCH04 = "#002555";
+        $configuracion->tj_ac_colorCH05 = "#00132b";
+
+        $configuracion->tj_pp_tamanoFuente = "1.8";
+        $configuracion->tj_pp_colorBorde = "#000000";
+        $configuracion->tj_pp_tipoBorde = "solid";
+        $configuracion->tj_pp_colorFuente = "#000000";
+        $configuracion->tj_pp_tamanoBorde = "2";
+        // AJUSTES POR DEFECTO TARJETA DIGITAL //////////////////////////////////////////////////////////
+
+        // AJUSTES POR DEFECTO MINISITIO ////////////////////////////////////////////////////////////////
+        $configuracionEmpresa = new SettingEmpresa;
+        $configuracionEmpresa->empresa_id = $id;
+        $configuracionEmpresa->ms_sc_colorPrimario = "#1d50b3";
+        $configuracionEmpresa->ms_sc_colorFuentePrimario = "#1d50b3";
+        // AJUSTES POR DEFECTO MINISITIO ////////////////////////////////////////////////////////////////
+
+        $configuracion->save();
+
+        return redirect()->route('admin.empresas.show', ['id' => $id])->with('flash', 'La empresa ha sido creada con exito.');
+    }
+
+    public function show($id){
+
+        $empresa = Empresa::findOrFail($id);
+        $tarjetas = Tarjeta::where('empresa_id', $id)->get();
+        $servicios = Servicio::where('empresa_id', $id)->get();
+        $productos = Producto::where('empresa_id', $id)->get();
+        $fotos = Foto::where('empresa_id', $id)->get();
+        $sliders = Slider::where('empresa_id', $id)->get();
+        $configuracion = Setting::where('empresa_id', $id)->first();
+        $configuracionEmpresa = SettingEmpresa::where('empresa_id', $id)->first();
+
+        return view('admin.empresas.show', compact('empresa', 'tarjetas', 'servicios', 'productos', 'fotos', 'sliders', 'configuracion', 'configuracionEmpresa'));
+    }
+
+    public function showServicio($id){
+        $servicio = Servicio::where('id', $id)->first();
+        return view('empresas.showServicio', compact('servicio'));
+    }
+
+    public function showProducto($id){
+        $producto = Producto::where('id', $id)->first();
+        return view('empresas.showProducto', compact('producto'));
+    }
+
+    public function edit($id){
+        $empresa = Empresa::findOrfail($id);
+
+        return view('admin.empresas.edit', compact('empresa'));
+    }
+
+    public function update(Request $request, $id){
+
+        $empresa = Empresa::where('id', $id)->first();
+
+        $this->validate($request, [
+            'direccion' => 'required',
+            'telefono' => 'required',
+            'descripcion' => 'required',
+            'web' => 'required',
+            'email' => 'required|email',
+        ]);
+
+        $datos = array(
+            'direccion' => $request->get('direccion'),
+            'adicional' => $request->get('adicional'),
+            'telefono' => $request->get('telefono'),
+            'facebook' => $request->get('facebook'),
+            'instagram' => $request->get('instagram'),
+            'twitter' => $request->get('twitter'),
+            'youtube' => $request->get('youtube'),
+            'web' => $request->get('web'),
+            'email' => $request->get('email'),
+            'my_business' => $request->get('my_business'),
+            'urlVideo' => $request->get('urlVideo'),
+            'descripcion' => $request->get('descripcion'),
+            'tituloParte1' => $request->get('tituloParte1'),
+            'tituloParte2' => $request->get('tituloParte2'),
+            'subtitulo' => $request->get('subtitulo'),
+        );
+
+        if($request->get('nombre') == $empresa->nombre){
+            // No hacer nada
+        }else{
+            $this->validate($request, [
+                'nombre' => 'required|unique:empresas',
+            ]);
+            $datos['nombre'] = $request->get('nombre');
+        }
+
+        if($request->get('url') == $empresa->url){
+            // No hacer nada
+        }else{
+            $this->validate($request, [
+                'url' => ['required', Rule::unique('empresas', 'url')],
+            ], [
+                // Mensajes de error de validación
+            ]);
+            $datos['url'] = $request->get('url');
+        }
+
+        if($request->input('estadoLogo') !== null){
+            $datos['estadoLogo'] = 1;
+        }else{
+            $datos['estadoLogo'] = 0;
+        }
+
+        $logo_id = $request->hidden_logoId;
+        $imagenLogo = $request->file('logo');
+        if($imagenLogo != ''){
+            // Validación
+            $this->validate($request, [
+                'logo' => 'image|max:200',
+            ]);
+
+            if($logo_id != ''){
+                Cloudder::destroyImage($logo_id);
+                Cloudder::delete($logo_id);
+            }
+
+            $logo_path = $imagenLogo->getRealPath();
+            Cloudder::upload($logo_path, null);
+            $resultado = Cloudder::getResult();
+            $datos['logo'] = $resultado['url'];
+            $datos['logoId'] = $resultado['public_id'];
+        }
+
+        if($request->input('estadoFondo') !== null){
+            $datos['estadoFondo'] = 1;
+        }else{
+            $datos['estadoFondo'] = 0;
+        }
+
+        $fondo_id = $request->hidden_fondoId;
+        $imagenFondo = $request->file('fondo');
+        if($imagenFondo != ''){
+            // Validación
+            $this->validate($request, [
+                'fondo' => 'image|max:200',
+            ]);
+
+            if($fondo_id != ''){
+                Cloudder::destroyImage($fondo_id);
+                Cloudder::delete($fondo_id);
+            }
+
+            $fondo_path = $imagenFondo->getRealPath();
+            Cloudder::upload($fondo_path, null);
+            $resultado = Cloudder::getResult();
+            $datos['fondo'] = $resultado['url'];
+            $datos['fondoId'] = $resultado['public_id'];
+        }
+
+        if($request->input('estadoFondoFoto') !== null){
+            $datos['estadoFondoFoto'] = 1;
+        }else{
+            $datos['estadoFondoFoto'] = 0;
+        }
+
+        $fondoFoto_id = $request->hidden_fondoFotoId;
+        $imagenFondoFoto = $request->file('fondoFoto');
+        if($imagenFondoFoto != ''){
+            // Validación
+            $this->validate($request, [
+                'fondoFoto' => 'image|max:200',
+            ]);
+
+            if($fondoFoto_id != ''){
+                Cloudder::destroyImage($fondoFoto_id);
+                Cloudder::delete($fondoFoto_id);
+            }
+
+            $fondoFoto_path = $imagenFondoFoto->getRealPath();
+            Cloudder::upload($fondoFoto_path, null);
+            $resultado = Cloudder::getResult();
+            $datos['fondoFoto'] = $resultado['url'];
+            $datos['fondoFotoId'] = $resultado['public_id'];
+        }
+
+        if($request->input('estadoImagenVideo') !== null){
+            $datos['estadoImagenVideo'] = 1;
+        }else{
+            $datos['estadoImagenVideo'] = 0;
+        }
+
+        $imagenVideo_id = $request->hidden_imagenVideoId;
+        $imagenVideoPresentacion = $request->file('imagenVideo');
+        if($imagenVideoPresentacion != ''){
+            // Validación
+            $this->validate($request, [
+                'imagenVideo' => 'image|max:200',
+            ]);
+
+            if($imagenVideo_id != ''){
+                Cloudder::destroyImage($imagenVideo_id);
+                Cloudder::delete($imagenVideo_id);
+            }
+
+            $imagenVideo_path = $imagenVideoPresentacion->getRealPath();
+            Cloudder::upload($imagenVideo_path, null);
+            $resultado = Cloudder::getResult();
+            $datos['imagenVideo'] = $resultado['url'];
+            $datos['imagenVideoId'] = $resultado['public_id'];
+        }
+
+        if($request->input('estadoMinisitio') !== null){
+            $datos['estadoMinisitio'] = 1;
+        }else{
+            $datos['estadoMinisitio'] = 0;
+        }
+
+        Empresa::whereId($id)->update($datos);
+        return redirect()->route('admin.empresas.show', ['id' => $id])->with('flash', 'La empresa ha sido actualizada con exito.');
+    }
+
+    public function destroy($id){
+
+        $datosEmpresa = Empresa::findOrFail($id);
+        $datosTarjetas = Tarjeta::where('empresa_id', $id)->get();
+        $datosServicios = Servicio::where('empresa_id', $id)->get();
+        $datosProductos = Producto::where('empresa_id', $id)->get();
+        $datosAjustes = Setting::where('empresa_id', $id)->first();
+        $datosFotos = Foto::where('empresa_id', $id)->get();
+        $datosSlider = Slider::where('empresa_id', $id)->get();
+
+//        dd($datosFotos);
+
+        // ---------- INICIO TARJETAS ---------- //
+
+        // Eliminamos Foto Persona y Miniatura de Cloudinary
+        foreach ($datosTarjetas as $tarjeta){
+            if($tarjeta->fotoId != ''){
+                Cloudder::destroyImage($tarjeta->fotoId);
+                Cloudder::delete($tarjeta->fotoId);
+            }
+            if($tarjeta->miniaturaId != ''){
+                Cloudder::destroyImage($tarjeta->miniaturaId);
+                Cloudder::delete($tarjeta->miniaturaId);
+            }
+
+            $tarjeta->delete();
+        }
+        // ---------- FIN TARJETAS ---------- //
+
+        // ---------- INICIO SERVICIOS ---------- //
+
+        // Eliminamos Imagen Servicio
+        foreach ($datosServicios as $servicio){
+            if($servicio->imagenId != ''){
+                Cloudder::destroyImage($servicio->imagenId);
+                Cloudder::delete($servicio->imagenId);
+            }
+
+            $servicio->delete();
+        }
+        // ---------- FIN SERVICIOS ---------- //
+
+        // ---------- INICIO PRODUCTOS ---------- //
+
+        // Eliminamos Imagen Producto
+        foreach ($datosProductos as $producto){
+            if($producto->imagenId != ''){
+                Cloudder::destroyImage($producto->imagenId);
+                Cloudder::delete($producto->imagenId);
+            }
+
+            $producto->delete();
+        }
+        // ---------- FIN PRODUCTOS ---------- //
+
+        // ---------- INICIO AJUSTES ---------- //
+        $datosAjustes->delete();
+        // ---------- FIN AJUSTES ---------- //
+
+        // ---------- INICIO FOTOS ---------- //
+
+        // Eliminamos Imagen Foto
+        foreach ($datosFotos as $foto){
+            if($foto->imagenId != ''){
+                Cloudder::destroyImage($foto->imagenId);
+                Cloudder::delete($foto->imagenId);
+            }
+
+            $foto->delete();
+        }
+        // ---------- FIN FOTOS ---------- //
+
+        // Eliminamos Imagen Slider
+        foreach ($datosSlider as $slide){
+            if($slide->imagenVideoId != ''){
+                Cloudder::destroyImage($slide->imagenVideoId);
+                Cloudder::delete($slide->imagenVideoId);
+            }
+
+            $foto->delete();
+        }
+        // ---------- FIN SLIDER ---------- //
+
+        $logo_id = $datosEmpresa->logoId;
+        $fondo_id = $datosEmpresa->fondoId;
+        $fondoFoto_id = $datosEmpresa->fondoFotoId;
+        $imagenVideo_id = $datosEmpresa->imagenVideoId;
+
+        if($logo_id != ''){
+            Cloudder::destroyImage($logo_id);
+            Cloudder::delete($logo_id);
+        }
+
+        if($fondo_id != ''){
+            Cloudder::destroyImage($fondo_id);
+            Cloudder::delete($fondo_id);
+        }
+
+        if($fondoFoto_id != ''){
+            Cloudder::destroyImage($fondoFoto_id);
+            Cloudder::delete($fondoFoto_id);
+        }
+
+        if($imagenVideo_id != ''){
+            Cloudder::destroyImage($imagenVideo_id);
+            Cloudder::delete($imagenVideo_id);
+        }
+
+        $datosEmpresa->delete();
+
+
+        return back()->with('flash', 'La empresa ha sido eliminada con éxito.');
+
+    }
+}

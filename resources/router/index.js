@@ -14,6 +14,9 @@ import CompanyEdit   from '../js/views/company/CompanyEdit.vue';
 import CardCreate from '../js/views/card/CardCreate.vue';
 import CardEdit   from '../js/views/card/CardEdit.vue';
 
+// Editor de plantillas (admin)
+import TemplateEditor from '../js/views/settings/TemplateEditor.vue';
+
 // Vistas públicas
 import CompanyPublic from '../js/views/public/CompanyPublic.vue';
 import CardPublic    from '../js/views/public/CardPublic.vue';
@@ -78,6 +81,14 @@ const routes = [
         path: '/empresas/:companyId/tarjetas/:cardId/editar',
         name: 'cards.edit',
         component: CardEdit,
+        meta: { requiresAuth: true },
+    },
+
+    // --- Editor de Plantillas ---
+    {
+        path: '/empresas/:companyId/plantilla',
+        name: 'settings.editor',
+        component: TemplateEditor,
         meta: { requiresAuth: true },
     },
 

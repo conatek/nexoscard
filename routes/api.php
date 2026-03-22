@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CompanySettingController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\ProductController;
@@ -18,6 +19,10 @@ Route::prefix('public')->group(function () {
     Route::get('/{companySlug}/{cardSlug}',  [PublicCardController::class, 'card']);
 });
 
+// Rutas públicas de plantillas (sin auth - para consultar schemas)
+Route::get('/templates', [CompanySettingController::class, 'templates']);
+Route::get('/templates/{templateName}/schema', [CompanySettingController::class, 'schema']);
+
 // Rutas protegidas con Sanctum
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -29,6 +34,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Empresas (CRUD)
     Route::apiResource('companies', CompanyController::class);
     Route::get('companies/{company}/theme', [CompanyController::class, 'theme']);
+
+    // Configuración de plantilla por empresa
+    Route::get('companies/{company}/settings', [CompanySettingController::class, 'show']);
+    Route::put('companies/{company}/settings', [CompanySettingController::class, 'update']);
+    Route::post('companies/{company}/settings/reset', [CompanySettingController::class, 'reset']);
 
     // Tarjetas (anidadas bajo empresa)
     Route::apiResource('companies.cards', CardController::class);

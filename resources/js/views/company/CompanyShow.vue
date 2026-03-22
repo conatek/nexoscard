@@ -25,6 +25,10 @@
           </div>
         </div>
         <div class="page-title-actions d-flex gap-2">
+          <router-link :to="{ name: 'settings.editor', params: { companyId: company.id } }"
+                       class="btn btn-outline-primary btn-sm">
+            <i class="fa fa-palette me-1"></i> Personalizar Plantilla
+          </router-link>
           <router-link :to="{ name: 'companies.edit', params: { id: company.id } }"
                        class="btn btn-outline-secondary btn-sm">
             <i class="fa fa-edit me-1"></i> Editar empresa

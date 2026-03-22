@@ -18,10 +18,20 @@ class PublicCardController extends Controller
                 'cards'    => fn($q) => $q->where('is_active', true)->orderBy('last_name'),
                 'services' => fn($q) => $q->where('is_active', true),
                 'products' => fn($q) => $q->where('is_active', true),
+                'settings',
             ])
             ->firstOrFail();
 
-        return response()->json($company);
+        // Agregar customization completa (con defaults aplicados)
+        $settings = $company->getOrCreateSettings();
+
+        return response()->json([
+            'company' => $company,
+            'template' => [
+                'name' => $settings->template_name,
+                'customization' => $settings->full_customization,
+            ],
+        ]);
     }
 
     /**
@@ -34,6 +44,7 @@ class PublicCardController extends Controller
             ->with([
                 'services' => fn($q) => $q->where('is_active', true),
                 'products' => fn($q) => $q->where('is_active', true),
+                'settings',
             ])
             ->firstOrFail();
 
@@ -42,9 +53,16 @@ class PublicCardController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
+        // Agregar customization completa (con defaults aplicados)
+        $settings = $company->getOrCreateSettings();
+
         return response()->json([
             'card'    => $card,
             'company' => $company,
+            'template' => [
+                'name' => $settings->template_name,
+                'customization' => $settings->full_customization,
+            ],
         ]);
     }
 }
