@@ -18,6 +18,13 @@ class ServiceController extends Controller
         return response()->json($company->services);
     }
 
+    public function show(Company $company, Service $service): JsonResponse
+    {
+        abort_if($service->company_id !== $company->id, 404);
+
+        return response()->json($service);
+    }
+
     public function store(StoreServiceRequest $request, Company $company): JsonResponse
     {
         $this->authorizeOwner($request, $company);

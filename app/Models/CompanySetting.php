@@ -74,4 +74,39 @@ class CompanySetting extends Model
     {
         return data_get($this->full_customization, $key, $default);
     }
+
+    /**
+     * Obtener solo los valores de customización (sin metadatos del schema)
+     * Formato: { section: { field: value, ... }, ... }
+     */
+    public function getValuesOnlyAttribute(): array
+    {
+        $schema = config("templates.schemas.{$this->template_name}", []);
+        $custom = $this->customization ?? [];
+        $result = [];
+
+        foreach ($schema as $sectionKey => $section) {
+            if (!is_array($section)) {
+                continue;
+            }
+
+            $result[$sectionKey] = [];
+
+            foreach ($section as $fieldKey => $fieldConfig) {
+                // Ignorar metadatos como _label
+                if (str_starts_with($fieldKey, '_')) {
+                    continue;
+                }
+
+                // Usar valor guardado si existe, sino usar default del schema
+                if (isset($custom[$sectionKey][$fieldKey])) {
+                    $result[$sectionKey][$fieldKey] = $custom[$sectionKey][$fieldKey];
+                } elseif (is_array($fieldConfig) && isset($fieldConfig['value'])) {
+                    $result[$sectionKey][$fieldKey] = $fieldConfig['value'];
+                }
+            }
+        }
+
+        return $result;
+    }
 }

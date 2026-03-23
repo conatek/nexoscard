@@ -38,7 +38,7 @@
     @vite('resources/css/app.css')
     @cloudinaryJS
 
-    <title>MUYHUMANO</title>
+    <title>Nexos - Tarjetas de Presentación Digital</title>
 </head>
 <body>
     <div id="app"></div>

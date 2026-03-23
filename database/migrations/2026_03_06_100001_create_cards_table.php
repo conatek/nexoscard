@@ -20,6 +20,8 @@ return new class extends Migration
             $table->string('mobile_phone')->nullable();
             $table->string('whatsapp')->nullable();
             $table->string('email')->nullable();
+            $table->string('linkedin')->nullable();
+            $table->string('whatsapp_message')->nullable();   // mensaje predeterminado
             $table->text('description')->nullable();          // perfil profesional
             $table->boolean('is_active')->default(true);
             $table->timestamps();

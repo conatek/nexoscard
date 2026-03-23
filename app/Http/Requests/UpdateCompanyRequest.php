@@ -27,6 +27,13 @@ class UpdateCompanyRequest extends FormRequest
                 Rule::unique('companies', 'slug')->ignore($companyId),
             ],
             'logo' => ['nullable', 'image', 'max:5120'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'web' => ['nullable', 'url', 'max:255'],
+            'my_business' => ['nullable', 'url', 'max:255'],
+            'facebook' => ['nullable', 'url', 'max:255'],
+            'instagram' => ['nullable', 'url', 'max:255'],
+            'twitter' => ['nullable', 'url', 'max:255'],
+            'youtube' => ['nullable', 'url', 'max:255'],
         ];
     }
 

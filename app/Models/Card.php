@@ -19,6 +19,8 @@ class Card extends Model
         'mobile_phone',
         'whatsapp',
         'email',
+        'linkedin',
+        'whatsapp_message',
         'description',
         'is_active',
     ];

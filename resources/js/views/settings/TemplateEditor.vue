@@ -1,27 +1,42 @@
 <template>
     <div class="template-editor">
         <!-- Header -->
-        <div class="editor-header d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h4 class="mb-1">Editor de Plantilla</h4>
-                <p class="text-muted mb-0">{{ company?.name }}</p>
-            </div>
-            <div class="d-flex gap-2">
-                <button
-                    class="btn btn-outline-secondary"
-                    @click="resetToDefaults"
-                    :disabled="saving"
-                >
-                    Restablecer
-                </button>
-                <button
-                    class="btn btn-primary"
-                    @click="saveSettings"
-                    :disabled="saving || !hasChanges"
-                >
-                    <span v-if="saving" class="spinner-border spinner-border-sm me-1"></span>
-                    {{ saving ? 'Guardando...' : 'Guardar Cambios' }}
-                </button>
+        <div class="app-page-title">
+            <div class="page-title-wrapper">
+                <div class="page-title-heading">
+                    <div class="page-title-icon">
+                        <i class="fa fa-palette icon-gradient bg-mean-fruit"></i>
+                    </div>
+                    <div>
+                        Editor de Plantilla
+                        <div class="page-title-subheading text-muted">
+                            {{ company?.name }}
+                        </div>
+                    </div>
+                </div>
+                <div class="page-title-actions d-flex gap-2">
+                    <router-link
+                        :to="{ name: 'companies.show', params: { id: $route.params.companyId } }"
+                        class="btn btn-outline-dark btn-sm"
+                    >
+                        <i class="fa fa-arrow-left me-1"></i> Volver
+                    </router-link>
+                    <button
+                        class="btn btn-outline-secondary btn-sm"
+                        @click="resetToDefaults"
+                        :disabled="saving"
+                    >
+                        Restablecer
+                    </button>
+                    <button
+                        class="btn btn-primary btn-sm"
+                        @click="saveSettings"
+                        :disabled="saving || !hasChanges"
+                    >
+                        <span v-if="saving" class="spinner-border spinner-border-sm me-1"></span>
+                        {{ saving ? 'Guardando...' : 'Guardar Cambios' }}
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -499,7 +514,6 @@ export default {
 
 <style scoped>
 .template-editor {
-    padding: 1.5rem;
     max-width: 100%;
     overflow: hidden;
 }

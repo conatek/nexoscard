@@ -18,6 +18,13 @@ class ProductController extends Controller
         return response()->json($company->products);
     }
 
+    public function show(Company $company, Product $product): JsonResponse
+    {
+        abort_if($product->company_id !== $company->id, 404);
+
+        return response()->json($product);
+    }
+
     public function store(StoreProductRequest $request, Company $company): JsonResponse
     {
         $this->authorizeOwner($request, $company);

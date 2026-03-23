@@ -44,8 +44,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('companies.cards', CardController::class);
 
     // Servicios (anidados bajo empresa)
-    Route::apiResource('companies.services', ServiceController::class)->except(['show']);
+    Route::apiResource('companies.services', ServiceController::class);
 
     // Productos (anidados bajo empresa)
-    Route::apiResource('companies.products', ProductController::class)->except(['show']);
+    Route::apiResource('companies.products', ProductController::class);
 });

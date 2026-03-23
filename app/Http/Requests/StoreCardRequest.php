@@ -32,6 +32,8 @@ class StoreCardRequest extends FormRequest
             'mobile_phone' => ['nullable', 'string', 'max:30'],
             'whatsapp'     => ['nullable', 'string', 'max:30'],
             'email'        => ['nullable', 'email', 'max:150'],
+            'linkedin'     => ['nullable', 'url', 'max:255'],
+            'whatsapp_message' => ['nullable', 'string', 'max:500'],
             'description'  => ['nullable', 'string', 'max:1000'],
             'is_active'    => ['nullable', 'boolean'],
         ];

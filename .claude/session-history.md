@@ -1,78 +1,162 @@
-# Historial de Sesiones - Sistema de Plantillas MuyLocal
+# Historial de Sesiones - MuyLocal
 
-## Sesión: Marzo 2026
+## Sesion: Marzo 2026 (Sesion 2) - CRUD Completo
+
+### Resumen
+Implementacion completa del CRUD para tarjetas, productos y servicios con vue-advanced-cropper y Cloudinary.
 
 ### Trabajo Realizado
 
-#### 1. Corrección de TemplateModern
-- **Problema:** Los controles del editor no afectaban la plantilla
-- **Causa raíz:** CSS variables con `scoped` no heredan del padre correctamente
-- **Solución:** Cambiar a computed styles inline con `:style="computed"`
-- **Archivos modificados:**
-  - `TemplateModern.vue` - Agregados computed: logoStyle, photoStyle, companyNameStyle, firstNameStyle, lastNameStyle, jobTitleStyle, profileSectionStyle, getSocialBtnStyle()
+#### 1. Expansion de Base de Datos
+- **companies**: Agregados campos address, web, my_business, facebook, instagram, twitter, youtube
+- **cards**: Agregados campos linkedin, whatsapp_message
+- Actualizados modelos con $fillable correspondientes
 
-#### 2. Creación de TemplateCreative
-- **Características:** Glassmorphism, luces ambientales, tarjeta flotante
-- **Archivos creados/modificados:**
-  - `TemplateCreative.vue` - Componente completo
-  - `config/templates.php` - Schema creative
-  - `LivePreview.vue` - Registro
-  - `app.blade.php` - Fuentes Inter, Space Grotesk
+#### 2. Servicios JS Creados
+- `productService.js` - CRUD completo para productos
+- `serviceService.js` - CRUD completo para servicios
 
-#### 3. Creación de TemplateCyber
-- **Características:** Estilo terminal, efectos neón, cursor animado
-- **Archivos creados/modificados:**
-  - `TemplateCyber.vue` - Componente completo
-  - `config/templates.php` - Schema cyber
-  - `LivePreview.vue` - Registro
-  - `app.blade.php` - Fuentes Space Mono, Fira Code, Roboto Mono
+#### 3. Vistas Vue con vue-advanced-cropper
 
-#### 4. Actualización de TemplateClassic
-- **Características:** Diseño elegante con tipografías serif, bordes dobles
-- **Cambios:**
-  - Reescritura completa del componente
-  - Nuevo schema con secciones: general, avatar, perfil, botones
-  - Foto de perfil siempre centrada
-- **Archivos modificados:**
-  - `TemplateClassic.vue` - Componente actualizado
-  - `config/templates.php` - Schema classic
-  - `app.blade.php` - Fuentes Playfair Display, Merriweather, Lora, Crimson Text, Libre Baskerville
+**Tarjetas (proporcion 1:1 fija)**
+- `CardCreate.vue` - Formulario dos columnas, cropper 1:1
+- `CardEdit.vue` - Formulario dos columnas, cropper 1:1
 
-#### 5. Actualización de TemplateMinimal
-- **Características:** Diseño ultra-limpio, filtro B&N opcional
-- **Cambios:**
-  - Nuevo schema con escalaGrises toggle
-  - Logo y foto siempre centrados
-  - Alineación por defecto: center
-- **Archivos modificados:**
-  - `TemplateMinimal.vue` - Componente actualizado
-  - `config/templates.php` - Schema minimal
+**Productos (proporciones 1:1, 2:1, 3:1)**
+- `ProductCreate.vue` - Formulario dos columnas, selector de ratio
+- `ProductEdit.vue` - Formulario dos columnas, selector de ratio
 
-#### 6. Creación de TemplateVibrant
-- **Características:** Bento Box, gradiente animado, animaciones de avatar
-- **Archivos creados/modificados:**
-  - `TemplateVibrant.vue` - Componente completo
-  - `config/templates.php` - Schema vibrant
-  - `LivePreview.vue` - Registro
-  - `app.blade.php` - Fuentes Outfit, Syne
+**Servicios (proporciones 1:1, 2:1, 3:1)**
+- `ServiceCreate.vue` - Formulario dos columnas, selector de ratio
+- `ServiceEdit.vue` - Formulario dos columnas, selector de ratio
 
-#### 7. Corrección de Footer en Modern
-- **Problema:** Footer tenía espacio desde el borde inferior
-- **Solución:** Flexbox con `margin-top: auto` en footer
-- **Agregado:** Control de fondo independiente para footer (tipo, colores, patrón)
+#### 4. Actualizacion de Router
+Nuevas rutas agregadas:
+```
+/empresas/:companyId/productos/crear
+/empresas/:companyId/productos/:productId/editar
+/empresas/:companyId/servicios/crear
+/empresas/:companyId/servicios/:serviceId/editar
+```
 
-#### 8. Documentación
-- **Creado:** `indications.txt` - Guía completa para agregar plantillas
-- **Creado:** `.claude/templates-inventory.md` - Inventario de plantillas
-- **Creado:** `.claude/ux-improvements.md` - Mejoras identificadas
-- **Creado:** `.claude/session-history.md` - Este archivo
+#### 5. CompanyShow.vue Actualizado
+- Tabla de tarjetas con acciones (editar/eliminar)
+- Tabla de servicios con acciones (editar/eliminar)
+- Tabla de productos con acciones (editar/eliminar)
+- Modales de confirmacion para eliminacion
+- Botones para crear nuevos items
+
+#### 6. Controladores Backend
+- `ProductController.php` - Agregado metodo show()
+- `ServiceController.php` - Agregado metodo show()
+- `routes/api.php` - Habilitados endpoints show para productos/servicios
+
+#### 7. Cloudinary - Rutas Descriptivas
+```
+companies/cards     - Fotos de perfil de tarjetas
+companies/products  - Imagenes de productos
+companies/services  - Imagenes de servicios
+```
+
+### Archivos Creados/Modificados
+
+```
+# Creados
+resources/js/services/productService.js
+resources/js/services/serviceService.js
+resources/js/views/product/ProductCreate.vue
+resources/js/views/product/ProductEdit.vue
+resources/js/views/service/ServiceCreate.vue
+resources/js/views/service/ServiceEdit.vue
+
+# Modificados
+resources/js/views/card/CardCreate.vue (agregado cropper)
+resources/js/views/card/CardEdit.vue (agregado cropper)
+resources/js/views/company/CompanyShow.vue (tablas productos/servicios)
+resources/router/index.js (nuevas rutas)
+app/Http/Controllers/ProductController.php (metodo show)
+app/Http/Controllers/ServiceController.php (metodo show)
+routes/api.php (endpoints show)
+```
+
+### Patron de Cropper Implementado
+
+```javascript
+// Modal overlay con cropper
+<div v-if="cropperOpen" class="cropper-overlay">
+  <div class="cropper-dialog">
+    <!-- Selector de ratio (solo productos/servicios) -->
+    <div class="mb-3 d-flex gap-2 flex-wrap">
+      <button v-for="r in ratios" :key="r.label"
+        :class="['btn btn-sm', selectedRatio === r.value ? 'btn-primary' : 'btn-outline-secondary']"
+        @click="selectedRatio = r.value">
+        {{ r.label }}
+      </button>
+    </div>
+
+    <Cropper ref="cropper" :src="cropperSrc"
+      :stencil-props="{ aspectRatio: selectedRatio }" />
+
+    <button @click="confirmCrop">Aplicar recorte</button>
+  </div>
+</div>
+```
+
+```javascript
+// Metodos del cropper
+onFileSelected(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  this.cropperSrc = URL.createObjectURL(file);
+  this.cropperOpen = true;
+},
+
+confirmCrop() {
+  const { canvas } = this.$refs.cropper.getResult();
+  canvas.toBlob((blob) => {
+    this.imageFile = new File([blob], 'image.png', { type: 'image/png' });
+    if (this.imagePreview) URL.revokeObjectURL(this.imagePreview);
+    this.imagePreview = URL.createObjectURL(blob);
+    this.cropperOpen = false;
+  }, 'image/png');
+},
+```
 
 ---
 
-### Patrón Técnico Establecido
+## Sesion: Marzo 2026 (Sesion 1) - Sistema de Plantillas
+
+### Trabajo Realizado
+
+#### 1. Correccion de TemplateModern
+- **Problema:** Los controles del editor no afectaban la plantilla
+- **Causa raiz:** CSS variables con `scoped` no heredan del padre correctamente
+- **Solucion:** Cambiar a computed styles inline con `:style="computed"`
+
+#### 2. Creacion de Plantillas
+- **TemplateCreative** - Glassmorphism, luces ambientales, tarjeta flotante
+- **TemplateCyber** - Estilo terminal, efectos neon, cursor animado
+- **TemplateVibrant** - Bento Box, gradiente animado, animaciones de avatar
+
+#### 3. Actualizacion de Plantillas Existentes
+- **TemplateClassic** - Reescritura completa, tipografias serif
+- **TemplateMinimal** - Filtro B&N opcional, diseño ultra-limpio
+
+#### 4. Correccion de Footer en Modern
+- Flexbox con `margin-top: auto` en footer
+- Control de fondo independiente para footer
+
+#### 5. Documentacion
+- `indications.txt` - Guia completa para agregar plantillas
+- `.claude/templates-inventory.md` - Inventario de plantillas
+- `.claude/ux-improvements.md` - Mejoras identificadas
+
+---
+
+## Patron Tecnico Establecido
 
 ```javascript
-// PATRÓN CORRECTO para estilos dinámicos en plantillas
+// PATRON CORRECTO para estilos dinamicos en plantillas
 export default {
     props: {
         customization: { type: Object, default: () => ({}) },
@@ -88,7 +172,7 @@ export default {
             return this.customization?.avatar?.mostrar !== false
         },
 
-        // Para estilos con valores numéricos (usar ??)
+        // Para estilos con valores numericos (usar ??)
         avatarStyle() {
             const avatar = this.customization?.avatar || {}
             return {
@@ -107,34 +191,27 @@ export default {
             }
         },
     },
-
-    methods: {
-        // Para estilos paramétricos (botones sociales)
-        getSocialBtnStyle(type) {
-            const config = this.customization?.botones || {}
-            // ... lógica según tipo
-        }
-    }
 }
 ```
 
 ---
 
-### Errores Resueltos
+## Errores Resueltos
 
-| Error | Causa | Solución |
+| Error | Causa | Solucion |
 |-------|-------|----------|
 | Controles no funcionan | CSS variables scoped | Computed styles inline |
 | Foto ovalada | width ≠ height | Asegurar igualdad |
 | Fuente no cambia | No cargada | Agregar a app.blade.php |
-| Schema no se refleja | Caché Laravel | config:clear && cache:clear |
+| Schema no se refleja | Cache Laravel | config:clear && cache:clear |
+| Cropper no guarda | Falta File object | canvas.toBlob -> new File |
 
 ---
 
-### Comandos Frecuentes
+## Comandos Frecuentes
 
 ```bash
-# Limpiar caché después de cambios en config/
+# Limpiar cache despues de cambios en config/
 php artisan config:clear && php artisan cache:clear
 
 # Desarrollo
@@ -144,14 +221,24 @@ php artisan serve
 
 ---
 
-### Próximos Pasos Sugeridos
+## Estado del Proyecto
 
-1. [ ] Implementar vista pública con plantillas dinámicas
-2. [ ] Agregar más controles a plantillas simples
-3. [ ] Crear sistema de presets/temas por plantilla
-4. [ ] Implementar exportación de configuración
-5. [ ] Agregar preview en selector de plantillas
+### Completado
+- [x] 6 plantillas dinamicas funcionando
+- [x] CRUD empresas con logo cropper
+- [x] CRUD tarjetas con foto cropper (1:1)
+- [x] CRUD productos con imagen cropper (1:1, 2:1, 3:1)
+- [x] CRUD servicios con imagen cropper (1:1, 2:1, 3:1)
+- [x] Vista publica con plantillas dinamicas
+- [x] Formularios en dos columnas
+- [x] Footer solido en admin
+
+### Pendiente
+- [ ] Galeria de fotos por empresa
+- [ ] Exportar/importar configuraciones
+- [ ] Sistema de presets por plantilla
+- [ ] Preview en selector de plantillas
 
 ---
 
-*Última actualización: Marzo 2026*
+*Ultima actualizacion: Marzo 2026*

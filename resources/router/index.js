@@ -14,10 +14,18 @@ import CompanyEdit   from '../js/views/company/CompanyEdit.vue';
 import CardCreate from '../js/views/card/CardCreate.vue';
 import CardEdit   from '../js/views/card/CardEdit.vue';
 
+// Productos (admin)
+import ProductCreate from '../js/views/product/ProductCreate.vue';
+import ProductEdit   from '../js/views/product/ProductEdit.vue';
+
+// Servicios (admin)
+import ServiceCreate from '../js/views/service/ServiceCreate.vue';
+import ServiceEdit   from '../js/views/service/ServiceEdit.vue';
+
 // Editor de plantillas (admin)
 import TemplateEditor from '../js/views/settings/TemplateEditor.vue';
 
-// Vistas públicas
+// Vistas publicas
 import CompanyPublic from '../js/views/public/CompanyPublic.vue';
 import CardPublic    from '../js/views/public/CardPublic.vue';
 
@@ -84,6 +92,34 @@ const routes = [
         meta: { requiresAuth: true },
     },
 
+    // --- Productos (anidados bajo empresa) ---
+    {
+        path: '/empresas/:companyId/productos/crear',
+        name: 'products.create',
+        component: ProductCreate,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/empresas/:companyId/productos/:productId/editar',
+        name: 'products.edit',
+        component: ProductEdit,
+        meta: { requiresAuth: true },
+    },
+
+    // --- Servicios (anidados bajo empresa) ---
+    {
+        path: '/empresas/:companyId/servicios/crear',
+        name: 'services.create',
+        component: ServiceCreate,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: '/empresas/:companyId/servicios/:serviceId/editar',
+        name: 'services.edit',
+        component: ServiceEdit,
+        meta: { requiresAuth: true },
+    },
+
     // --- Editor de Plantillas ---
     {
         path: '/empresas/:companyId/plantilla',
@@ -92,7 +128,7 @@ const routes = [
         meta: { requiresAuth: true },
     },
 
-    // --- Vistas públicas de tarjetas (al final, antes del 404) ---
+    // --- Vistas publicas de tarjetas (al final, antes del 404) ---
     {
         path: '/:companySlug',
         name: 'public.company',

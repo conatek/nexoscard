@@ -2,8 +2,8 @@
   <div class="app-page-title">
     <div class="page-title-wrapper">
       <div class="page-title-heading">
-        <div class="page-title-icon"><i class="fa fa-id-card icon-gradient bg-mean-fruit"></i></div>
-        <div>Nueva tarjeta<div class="page-title-subheading">{{ companyName }}</div></div>
+        <div class="page-title-icon"><i class="fa fa-box icon-gradient bg-mean-fruit"></i></div>
+        <div>Nuevo producto<div class="page-title-subheading">{{ companyName }}</div></div>
       </div>
       <div class="page-title-actions">
         <router-link :to="{ name: 'companies.show', params: { id: $route.params.companyId } }"
@@ -16,105 +16,86 @@
 
   <form @submit.prevent="submit">
     <div class="row">
-      <!-- Columna izquierda: Datos personales -->
+      <!-- Columna izquierda: Informacion del producto -->
       <div class="col-lg-6">
         <div class="card mb-4">
           <div class="card-header fw-semibold">
-            <i class="fa fa-user me-2 text-primary"></i>Datos personales
+            <i class="fa fa-box me-2 text-primary"></i>Informacion del producto
           </div>
           <div class="card-body">
-            <div class="row g-3 mb-3">
-              <div class="col-6">
-                <label class="form-label">Nombre *</label>
-                <input v-model="form.first_name" type="text" class="form-control" :class="errorClass('first_name')" />
-                <div class="invalid-feedback">{{ errors.first_name?.[0] }}</div>
-              </div>
-              <div class="col-6">
-                <label class="form-label">Apellido *</label>
-                <input v-model="form.last_name" type="text" class="form-control" :class="errorClass('last_name')" />
-                <div class="invalid-feedback">{{ errors.last_name?.[0] }}</div>
-              </div>
-            </div>
-
-            <div class="row g-3 mb-3">
-              <div class="col-6">
-                <label class="form-label">Slug *</label>
-                <div class="input-group">
-                  <span class="input-group-text text-muted small">/</span>
-                  <input v-model="form.slug" type="text" class="form-control" :class="errorClass('slug')"
-                    @input="form.slug = slugify(form.slug)" />
-                </div>
-                <div class="invalid-feedback d-block" v-if="errors.slug">{{ errors.slug[0] }}</div>
-              </div>
-              <div class="col-6">
-                <label class="form-label">Cargo</label>
-                <input v-model="form.job_title" type="text" class="form-control" placeholder="Ej: Gerente" />
-              </div>
+            <div class="mb-3">
+              <label class="form-label">Nombre *</label>
+              <input v-model="form.name" type="text" class="form-control" :class="errorClass('name')" />
+              <div class="invalid-feedback">{{ errors.name?.[0] }}</div>
             </div>
 
             <div class="mb-3">
-              <label class="form-label">Foto de perfil</label>
+              <label class="form-label">Descripcion</label>
+              <textarea v-model="form.description" class="form-control" rows="3"
+                        placeholder="Descripcion del producto..."></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Imagen del producto</label>
               <input ref="fileInput" type="file" class="form-control" accept="image/*" @change="onFileSelected" />
-              <div v-if="photoPreview" class="mt-2 d-flex align-items-center gap-2">
-                <img :src="photoPreview" class="rounded-circle"
-                     style="width: 80px; height: 80px; object-fit: cover" />
+              <div v-if="imagePreview" class="mt-2 d-flex align-items-center gap-2">
+                <img :src="imagePreview" class="rounded border"
+                     style="height: 100px; width: auto; max-width: 200px; object-fit: cover" />
                 <button type="button" class="btn btn-sm btn-outline-secondary" @click="openCropper">
                   <i class="fa fa-crop me-1"></i> Recortar
                 </button>
               </div>
             </div>
-
-            <div>
-              <label class="form-label">Perfil profesional</label>
-              <textarea v-model="form.description" class="form-control" rows="3"
-                        placeholder="Breve descripcion profesional..."></textarea>
-            </div>
           </div>
         </div>
       </div>
 
-      <!-- Columna derecha: Contacto -->
+      <!-- Columna derecha: Precio y opciones -->
       <div class="col-lg-6">
         <div class="card mb-4">
           <div class="card-header fw-semibold">
-            <i class="fa fa-address-book me-2 text-primary"></i>Contacto
+            <i class="fa fa-dollar-sign me-2 text-primary"></i>Precio y opciones
           </div>
           <div class="card-body">
             <div class="row g-3 mb-3">
               <div class="col-6">
-                <label class="form-label">Telefono movil</label>
-                <input v-model="form.mobile_phone" type="text" class="form-control" placeholder="+58 412..." />
+                <label class="form-label">Precio *</label>
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  <input v-model="form.price" type="number" step="0.01" min="0"
+                         class="form-control" :class="errorClass('price')" />
+                </div>
+                <div class="invalid-feedback d-block" v-if="errors.price">{{ errors.price[0] }}</div>
               </div>
               <div class="col-6">
-                <label class="form-label"><i class="fab fa-whatsapp text-success me-1"></i> WhatsApp</label>
-                <input v-model="form.whatsapp" type="text" class="form-control" placeholder="+58412..." />
-              </div>
-            </div>
-
-            <div class="row g-3 mb-3">
-              <div class="col-6">
-                <label class="form-label">Email</label>
-                <input v-model="form.email" type="email" class="form-control" :class="errorClass('email')" />
-                <div class="invalid-feedback">{{ errors.email?.[0] }}</div>
-              </div>
-              <div class="col-6">
-                <label class="form-label"><i class="fab fa-linkedin text-primary me-1"></i> LinkedIn</label>
-                <input v-model="form.linkedin" type="url" class="form-control" :class="errorClass('linkedin')"
-                  placeholder="https://linkedin.com/in/..." />
-                <div class="invalid-feedback">{{ errors.linkedin?.[0] }}</div>
+                <label class="form-label">Descuento (%)</label>
+                <div class="input-group">
+                  <input v-model="form.discount" type="number" step="0.01" min="0" max="100"
+                         class="form-control" placeholder="0" />
+                  <span class="input-group-text">%</span>
+                </div>
               </div>
             </div>
 
             <div class="mb-3">
-              <label class="form-label">Mensaje predeterminado de WhatsApp</label>
-              <textarea v-model="form.whatsapp_message" class="form-control" rows="2"
-                placeholder="Hola, me gustaria obtener mas informacion..."></textarea>
-              <div class="form-text">Se usara cuando hagan clic en el boton de WhatsApp.</div>
+              <label class="form-label">Comentario breve</label>
+              <input v-model="form.comment" type="text" class="form-control"
+                     placeholder="Ej: Oferta limitada, Nuevo..." maxlength="120" />
+              <div class="form-text">Se muestra junto al producto (max 120 caracteres)</div>
             </div>
 
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" v-model="form.is_active" id="isActive" />
-              <label class="form-check-label" for="isActive">Tarjeta activa</label>
+            <div class="row g-3 mb-3">
+              <div class="col-6">
+                <label class="form-label">Orden</label>
+                <input v-model="form.order" type="number" min="0" class="form-control" placeholder="0" />
+                <div class="form-text">Menor = aparece primero</div>
+              </div>
+              <div class="col-6 d-flex align-items-end">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" v-model="form.is_active" id="isActive" />
+                  <label class="form-check-label" for="isActive">Producto activo</label>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -128,7 +109,7 @@
           <button type="submit" class="btn btn-primary" :disabled="saving">
             <span v-if="saving" class="spinner-border spinner-border-sm me-1"></span>
             <i v-else class="fa fa-check me-1"></i>
-            Crear tarjeta
+            Crear producto
           </button>
         </div>
       </div>
@@ -139,19 +120,27 @@
   <div v-if="cropperOpen" class="cropper-overlay">
     <div class="cropper-dialog">
       <div class="cropper-dialog__header">
-        <span class="fw-semibold">Recortar foto de perfil</span>
+        <span class="fw-semibold">Recortar imagen del producto</span>
         <button type="button" class="btn-close" @click="cancelCrop"></button>
       </div>
 
-      <div class="mb-3">
-        <span class="badge bg-secondary">Proporcion 1:1 (cuadrada)</span>
+      <div class="mb-3 d-flex gap-2 flex-wrap">
+        <button
+          v-for="r in ratios"
+          :key="r.label"
+          type="button"
+          :class="['btn btn-sm', selectedRatio === r.value ? 'btn-primary' : 'btn-outline-secondary']"
+          @click="selectedRatio = r.value"
+        >
+          {{ r.label }}
+        </button>
       </div>
 
       <div class="cropper-wrapper">
         <Cropper
           ref="cropper"
           :src="cropperSrc"
-          :stencil-props="{ aspectRatio: 1 }"
+          :stencil-props="{ aspectRatio: selectedRatio }"
           class="cropper"
         />
       </div>
@@ -171,11 +160,11 @@
 <script>
 import { Cropper } from 'vue-advanced-cropper';
 import 'vue-advanced-cropper/dist/style.css';
-import cardService    from '@/services/cardService.js';
+import productService from '@/services/productService.js';
 import companyService from '@/services/companyService.js';
 
 export default {
-  name: 'CardCreate',
+  name: 'ProductCreate',
 
   components: { Cropper },
 
@@ -185,15 +174,25 @@ export default {
       saving: false,
       errors: {},
       generalError: null,
-      photoPreview: null,
-      photoFile: null,
+      imagePreview: null,
+      imageFile: null,
       // Cropper
       cropperOpen: false,
       cropperSrc: null,
+      selectedRatio: 1,
+      ratios: [
+        { label: '1:1', value: 1 },
+        { label: '2:1', value: 2 },
+        { label: '3:1', value: 3 },
+      ],
       form: {
-        first_name: '', last_name: '', slug: '', job_title: '',
-        mobile_phone: '', whatsapp: '', email: '', linkedin: '',
-        whatsapp_message: '', description: '', is_active: true,
+        name: '',
+        description: '',
+        price: '',
+        discount: '',
+        comment: '',
+        order: 0,
+        is_active: true,
       },
     };
   },
@@ -204,10 +203,6 @@ export default {
   },
 
   methods: {
-    slugify(v) {
-      return v.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-_]/g, '');
-    },
-
     onFileSelected(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -216,23 +211,23 @@ export default {
     },
 
     openCropper() {
-      this.cropperSrc = this.photoPreview;
+      this.cropperSrc = this.imagePreview;
       this.cropperOpen = true;
     },
 
     confirmCrop() {
       const { canvas } = this.$refs.cropper.getResult();
       canvas.toBlob((blob) => {
-        this.photoFile = new File([blob], 'photo.png', { type: 'image/png' });
-        if (this.photoPreview) URL.revokeObjectURL(this.photoPreview);
-        this.photoPreview = URL.createObjectURL(blob);
+        this.imageFile = new File([blob], 'image.png', { type: 'image/png' });
+        if (this.imagePreview) URL.revokeObjectURL(this.imagePreview);
+        this.imagePreview = URL.createObjectURL(blob);
         this.cropperOpen = false;
       }, 'image/png');
     },
 
     cancelCrop() {
       this.cropperOpen = false;
-      if (!this.photoFile) {
+      if (!this.imageFile) {
         this.cropperSrc = null;
         this.$refs.fileInput.value = '';
       }
@@ -251,16 +246,16 @@ export default {
       Object.entries(this.form).forEach(([k, v]) => {
         if (v !== null && v !== '') payload.append(k, v);
       });
-      if (this.photoFile) payload.append('photo', this.photoFile);
+      if (this.imageFile) payload.append('image', this.imageFile);
 
       try {
-        await cardService.store(this.$route.params.companyId, payload);
+        await productService.store(this.$route.params.companyId, payload);
         this.$router.push({ name: 'companies.show', params: { id: this.$route.params.companyId } });
       } catch (err) {
         if (err.response?.status === 422) {
           this.errors = err.response.data.errors;
         } else {
-          this.generalError = err.response?.data?.message || 'Error al crear la tarjeta.';
+          this.generalError = err.response?.data?.message || 'Error al crear el producto.';
         }
       } finally {
         this.saving = false;
@@ -285,7 +280,7 @@ export default {
   background: #fff;
   border-radius: 0.5rem;
   padding: 1.5rem;
-  width: min(500px, 95vw);
+  width: min(600px, 95vw);
   max-height: 90vh;
   overflow-y: auto;
 }
@@ -298,7 +293,7 @@ export default {
 }
 
 .cropper-wrapper {
-  height: 350px;
+  height: 380px;
   background: #1a1a1a;
   border-radius: 0.375rem;
   overflow: hidden;

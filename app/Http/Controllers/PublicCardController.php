@@ -22,14 +22,14 @@ class PublicCardController extends Controller
             ])
             ->firstOrFail();
 
-        // Agregar customization completa (con defaults aplicados)
+        // Obtener customization con valores por defecto aplicados
         $settings = $company->getOrCreateSettings();
 
         return response()->json([
             'company' => $company,
             'template' => [
                 'name' => $settings->template_name,
-                'customization' => $settings->full_customization,
+                'customization' => $settings->values_only,
             ],
         ]);
     }
@@ -53,7 +53,7 @@ class PublicCardController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
-        // Agregar customization completa (con defaults aplicados)
+        // Obtener customization con valores por defecto aplicados
         $settings = $company->getOrCreateSettings();
 
         return response()->json([
@@ -61,7 +61,7 @@ class PublicCardController extends Controller
             'company' => $company,
             'template' => [
                 'name' => $settings->template_name,
-                'customization' => $settings->full_customization,
+                'customization' => $settings->values_only,
             ],
         ]);
     }

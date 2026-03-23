@@ -106,6 +106,20 @@ export default {
 </script>
 
 <style>
+/* Layout base para el panel admin */
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.app-main {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
 .closed-sidebar.fixed-footer .app-footer .app-footer__inner {
   margin-left: 80px !important;
 }
@@ -115,7 +129,9 @@ export default {
     width: 100%;
     bottom: 0;
     left: 0;
-    z-index: 7;
+    z-index: 100;
+    background-color: #ffffff !important;
+    border-top: 1px solid #dee2e6;
 }
 
 @media (max-width: 768px) {
@@ -154,7 +170,8 @@ export default {
         height: 30px;
         /* width: 200px; */
         width: 100%;
-        background: url("../../images/logo-muyhumano-lineal.png");
+        /* background: url("../../images/logo-muyhumano-lineal.png"); */
+        background: url("../../images/nexos-logo.png");
         background-size: contain;
         background-repeat: no-repeat;
     }
@@ -189,9 +206,9 @@ export default {
 
     }
     .app-header__logo .logo-src {
-        height: 30px;
+        height: 50px;
         width: 100%;
-        background: url("../../images/logo-muyhumano-lineal.png");
+        background: url("../../images/nexos-logo.png");
         background-size: contain;
         background-repeat: no-repeat;
     }
@@ -203,8 +220,18 @@ export default {
 }
 
 .fixed-footer .app-main .app-main__outer {
-    padding-bottom: 60px;
+    padding-bottom: 70px;  /* Espacio para el footer fijo */
     height: calc(100vh - 60px);  /* 60px = altura del header */
+    max-height: calc(100vh - 60px);
     overflow-y: auto;
+}
+
+/* Footer con fondo sólido en todos los casos */
+.app-footer {
+    background-color: #ffffff !important;
+}
+
+.app-footer .app-footer__inner {
+    background-color: #ffffff !important;
 }
 </style>

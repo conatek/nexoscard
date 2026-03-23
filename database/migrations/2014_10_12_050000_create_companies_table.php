@@ -15,6 +15,13 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->string('logo_path')->nullable();
             $table->string('logo_public_id')->nullable();
+            $table->string('address')->nullable();
+            $table->string('web')->nullable();
+            $table->string('my_business')->nullable();
+            $table->string('facebook')->nullable();
+            $table->string('instagram')->nullable();
+            $table->string('twitter')->nullable();
+            $table->string('youtube')->nullable();
             $table->timestamps();
         });
     }

@@ -56,13 +56,6 @@ export default {
     box-sizing: border-box;
 }
 
-html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-}
-
 .app-sidebar {
     width: 280px;
     min-width: 280px;

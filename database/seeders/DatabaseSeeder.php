@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             CitySeeder::class,
             RoleSeeder::class,
             CompanySeeder::class,
+            CardSeeder::class,
             UserSeeder::class,
         ]);
     }

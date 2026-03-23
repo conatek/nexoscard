@@ -15,6 +15,13 @@ class Company extends Model
         'slug',
         'logo_path',
         'logo_public_id',
+        'address',
+        'web',
+        'my_business',
+        'facebook',
+        'instagram',
+        'twitter',
+        'youtube',
     ];
 
     public function owner()
