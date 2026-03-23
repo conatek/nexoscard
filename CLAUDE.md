@@ -47,10 +47,13 @@ resources/
 │   │   ├── Header.vue, Sidebar.vue, Footer.vue
 │   │   ├── AdminApp.vue, PublicApp.vue
 │   │   └── templates/               # Sistema de plantillas
-│   │       ├── LivePreview.vue      # Contenedor con CSS Variables
-│   │       ├── TemplateModern.vue   # Plantilla moderna
-│   │       ├── TemplateClassic.vue  # Plantilla clásica (placeholder)
-│   │       └── TemplateMinimal.vue  # Plantilla minimalista (placeholder)
+│   │       ├── LivePreview.vue      # Contenedor que renderiza plantillas
+│   │       ├── TemplateModern.vue   # Plantilla moderna (~45 controles)
+│   │       ├── TemplateClassic.vue  # Plantilla clásica (serif elegante)
+│   │       ├── TemplateMinimal.vue  # Plantilla minimalista (B&N opcional)
+│   │       ├── TemplateCreative.vue # Plantilla creativa (glassmorphism)
+│   │       ├── TemplateCyber.vue    # Plantilla cyber (neón terminal)
+│   │       └── TemplateVibrant.vue  # Plantilla vibrante (Bento Box)
 │   └── views/
 │       ├── company/                 # CompanyIndex, CompanyCreate, CompanyShow, CompanyEdit
 │       ├── card/                    # CardCreate, CardEdit
@@ -92,8 +95,19 @@ El sistema permite múltiples plantillas con personalización visual completa vi
 1. **CompanySetting** (modelo): Almacena `template_name` y `customization` (JSON) por empresa
 2. **config/templates.php**: Define plantillas disponibles y sus schemas de configuración
 3. **TemplateEditor.vue**: Editor visual con controles generados dinámicamente
-4. **LivePreview.vue**: Contenedor que inyecta CSS Variables para actualización en tiempo real
-5. **TemplateModern.vue**: Plantilla que consume las CSS Variables
+4. **LivePreview.vue**: Contenedor que renderiza la plantilla seleccionada
+5. **Template*.vue**: Plantillas que usan **computed styles inline** (NO CSS variables)
+
+### Plantillas Disponibles
+
+| Plantilla | Archivo | Características | Complejidad |
+|-----------|---------|-----------------|-------------|
+| Modern | TemplateModern.vue | Acordeón, patrones, control granular | Alta (~45) |
+| Classic | TemplateClassic.vue | Serif elegante, bordes dobles | Baja (~10) |
+| Minimal | TemplateMinimal.vue | Ultra-limpio, filtro B&N | Baja (~10) |
+| Creative | TemplateCreative.vue | Glassmorphism, luces ambientales | Media (~15) |
+| Cyber | TemplateCyber.vue | Terminal, neón, cursor animado | Media (~10) |
+| Vibrant | TemplateVibrant.vue | Bento Box, gradiente animado | Media (~12) |
 
 ### Flujo de datos
 
@@ -112,14 +126,12 @@ TemplateEditor.vue
     ├── customization (objeto reactivo)
     │       │
     │       ▼
-    │   computed: cssVariables
-    │   Convierte: { general: { colorFondo: '#fff' } }
-    │   A: { '--general-color-fondo': '#fff' }
-    │
-    └── LivePreview.vue :style="cssVariables"
+    └── LivePreview.vue
             │
-            └── TemplateModern.vue
-                Usa: var(--general-color-fondo, #ffffff)
+            └── Template*.vue
+                - Recibe prop: customization
+                - Usa computed properties para estilos
+                - Aplica via :style="computedStyle"
 ```
 
 ### Schema de configuración (config/templates.php)
@@ -159,37 +171,56 @@ PUT    /api/companies/{id}/settings           # Actualizar configuración
 POST   /api/companies/{id}/settings/reset     # Restablecer a defaults
 ```
 
-### CSS Variables en plantillas
+### Estilos en Plantillas (IMPORTANTE)
 
-Las plantillas usan CSS Variables que se actualizan reactivamente:
+**Las plantillas usan computed styles inline, NO CSS variables heredadas.**
 
-```css
-.company-logo {
-    width: var(--header-ancho-logo, 150px);
+```javascript
+// CORRECTO - Computed styles inline
+computed: {
+    avatarStyle() {
+        const avatar = this.customization?.avatar || {}
+        return {
+            width: `${avatar.tamano ?? 120}px`,
+            height: `${avatar.tamano ?? 120}px`,
+            borderRadius: `${avatar.radio ?? 50}%`,
+        }
+    }
 }
 
-.first-name {
-    font-size: var(--profile-nombre-tamano, 1.5em);
-    color: var(--profile-nombre-color, #333333);
-    font-weight: var(--profile-nombre-peso, 600);
-}
+// En template
+<img :style="avatarStyle" ...>
+```
 
-.social-btn.facebook {
-    background: var(--social-fondo-facebook, #3b5998);
+```javascript
+// INCORRECTO - CSS variables NO funcionan con scoped
+.avatar {
+    width: var(--avatar-tamano, 120px);  // NO USAR
 }
 ```
 
-### Sombras dinámicas
+### Operadores para Defaults
 
-Los toggles de sombra usan clases dinámicas de Vue (no se pueden condicionales en CSS):
+```javascript
+// ?? para numéricos (permite 0 como valor válido)
+avatar.tamano ?? 120
+
+// || para strings/colores
+gen.colorTexto || '#333333'
+```
+
+### Clases Dinámicas (para toggles/animaciones)
 
 ```html
 <img :class="{ 'with-shadow': customization?.photo?.sombra }" ...>
+<div :class="avatarAnimationClass">
 ```
 
-```css
-.profile-photo.with-shadow {
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+```javascript
+avatarAnimationClass() {
+    const anim = this.customization?.avatar?.animacion || 'ninguna'
+    if (anim === 'flotar') return 'anim-float'
+    return ''
 }
 ```
 
@@ -310,10 +341,25 @@ box-shadow: var(--photo-sombra) == true ? 2px 2px 10px #666 : none;
 php artisan config:clear && php artisan cache:clear && php artisan route:clear
 ```
 
+## Archivos de Memoria
+
+El directorio `.claude/` contiene documentación de trabajo:
+
+```
+.claude/
+├── templates-inventory.md   # Inventario completo de plantillas
+├── ux-improvements.md       # Mejoras de UX identificadas
+└── session-history.md       # Historial de trabajo realizado
+```
+
+También existe `indications.txt` en la raíz con guía completa para agregar plantillas.
+
 ## Próximos pasos sugeridos
 
-1. Completar plantillas Classic y Minimal
+1. ~~Completar plantillas Classic y Minimal~~ ✓
 2. Agregar campos adicionales a Company (redes sociales, dirección, teléfono, web)
 3. Implementar vista pública CardPublic.vue con plantillas dinámicas
 4. Agregar galería de fotos por empresa
 5. Exportar/importar configuraciones de plantilla
+6. Estandarizar nomenclatura de secciones en schemas (ver .claude/ux-improvements.md)
+7. Agregar más controles a plantillas simples (tamaño logo, textos)

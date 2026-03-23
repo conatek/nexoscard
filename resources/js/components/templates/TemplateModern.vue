@@ -27,6 +27,7 @@
                 <h4
                     v-else-if="headerContent === 'nombre' || (headerContent === 'logo' && !company?.logo_path)"
                     class="company-name"
+                    :style="companyNameStyle"
                 >
                     {{ company?.name || 'Empresa' }}
                 </h4>
@@ -40,21 +41,22 @@
                     :alt="`${card.first_name} ${card.last_name}`"
                     class="profile-photo"
                     :class="{ 'with-shadow': customization?.photo?.sombra }"
+                    :style="photoStyle"
                 >
-                <div v-else class="photo-placeholder" :class="{ 'with-shadow': customization?.photo?.sombra }">
+                <div v-else class="photo-placeholder" :class="{ 'with-shadow': customization?.photo?.sombra }" :style="photoStyle">
                     <i class="bi bi-person-fill"></i>
                 </div>
             </div>
         </section>
 
         <!-- Datos Personales -->
-        <section class="profile-section">
+        <section class="profile-section" :style="profileSectionStyle">
             <div class="profile-data" :class="{ 'with-text-shadow': customization?.profile?.sombra }">
                 <p class="full-name">
-                    <span class="first-name">{{ card?.first_name || 'Nombre' }}</span>
-                    <span class="last-name">{{ card?.last_name || 'Apellido' }}</span>
+                    <span class="first-name" :style="firstNameStyle">{{ card?.first_name || 'Nombre' }}</span>
+                    <span class="last-name" :style="lastNameStyle">{{ card?.last_name || 'Apellido' }}</span>
                 </p>
-                <p class="job-title">{{ card?.job_title || 'Cargo' }}</p>
+                <p class="job-title" :style="jobTitleStyle">{{ card?.job_title || 'Cargo' }}</p>
             </div>
         </section>
 
@@ -62,27 +64,27 @@
         <section class="social-section" :class="{ 'social-with-shadow': customization?.social?.sombra }">
             <ul class="social-icons company-social">
                 <li v-if="company?.facebook">
-                    <a :href="company.facebook" class="social-btn facebook">
+                    <a :href="company.facebook" class="social-btn facebook" :style="getSocialBtnStyle('facebook')">
                         <i class="bi bi-facebook"></i>
                     </a>
                 </li>
                 <li v-if="company?.instagram">
-                    <a :href="company.instagram" class="social-btn instagram">
+                    <a :href="company.instagram" class="social-btn instagram" :style="getSocialBtnStyle('instagram')">
                         <i class="bi bi-instagram"></i>
                     </a>
                 </li>
                 <li v-if="company?.twitter">
-                    <a :href="company.twitter" class="social-btn twitter">
+                    <a :href="company.twitter" class="social-btn twitter" :style="getSocialBtnStyle('twitter')">
                         <i class="bi bi-twitter-x"></i>
                     </a>
                 </li>
                 <li v-if="card?.linkedin">
-                    <a :href="card.linkedin" class="social-btn linkedin">
+                    <a :href="card.linkedin" class="social-btn linkedin" :style="getSocialBtnStyle('linkedin')">
                         <i class="bi bi-linkedin"></i>
                     </a>
                 </li>
                 <li v-if="company?.youtube">
-                    <a :href="company.youtube" class="social-btn youtube">
+                    <a :href="company.youtube" class="social-btn youtube" :style="getSocialBtnStyle('youtube')">
                         <i class="bi bi-youtube"></i>
                     </a>
                 </li>
@@ -90,27 +92,27 @@
 
             <ul class="social-icons contact-social">
                 <li v-if="card?.mobile_phone">
-                    <a :href="`tel:${card.mobile_phone}`" class="social-btn phone">
+                    <a :href="`tel:${card.mobile_phone}`" class="social-btn phone" :style="getSocialBtnStyle('phone')">
                         <i class="bi bi-telephone-fill"></i>
                     </a>
                 </li>
                 <li v-if="card?.whatsapp">
-                    <a :href="whatsappLink" class="social-btn whatsapp">
+                    <a :href="whatsappLink" class="social-btn whatsapp" :style="getSocialBtnStyle('whatsapp')">
                         <i class="bi bi-whatsapp"></i>
                     </a>
                 </li>
                 <li v-if="company?.web">
-                    <a :href="company.web" class="social-btn web">
+                    <a :href="company.web" class="social-btn web" :style="getSocialBtnStyle('web')">
                         <i class="bi bi-globe"></i>
                     </a>
                 </li>
                 <li v-if="card?.email">
-                    <a :href="`mailto:${card.email}`" class="social-btn email">
+                    <a :href="`mailto:${card.email}`" class="social-btn email" :style="getSocialBtnStyle('email')">
                         <i class="bi bi-envelope-fill"></i>
                     </a>
                 </li>
                 <li v-if="company?.my_business">
-                    <a :href="company.my_business" class="social-btn location">
+                    <a :href="company.my_business" class="social-btn location" :style="getSocialBtnStyle('location')">
                         <i class="bi bi-geo-alt-fill"></i>
                     </a>
                 </li>
@@ -322,6 +324,19 @@ export default {
             return this.customization?.photo?.tamano || 120
         },
 
+        // Estilo de la foto de perfil
+        photoStyle() {
+            const photo = this.customization?.photo || {}
+            return {
+                width: `${photo.tamano || 120}px`,
+                height: `${photo.tamano || 120}px`,
+                borderRadius: `${photo.radio ?? 15}px`,
+                borderWidth: `${photo.tamanoBorde ?? 3}px`,
+                borderStyle: photo.tipoBorde || 'solid',
+                borderColor: photo.colorBorde || '#ffffff',
+            }
+        },
+
         // Estilo de la sección hero (contiene cabecera + foto)
         heroSectionStyle() {
             if (!this.showPhoto) {
@@ -336,10 +351,71 @@ export default {
         logoStyle() {
             const header = this.customization?.header || {}
             return {
+                width: `${header.anchoLogo || 150}px`,
                 borderWidth: `${header.logoBorde || 0}px`,
                 borderStyle: header.logoTipoBorde || 'solid',
                 borderColor: header.logoColorBorde || '#ffffff',
                 borderRadius: `${header.logoRedondeo || 0}px`,
+            }
+        },
+
+        // Estilo del nombre de empresa en header
+        companyNameStyle() {
+            const header = this.customization?.header || {}
+            return {
+                color: header.colorFuente || '#ffffff',
+                fontSize: `${header.tamanoFuente || 1.2}em`,
+            }
+        },
+
+        // Estilo del nombre
+        firstNameStyle() {
+            const profile = this.customization?.profile || {}
+            return {
+                fontSize: `${profile.nombreTamano || 1.5}em`,
+                color: profile.nombreColor || '#333333',
+                fontWeight: profile.nombrePeso || '600',
+            }
+        },
+
+        // Estilo del apellido
+        lastNameStyle() {
+            const profile = this.customization?.profile || {}
+            return {
+                fontSize: `${profile.apellidoTamano || 1.5}em`,
+                color: profile.apellidoColor || '#555555',
+                fontWeight: profile.apellidoPeso || '400',
+            }
+        },
+
+        // Estilo del cargo
+        jobTitleStyle() {
+            const profile = this.customization?.profile || {}
+            return {
+                fontSize: `${profile.cargoTamano || 1}em`,
+                color: profile.cargoColor || '#666666',
+                fontWeight: profile.cargoPeso || '400',
+            }
+        },
+
+        // Estilo de la sección de perfil
+        profileSectionStyle() {
+            const profile = this.customization?.profile || {}
+            return {
+                background: profile.colorFondo || 'transparent',
+                borderWidth: `${profile.tamanoBorde || 0}px`,
+                borderStyle: profile.tipoBorde || 'none',
+                borderColor: profile.colorBorde || 'transparent',
+                borderRadius: `${profile.radio || 0}px`,
+            }
+        },
+
+        // Estilos base de botones sociales
+        socialBtnBaseStyle() {
+            const social = this.customization?.social || {}
+            return {
+                borderRadius: `${social.radio ?? 50}%`,
+                color: social.colorIcono || '#ffffff',
             }
         },
 
@@ -470,6 +546,30 @@ export default {
             this.modalOpen = false
             this.modalType = null
             this.modalData = null
+        },
+
+        // Obtener estilo de botón social por tipo
+        getSocialBtnStyle(type) {
+            const social = this.customization?.social || {}
+            // Mapeo de tipo a nombre de propiedad y color por defecto
+            const mapping = {
+                facebook: { key: 'fondoFacebook', default: '#3b5998' },
+                instagram: { key: 'fondoInstagram', default: '#e4405f' },
+                twitter: { key: 'fondoTwitter', default: '#1da1f2' },
+                linkedin: { key: 'fondoLinkedin', default: '#0077b5' },
+                youtube: { key: 'fondoYoutube', default: '#ff0000' },
+                whatsapp: { key: 'fondoWhatsapp', default: '#25d366' },
+                email: { key: 'fondoEmail', default: '#ea4335' },
+                phone: { key: 'fondoCelular', default: '#34b7f1' },
+                web: { key: 'fondoWeb', default: '#4285f4' },
+                location: { key: 'fondoUbicacion', default: '#ff5722' },
+            }
+            const config = mapping[type] || { key: '', default: '#666666' }
+            return {
+                borderRadius: `${social.radio ?? 50}%`,
+                color: social.colorIcono || '#ffffff',
+                background: social[config.key] || config.default,
+            }
         },
     },
 }

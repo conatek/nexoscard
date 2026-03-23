@@ -1,5 +1,5 @@
 <template>
-    <div class="live-preview">
+    <div class="live-preview" :style="cssVariablesStyle">
         <component
             :is="currentTemplateComponent"
             :customization="customization"
@@ -15,6 +15,9 @@
 import TemplateModern from './TemplateModern.vue'
 import TemplateClassic from './TemplateClassic.vue'
 import TemplateMinimal from './TemplateMinimal.vue'
+import TemplateCreative from './TemplateCreative.vue'
+import TemplateCyber from './TemplateCyber.vue'
+import TemplateVibrant from './TemplateVibrant.vue'
 
 export default {
     name: 'LivePreview',
@@ -23,6 +26,9 @@ export default {
         TemplateModern,
         TemplateClassic,
         TemplateMinimal,
+        TemplateCreative,
+        TemplateCyber,
+        TemplateVibrant,
     },
 
     props: {
@@ -103,6 +109,9 @@ export default {
                 modern: 'TemplateModern',
                 classic: 'TemplateClassic',
                 minimal: 'TemplateMinimal',
+                creative: 'TemplateCreative',
+                cyber: 'TemplateCyber',
+                vibrant: 'TemplateVibrant',
             }
             return templates[this.templateName] || 'TemplateModern'
         },
