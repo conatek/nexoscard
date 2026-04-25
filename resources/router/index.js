@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import Landing  from '../views/Landing.vue';
 import Login    from '../views/Login.vue';
 import Register from '../views/Register.vue';
 import Home     from '../views/Home.vue';
@@ -30,6 +31,14 @@ import CompanyPublic from '../js/views/public/CompanyPublic.vue';
 import CardPublic    from '../js/views/public/CardPublic.vue';
 
 const routes = [
+    // --- Landing (pagina publica de inicio) ---
+    {
+        path: '/inicio',
+        name: 'landing',
+        component: Landing,
+        meta: { layout: 'public' },
+    },
+
     // --- Auth ---
     {
         path: '/login',
@@ -159,7 +168,7 @@ router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('auth_token');
 
     if (to.meta.requiresAuth && !token) {
-        return next({ name: 'login' });
+        return next({ name: 'landing' });
     }
 
     if (to.meta.guest && token) {

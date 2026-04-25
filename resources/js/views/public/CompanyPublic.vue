@@ -101,7 +101,7 @@
     </div>
 
     <footer class="cp-footer">
-      <p>Tarjetas digitales · Powered by MuyLocal</p>
+      <p>Tarjetas digitales · Powered by NexosCard</p>
     </footer>
   </div>
 </template>

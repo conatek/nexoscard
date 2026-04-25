@@ -140,6 +140,15 @@
                                         placeholder="https://youtube.com/@mi-canal" />
                                     <span v-if="errors.youtube" class="error-text">{{ errors.youtube[0] }}</span>
                                 </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fab fa-tiktok social-icon"></i> TikTok
+                                    </label>
+                                    <input v-model="form.tiktok" type="url" class="form-input" :class="{ 'has-error': errors.tiktok }"
+                                        placeholder="https://tiktok.com/@mi-cuenta" />
+                                    <span v-if="errors.tiktok" class="error-text">{{ errors.tiktok[0] }}</span>
+                                </div>
                             </div>
                         </div>
 
@@ -263,6 +272,7 @@ export default {
             instagram: data.instagram || '',
             twitter: data.twitter || '',
             youtube: data.youtube || '',
+            tiktok: data.tiktok || '',
         };
         this.loading = false;
     },
@@ -323,6 +333,7 @@ export default {
             payload.append('instagram', this.form.instagram || '');
             payload.append('twitter', this.form.twitter || '');
             payload.append('youtube', this.form.youtube || '');
+            payload.append('tiktok', this.form.tiktok || '');
 
             try {
                 await companyService.update(this.$route.params.id, payload);

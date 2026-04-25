@@ -75,7 +75,7 @@
             </section>
 
             <footer class="social-footer">
-                <a v-if="company?.linkedin" :href="company.linkedin" class="social-link" :style="socialLinkStyle"><i class="bi bi-linkedin"></i></a>
+                <a v-if="card?.linkedin" :href="card.linkedin" class="social-link" :style="socialLinkStyle"><i class="bi bi-linkedin"></i></a>
                 <a v-if="company?.instagram" :href="company.instagram" class="social-link" :style="socialLinkStyle"><i class="bi bi-instagram"></i></a>
                 <a v-if="company?.facebook" :href="company.facebook" class="social-link" :style="socialLinkStyle"><i class="bi bi-facebook"></i></a>
             </footer>

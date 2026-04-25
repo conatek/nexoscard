@@ -3,7 +3,7 @@ GUÍA PARA AGREGAR NUEVAS PLANTILLAS DE TARJETA DIGITAL
 ================================================================================
 
 Este documento describe el proceso completo para agregar una nueva plantilla
-de tarjeta digital al sistema MuyLocal. Sigue estas instrucciones exactamente
+de tarjeta digital al sistema NexosCard. Sigue estas instrucciones exactamente
 para garantizar el correcto funcionamiento.
 
 ================================================================================

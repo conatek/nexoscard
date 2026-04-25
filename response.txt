@@ -1,4 +1,4 @@
-# Plan de Trabajo - Expansión de Base de Datos MuyLocal
+# Plan de Trabajo - Expansión de Base de Datos NexosCard
 
 ## Resumen de Cambios
 

@@ -35,4 +35,15 @@ export default {
     resetSettings(companyId) {
         return api.post(`/companies/${companyId}/settings/reset`)
     },
+
+    /**
+     * Subir imagen para configuración de plantilla
+     */
+    uploadImage(companyId, file) {
+        const formData = new FormData()
+        formData.append('image', file, file.name)
+        return api.post(`/companies/${companyId}/settings/upload-image`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        })
+    },
 }

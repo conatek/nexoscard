@@ -9,7 +9,7 @@
                     <div>
                         Panel de Control
                         <div class="page-title-subheading text-muted">
-                            Bienvenido a MuyLocal
+                            Bienvenido a NexosCard
                         </div>
                     </div>
                 </div>

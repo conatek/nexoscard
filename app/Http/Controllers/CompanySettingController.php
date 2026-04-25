@@ -7,6 +7,7 @@ use App\Models\CompanySetting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\CloudinaryService;
 
 class CompanySettingController extends Controller
 {
@@ -128,6 +129,28 @@ class CompanySettingController extends Controller
             'message' => 'Configuración restablecida a valores por defecto',
             'settings' => $settings->fresh(),
             'full_customization' => $settings->full_customization,
+        ]);
+    }
+
+    /**
+     * Subir una imagen para la configuración de plantilla
+     */
+    public function uploadImage(Request $request, Company $company, CloudinaryService $cloudinary): JsonResponse
+    {
+        if ((int) $company->user_id !== (int) Auth::id()) {
+            return response()->json(['message' => 'No autorizado'], 403);
+        }
+
+        $request->validate([
+            'image' => 'required|image|max:5120',
+        ]);
+
+        $folder = CloudinaryService::companyFolder($company->slug, 'plantilla');
+        $result = $cloudinary->upload($request->file('image'), $folder);
+
+        return response()->json([
+            'url' => $result['url'],
+            'public_id' => $result['public_id'],
         ]);
     }
 

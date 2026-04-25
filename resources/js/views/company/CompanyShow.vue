@@ -115,6 +115,9 @@
                             <a v-if="company.youtube" :href="company.youtube" target="_blank" class="social-btn social-youtube">
                                 <i class="fab fa-youtube"></i>
                             </a>
+                            <a v-if="company.tiktok" :href="company.tiktok" target="_blank" class="social-btn social-tiktok">
+                                <i class="fab fa-tiktok"></i>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -383,7 +386,7 @@ export default {
         },
         hasSocialLinks() {
             return this.company.facebook || this.company.instagram ||
-                   this.company.twitter || this.company.youtube;
+                   this.company.twitter || this.company.youtube || this.company.tiktok;
         },
     },
 
@@ -661,6 +664,7 @@ export default {
 .social-instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
 .social-twitter { background: #1da1f2; }
 .social-youtube { background: #ff0000; }
+.social-tiktok { background: #000000; }
 
 /* Section Cards */
 .section-card {

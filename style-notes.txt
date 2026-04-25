@@ -2,7 +2,7 @@
                     GUIA DE ESTILOS - SISTEMA DE DISEÑO
 ================================================================================
 
-Este documento describe el sistema de estilos aplicado en el proyecto MuyLocal.
+Este documento describe el sistema de estilos aplicado en el proyecto NexosCard.
 Diseñado para paneles administrativos Vue 3 con un estilo moderno, limpio y
 profesional. Compatible con Bootstrap 5 y Font Awesome.
 

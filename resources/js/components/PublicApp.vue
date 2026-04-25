@@ -3,7 +3,7 @@
     <router-view v-if="isPublicLayout" />
 
     <!-- Layout con sidebar/header para usuarios autenticados -->
-    <div v-else-if="isAuthenticated" class="app-container app-theme-dark fixed-header fixed-sidebar fixed-footer"
+    <div v-else-if="isAuthenticated" class="app-container app-theme-dark"
         :class="{
             'closed-sidebar': !isCollapsed,
             'sidebar-mobile-open': isOpenSidebarMobile
@@ -118,20 +118,43 @@ export default {
     flex: 1;
     display: flex;
     overflow: hidden;
+    padding-top: 0 !important;
 }
 
-.closed-sidebar.fixed-footer .app-footer .app-footer__inner {
-  margin-left: 80px !important;
+/* Corregir el margin/padding del sidebar que viene del base.css */
+.app-sidebar {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    flex: none !important;
 }
 
-.fixed-footer .app-footer {
-    position: fixed;
-    width: 100%;
-    bottom: 0;
-    left: 0;
-    z-index: 100;
-    background-color: #ffffff !important;
-    border-top: 1px solid #dee2e6;
+/* Evitar padding interno heredado de base.css */
+.app-sidebar .sidebar-inner,
+.app-sidebar .app-sidebar__inner {
+    padding: 0 !important;
+}
+
+/* Contenedor del contenido principal - IMPORTANTE: quitar padding-left del base.css */
+.app-main__outer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #f1f4f6;
+    padding-left: 0 !important; /* Sobrescribir el padding-left: 280px del base.css */
+}
+
+/* Reducir padding del contenido */
+.app-main .app-main__inner {
+    padding: 1rem 1.25rem !important;
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Quitar margins negativos del page-title que pueden causar espacios */
+.app-page-title {
+    margin: 0 0 1rem 0 !important;
+    padding: 0 !important;
 }
 
 @media (max-width: 768px) {
@@ -149,49 +172,38 @@ export default {
         display: none;
     }
 
-    .app-header .app-header__logo {
-        order: 2;
-        background: transparent !important;
-        border: 0 !important;
-    }
-
     .app-header__logo {
-        /* padding: 0 1.5rem; */
         padding: 0;
         height: 60px;
-        /* max-width: 280px; */
         width: 100%;
         display: flex;
         align-items: center;
         transition: width .2s;
-
     }
+
     .app-header__logo .logo-src {
         height: 30px;
-        /* width: 200px; */
         width: 100%;
-        /* background: url("../../images/logo-muyhumano-lineal.png"); */
         background: url("../../images/nexos-logo.png");
         background-size: contain;
         background-repeat: no-repeat;
     }
 
     .app-sidebar {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        z-index: 1000;
         transform: translateX(-100%);
-        transition: transform 0.5s ease-in-out !important;
+        transition: transform 0.3s ease-in-out !important;
     }
 
     .sidebar-mobile-open .app-sidebar {
         transform: translateX(0);
     }
 
-    .fixed-footer .app-footer .app-footer__inner {
-        box-shadow: 0.3rem -0.46875rem 2.1875rem rgba(4, 9, 20, 0.02), 0.3rem -0.9375rem 1.40625rem rgba(4, 9, 20, 0.02), 0.3rem -0.25rem 0.53125rem rgba(4, 9, 20, 0.04), 0.3rem -0.125rem 0.1875rem rgba(4, 9, 20, 0.02);
-    }
-
-    .app-footer .app-footer__inner .app-footer-left {
-        display: flex;
-        align-items: center;
+    .app-main .app-main__inner {
+        padding: 0.75rem !important;
     }
 }
 
@@ -203,8 +215,8 @@ export default {
         display: flex;
         align-items: center;
         transition: width .2s;
-
     }
+
     .app-header__logo .logo-src {
         height: 50px;
         width: 100%;
@@ -212,26 +224,13 @@ export default {
         background-size: contain;
         background-repeat: no-repeat;
     }
-
-    .fixed-footer .app-footer .app-footer__inner {
-        margin-left: 280px;
-        box-shadow: 0.3rem -0.46875rem 2.1875rem rgba(4, 9, 20, 0.02), 0.3rem -0.9375rem 1.40625rem rgba(4, 9, 20, 0.02), 0.3rem -0.25rem 0.53125rem rgba(4, 9, 20, 0.04), 0.3rem -0.125rem 0.1875rem rgba(4, 9, 20, 0.02);
-    }
 }
 
-.fixed-footer .app-main .app-main__outer {
-    padding-bottom: 70px;  /* Espacio para el footer fijo */
-    height: calc(100vh - 60px);  /* 60px = altura del header */
-    max-height: calc(100vh - 60px);
-    overflow-y: auto;
-}
-
-/* Footer con fondo sólido en todos los casos */
+/* Footer - dentro del flujo de app-main__outer */
 .app-footer {
+    position: relative !important;
+    width: 100% !important;
     background-color: #ffffff !important;
-}
-
-.app-footer .app-footer__inner {
-    background-color: #ffffff !important;
+    flex-shrink: 0;
 }
 </style>

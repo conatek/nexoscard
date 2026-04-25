@@ -39,6 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('companies/{company}/settings', [CompanySettingController::class, 'show']);
     Route::put('companies/{company}/settings', [CompanySettingController::class, 'update']);
     Route::post('companies/{company}/settings/reset', [CompanySettingController::class, 'reset']);
+    Route::post('companies/{company}/settings/upload-image', [CompanySettingController::class, 'uploadImage']);
 
     // Tarjetas (anidadas bajo empresa)
     Route::apiResource('companies.cards', CardController::class);
