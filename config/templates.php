@@ -1423,7 +1423,7 @@ return [
                 'texto' => [
                     'type' => 'text',
                     'label' => 'Texto',
-                    'value' => 'by MuyLocal.com',
+                    'value' => 'by NexosCard.com',
                 ],
                 'colorFondo' => [
                     'type' => 'color',

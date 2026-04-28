@@ -14,7 +14,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="page-title-actions">
+                <div class="page-title-actions" v-if="canCreate">
                     <router-link :to="{ name: 'companies.create' }" class="btn-create">
                         <i class="fa fa-plus me-2"></i> Nueva Empresa
                     </router-link>
@@ -68,7 +68,7 @@
                 <p class="empty-description">
                     Crea tu primera empresa para comenzar a generar tarjetas de presentacion digitales para tu equipo.
                 </p>
-                <router-link :to="{ name: 'companies.create' }" class="btn-create">
+                <router-link v-if="canCreate" :to="{ name: 'companies.create' }" class="btn-create">
                     <i class="fa fa-plus me-2"></i> Crear mi primera empresa
                 </router-link>
             </div>
@@ -112,11 +112,11 @@
                                  class="action-btn action-primary">
                         <i class="fa fa-eye me-1"></i> Gestionar
                     </router-link>
-                    <router-link :to="{ name: 'companies.edit', params: { id: company.id } }"
+                    <router-link v-if="canEdit" :to="{ name: 'companies.edit', params: { id: company.id } }"
                                  class="action-btn action-secondary">
                         <i class="fa fa-edit"></i>
                     </router-link>
-                    <button @click="confirmDelete(company)" class="action-btn action-danger">
+                    <button v-if="canDelete" @click="confirmDelete(company)" class="action-btn action-danger">
                         <i class="fa fa-trash"></i>
                     </button>
                 </div>
@@ -152,6 +152,7 @@
 
 <script>
 import companyService from '@/services/companyService.js';
+import { useAuth } from '@/stores/auth';
 
 export default {
     name: 'CompanyIndex',
@@ -163,6 +164,21 @@ export default {
             toDelete: null,
             deleting: false,
         };
+    },
+
+    computed: {
+        canCreate() {
+            const auth = useAuth();
+            return auth.can('create_company');
+        },
+        canEdit() {
+            const auth = useAuth();
+            return auth.can('edit_company');
+        },
+        canDelete() {
+            const auth = useAuth();
+            return auth.can('delete_company');
+        },
     },
 
     async created() {

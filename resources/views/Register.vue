@@ -260,7 +260,6 @@ export default {
     data() {
         return {
             form: {
-                company_id: 1,
                 name: '',
                 email: '',
                 password: '',

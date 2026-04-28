@@ -4,13 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use App\Models\CompanySetting;
+use App\Traits\HasCompanyAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Services\CloudinaryService;
 
 class CompanySettingController extends Controller
 {
+    use HasCompanyAccess;
+
     /**
      * Obtener lista de plantillas disponibles
      */
@@ -45,14 +47,11 @@ class CompanySettingController extends Controller
     /**
      * Obtener la configuración de una empresa
      */
-    public function show(Company $company): JsonResponse
+    public function show(Request $request, Company $company): JsonResponse
     {
-        // Verificar que el usuario tenga acceso a esta empresa
-        if ((int) $company->user_id !== (int) Auth::id()) {
-            return response()->json([
-                'message' => 'No autorizado',
-            ], 403);
-        }
+        $user = $request->user();
+        abort_if(!$user->can('view_settings'), 403, 'No autorizado.');
+        $this->enforceCompanyAccess($user, $company);
 
         $settings = $company->getOrCreateSettings();
         $schema = config("templates.schemas.{$settings->template_name}", []);
@@ -69,12 +68,9 @@ class CompanySettingController extends Controller
      */
     public function update(Request $request, Company $company): JsonResponse
     {
-        // Verificar que el usuario tenga acceso a esta empresa
-        if ((int) $company->user_id !== (int) Auth::id()) {
-            return response()->json([
-                'message' => 'No autorizado',
-            ], 403);
-        }
+        $user = $request->user();
+        abort_if(!$user->can('edit_settings'), 403, 'No autorizado.');
+        $this->enforceCompanyAccess($user, $company);
 
         $validated = $request->validate([
             'template_name' => 'sometimes|string|in:' . implode(',', array_keys(config('templates.available', []))),
@@ -110,14 +106,11 @@ class CompanySettingController extends Controller
     /**
      * Restablecer la configuración a los valores por defecto
      */
-    public function reset(Company $company): JsonResponse
+    public function reset(Request $request, Company $company): JsonResponse
     {
-        // Verificar que el usuario tenga acceso a esta empresa
-        if ((int) $company->user_id !== (int) Auth::id()) {
-            return response()->json([
-                'message' => 'No autorizado',
-            ], 403);
-        }
+        $user = $request->user();
+        abort_if(!$user->can('edit_settings'), 403, 'No autorizado.');
+        $this->enforceCompanyAccess($user, $company);
 
         $settings = $company->getOrCreateSettings();
         $defaults = config("templates.schemas.{$settings->template_name}", []);
@@ -137,9 +130,9 @@ class CompanySettingController extends Controller
      */
     public function uploadImage(Request $request, Company $company, CloudinaryService $cloudinary): JsonResponse
     {
-        if ((int) $company->user_id !== (int) Auth::id()) {
-            return response()->json(['message' => 'No autorizado'], 403);
-        }
+        $user = $request->user();
+        abort_if(!$user->can('edit_settings'), 403, 'No autorizado.');
+        $this->enforceCompanyAccess($user, $company);
 
         $request->validate([
             'image' => 'required|image|max:5120',

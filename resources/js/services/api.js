@@ -23,10 +23,15 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response && error.response.status === 401) {
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('auth_user');
-            router.push({ name: 'login' });
+        if (error.response) {
+            if (error.response.status === 401) {
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('auth_user');
+                localStorage.removeItem('auth_permissions');
+                router.push({ name: 'login' });
+            } else if (error.response.status === 403) {
+                router.push({ name: 'forbidden' });
+            }
         }
         return Promise.reject(error);
     }

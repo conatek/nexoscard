@@ -48,6 +48,7 @@
                             <div class="dropdown-user-info">
                                 <span class="dropdown-name">{{ userName }}</span>
                                 <span class="dropdown-email">{{ userEmail }}</span>
+                                <span class="role-badge" :class="roleBadgeClass">{{ userRole }}</span>
                             </div>
                         </div>
 
@@ -110,6 +111,21 @@ export default {
         userEmail() {
             const auth = useAuth();
             return auth.state.user?.email || '';
+        },
+        userRole() {
+            const auth = useAuth();
+            const roles = auth.state.user?.roles || [];
+            const role = roles.length > 0 ? roles[0].name : '';
+            if (role === 'Guest') return 'Gratis';
+            return role;
+        },
+        roleBadgeClass() {
+            const auth = useAuth();
+            const roles = auth.state.user?.roles || [];
+            const role = roles.length > 0 ? roles[0].name : '';
+            if (role === 'Master') return 'role-badge-master';
+            if (role === 'Admin') return 'role-badge-admin';
+            return 'role-badge-guest';
         },
     },
     mounted() {
@@ -352,6 +368,36 @@ export default {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Role Badge */
+.role-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    margin-top: 0.25rem;
+    letter-spacing: 0.02em;
+    width: fit-content;
+}
+
+.role-badge-master {
+    background: linear-gradient(135deg, #ede9fe, #f3e8ff);
+    color: #7c3aed;
+    border: 1px solid #ddd6fe;
+}
+
+.role-badge-admin {
+    background: linear-gradient(135deg, #e0f2fe, #dbeafe);
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+}
+
+.role-badge-guest {
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    color: #64748b;
+    border: 1px solid #cbd5e1;
 }
 
 .dropdown-divider {

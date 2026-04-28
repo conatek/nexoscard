@@ -2,27 +2,26 @@ import './bootstrap';
 
 import { createApp } from 'vue';
 import router from './../router';
-import components from '@/components';
 import { useAuth } from '@/stores/auth';
+
+import Header from './components/Header.vue';
+import Sidebar from './components/Sidebar.vue';
+import Footer from './components/Footer.vue';
 
 const loadApp = async () => {
     const auth = useAuth();
     await auth.loadFromStorage();
 
-    const isAdmin = window.location.pathname.startsWith('/admin');
-
-    const { default: App } = await (isAdmin
-        ? import('./components/AdminApp.vue')
-        : import('./components/PublicApp.vue'));
+    const { default: App } = await import('./components/PublicApp.vue');
 
     const app = createApp(App);
     app.use(router);
 
     app.provide('auth', auth);
 
-    Object.keys(components).forEach(key => {
-        app.component(key, components[key]);
-    });
+    app.component('main-header', Header);
+    app.component('main-sidebar', Sidebar);
+    app.component('main-footer', Footer);
 
     app.mount('#app');
 };

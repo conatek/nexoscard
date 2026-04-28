@@ -27,14 +27,14 @@
                         </div>
                     </div>
                     <div class="page-title-actions d-flex gap-2">
-                        <router-link :to="{ name: 'companies.index' }" class="btn-action btn-back">
+                        <router-link v-if="isMaster" :to="backRoute" class="btn-action btn-back">
                             <i class="fa fa-arrow-left me-1"></i> Volver
                         </router-link>
-                        <router-link :to="{ name: 'settings.editor', params: { companyId: company.id } }"
+                        <router-link v-if="canEditSettings" :to="{ name: 'settings.editor', params: { companyId: company.id }, query: fromAdmin ? { from: 'admin' } : {} }"
                                      class="btn-action btn-template">
                             <i class="fa fa-palette me-1"></i> Plantilla
                         </router-link>
-                        <router-link :to="{ name: 'companies.edit', params: { id: company.id } }"
+                        <router-link v-if="canEditCompany" :to="{ name: 'companies.edit', params: { id: company.id }, query: fromAdmin ? { from: 'admin' } : {} }"
                                      class="btn-action btn-edit">
                             <i class="fa fa-edit me-1"></i> Editar
                         </router-link>
@@ -130,7 +130,7 @@
                         <i class="fa fa-id-card section-icon icon-purple"></i>
                         <span>Tarjetas de presentacion</span>
                     </div>
-                    <router-link :to="{ name: 'cards.create', params: { companyId: company.id } }"
+                    <router-link v-if="canCreateCard" :to="{ name: 'cards.create', params: { companyId: company.id } }"
                                  class="btn-add btn-add-purple">
                         <i class="fa fa-plus me-1"></i> Nueva tarjeta
                     </router-link>
@@ -168,11 +168,11 @@
                                 </span>
                             </div>
                             <div class="item-actions">
-                                <router-link :to="{ name: 'cards.edit', params: { companyId: company.id, cardId: card.id } }"
+                                <router-link v-if="canEditCard" :to="{ name: 'cards.edit', params: { companyId: company.id, cardId: card.id } }"
                                              class="action-btn">
                                     <i class="fa fa-edit"></i>
                                 </router-link>
-                                <button @click="confirmDeleteCard(card)" class="action-btn action-delete">
+                                <button v-if="canDeleteCard" @click="confirmDeleteCard(card)" class="action-btn action-delete">
                                     <i class="fa fa-trash"></i>
                                 </button>
                             </div>
@@ -188,7 +188,7 @@
                         <i class="fa fa-concierge-bell section-icon icon-green"></i>
                         <span>Servicios</span>
                     </div>
-                    <router-link :to="{ name: 'services.create', params: { companyId: company.id } }"
+                    <router-link v-if="canCreateService" :to="{ name: 'services.create', params: { companyId: company.id } }"
                                  class="btn-add btn-add-green">
                         <i class="fa fa-plus me-1"></i> Nuevo servicio
                     </router-link>
@@ -222,11 +222,11 @@
                                 </span>
                             </div>
                             <div class="item-actions">
-                                <router-link :to="{ name: 'services.edit', params: { companyId: company.id, serviceId: service.id } }"
+                                <router-link v-if="canEditService" :to="{ name: 'services.edit', params: { companyId: company.id, serviceId: service.id } }"
                                              class="action-btn">
                                     <i class="fa fa-edit"></i>
                                 </router-link>
-                                <button @click="confirmDeleteService(service)" class="action-btn action-delete">
+                                <button v-if="canDeleteService" @click="confirmDeleteService(service)" class="action-btn action-delete">
                                     <i class="fa fa-trash"></i>
                                 </button>
                             </div>
@@ -242,7 +242,7 @@
                         <i class="fa fa-box section-icon icon-amber"></i>
                         <span>Productos</span>
                     </div>
-                    <router-link :to="{ name: 'products.create', params: { companyId: company.id } }"
+                    <router-link v-if="canCreateProduct" :to="{ name: 'products.create', params: { companyId: company.id } }"
                                  class="btn-add btn-add-amber">
                         <i class="fa fa-plus me-1"></i> Nuevo producto
                     </router-link>
@@ -278,11 +278,11 @@
                                 </span>
                             </div>
                             <div class="item-actions">
-                                <router-link :to="{ name: 'products.edit', params: { companyId: company.id, productId: product.id } }"
+                                <router-link v-if="canEditProduct" :to="{ name: 'products.edit', params: { companyId: company.id, productId: product.id } }"
                                              class="action-btn">
                                     <i class="fa fa-edit"></i>
                                 </router-link>
-                                <button @click="confirmDeleteProduct(product)" class="action-btn action-delete">
+                                <button v-if="canDeleteProduct" @click="confirmDeleteProduct(product)" class="action-btn action-delete">
                                     <i class="fa fa-trash"></i>
                                 </button>
                             </div>
@@ -365,6 +365,7 @@ import companyService from '@/services/companyService.js';
 import cardService    from '@/services/cardService.js';
 import serviceService from '@/services/serviceService.js';
 import productService from '@/services/productService.js';
+import { useAuth } from '@/stores/auth';
 
 export default {
     name: 'CompanyShow',
@@ -387,6 +388,63 @@ export default {
         hasSocialLinks() {
             return this.company.facebook || this.company.instagram ||
                    this.company.twitter || this.company.youtube || this.company.tiktok;
+        },
+        isMaster() {
+            const auth = useAuth();
+            return auth.isMaster();
+        },
+        fromAdmin() {
+            return this.$route.query.from === 'admin';
+        },
+        backRoute() {
+            if (this.fromAdmin) {
+                return { name: 'admin.companies' };
+            }
+            return { name: 'companies.index' };
+        },
+        canEditCompany() {
+            const auth = useAuth();
+            return auth.can('edit_company');
+        },
+        canEditSettings() {
+            const auth = useAuth();
+            return auth.can('edit_settings');
+        },
+        canCreateCard() {
+            const auth = useAuth();
+            return auth.can('create_card');
+        },
+        canEditCard() {
+            const auth = useAuth();
+            return auth.can('edit_card');
+        },
+        canDeleteCard() {
+            const auth = useAuth();
+            return auth.can('delete_card');
+        },
+        canCreateService() {
+            const auth = useAuth();
+            return auth.can('create_service');
+        },
+        canEditService() {
+            const auth = useAuth();
+            return auth.can('edit_service');
+        },
+        canDeleteService() {
+            const auth = useAuth();
+            return auth.can('delete_service');
+        },
+        canCreateProduct() {
+            const auth = useAuth();
+            return auth.can('create_product');
+        },
+        canEditProduct() {
+            const auth = useAuth();
+            return auth.can('edit_product');
+        },
+        canDeleteProduct() {
+            const auth = useAuth();
+            return auth.can('delete_product');
         },
     },
 

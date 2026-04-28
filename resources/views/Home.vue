@@ -16,6 +16,19 @@
             </div>
         </div>
 
+        <!-- Banner upgrade para Guest -->
+        <div v-if="isGuest" class="upgrade-banner">
+            <div class="banner-content">
+                <div class="banner-text">
+                    <i class="fa fa-info-circle me-2"></i>
+                    <span>Estas en <strong>modo prueba</strong>. Mejora tu plan para desbloquear todas las funcionalidades.</span>
+                </div>
+                <router-link :to="{ name: 'subscription.plans' }" class="banner-btn">
+                    Ver planes
+                </router-link>
+            </div>
+        </div>
+
         <!-- Hero Section -->
         <div class="welcome-hero">
             <div class="hero-content">
@@ -188,12 +201,66 @@
 </template>
 
 <script>
+import { useAuth } from '@/stores/auth';
+
 export default {
     name: 'Home',
+    computed: {
+        isGuest() {
+            const auth = useAuth();
+            return auth.hasRole('Guest');
+        },
+    },
 }
 </script>
 
 <style scoped>
+/* Upgrade Banner */
+.upgrade-banner {
+    background: linear-gradient(135deg, #ede9fe, #fce7f3);
+    border: 1px solid #ddd6fe;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.banner-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.banner-text {
+    font-size: 0.95rem;
+    color: #5b21b6;
+}
+
+.banner-btn {
+    white-space: nowrap;
+    padding: 0.5rem 1.25rem;
+    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.banner-btn:hover {
+    transform: translateY(-1px);
+    color: white;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+@media (max-width: 576px) {
+    .banner-content {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
 /* Hero Section */
 .welcome-hero {
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);

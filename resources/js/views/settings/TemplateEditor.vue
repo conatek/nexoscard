@@ -16,7 +16,7 @@
                 </div>
                 <div class="page-title-actions d-flex gap-2">
                     <router-link
-                        :to="{ name: 'companies.show', params: { id: $route.params.companyId } }"
+                        :to="{ name: 'companies.show', params: { id: $route.params.companyId }, query: $route.query.from === 'admin' ? { from: 'admin' } : {} }"
                         class="btn-editor btn-editor-back"
                     >
                         <i class="fa fa-arrow-left me-1"></i> Volver

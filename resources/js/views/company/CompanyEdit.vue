@@ -22,7 +22,7 @@
                         </div>
                     </div>
                     <div class="page-title-actions">
-                        <router-link :to="{ name: 'companies.show', params: { id: $route.params.id } }" class="btn-action btn-back">
+                        <router-link :to="{ name: 'companies.show', params: { id: $route.params.id }, query: $route.query.from === 'admin' ? { from: 'admin' } : {} }" class="btn-action btn-back">
                             <i class="fa fa-arrow-left me-1"></i> Volver
                         </router-link>
                     </div>
@@ -159,7 +159,7 @@
                         </div>
 
                         <div class="form-actions">
-                            <router-link :to="{ name: 'companies.show', params: { id: $route.params.id } }" class="btn-cancel">
+                            <router-link :to="{ name: 'companies.show', params: { id: $route.params.id }, query: $route.query.from === 'admin' ? { from: 'admin' } : {} }" class="btn-cancel">
                                 Cancelar
                             </router-link>
                             <button type="submit" class="btn-submit" :disabled="saving">
@@ -337,7 +337,7 @@ export default {
 
             try {
                 await companyService.update(this.$route.params.id, payload);
-                this.$router.push({ name: 'companies.show', params: { id: this.$route.params.id } });
+                this.$router.push({ name: 'companies.show', params: { id: this.$route.params.id }, query: this.$route.query.from === 'admin' ? { from: 'admin' } : {} });
             } catch (err) {
                 if (err.response?.status === 422) {
                     this.errors = err.response.data.errors;

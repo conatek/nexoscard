@@ -32,6 +32,7 @@ import TemplateMinimal from '@/components/templates/TemplateMinimal.vue';
 import TemplateCreative from '@/components/templates/TemplateCreative.vue';
 import TemplateCyber from '@/components/templates/TemplateCyber.vue';
 import TemplateVibrant from '@/components/templates/TemplateVibrant.vue';
+import TemplateAction from '@/components/templates/TemplateAction.vue';
 
 export default {
     name: 'CardPublic',
@@ -43,6 +44,7 @@ export default {
         TemplateCreative,
         TemplateCyber,
         TemplateVibrant,
+        TemplateAction,
     },
 
     data() {
@@ -65,6 +67,7 @@ export default {
                 creative: 'TemplateCreative',
                 cyber: 'TemplateCyber',
                 vibrant: 'TemplateVibrant',
+                action: 'TemplateAction',
             };
             return templates[this.templateName] || 'TemplateModern';
         },

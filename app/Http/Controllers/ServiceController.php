@@ -6,20 +6,26 @@ use App\Http\Requests\StoreServiceRequest;
 use App\Models\Company;
 use App\Models\Service;
 use App\Services\CloudinaryService;
+use App\Traits\HasCompanyAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ServiceController extends Controller
 {
+    use HasCompanyAccess;
+
     public function __construct(private CloudinaryService $cloudinary) {}
 
-    public function index(Company $company): JsonResponse
+    public function index(Request $request, Company $company): JsonResponse
     {
+        abort_if(!$request->user()->can('view_services'), 403, 'No autorizado.');
+
         return response()->json($company->services);
     }
 
-    public function show(Company $company, Service $service): JsonResponse
+    public function show(Request $request, Company $company, Service $service): JsonResponse
     {
+        abort_if(!$request->user()->can('view_services'), 403, 'No autorizado.');
         abort_if($service->company_id !== $company->id, 404);
 
         return response()->json($service);
@@ -27,7 +33,7 @@ class ServiceController extends Controller
 
     public function store(StoreServiceRequest $request, Company $company): JsonResponse
     {
-        $this->authorizeOwner($request, $company);
+        abort_if(!$request->user()->can('create_service'), 403, 'No autorizado.');
 
         $data = $request->validated();
         $data['company_id'] = $company->id;
@@ -44,7 +50,7 @@ class ServiceController extends Controller
 
     public function update(StoreServiceRequest $request, Company $company, Service $service): JsonResponse
     {
-        $this->authorizeOwner($request, $company);
+        abort_if(!$request->user()->can('edit_service'), 403, 'No autorizado.');
         abort_if($service->company_id !== $company->id, 404);
 
         $data = $request->validated();
@@ -64,7 +70,7 @@ class ServiceController extends Controller
 
     public function destroy(Request $request, Company $company, Service $service): JsonResponse
     {
-        $this->authorizeOwner($request, $company);
+        abort_if(!$request->user()->can('delete_service'), 403, 'No autorizado.');
         abort_if($service->company_id !== $company->id, 404);
 
         if ($service->image_path) {
@@ -74,10 +80,5 @@ class ServiceController extends Controller
         $service->delete();
 
         return response()->json(null, 204);
-    }
-
-    private function authorizeOwner(Request $request, Company $company): void
-    {
-        abort_if($company->user_id !== $request->user()->id, 403, 'No autorizado.');
     }
 }

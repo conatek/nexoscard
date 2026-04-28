@@ -35,7 +35,6 @@
     <link rel="stylesheet" href="{{ asset('adminlte/plugins/datatables-responsive/css/responsive.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('adminlte/plugins/datatables-buttons/css/buttons.bootstrap4.min.css') }}">
 
-    @vite('resources/css/app.css')
     @cloudinaryJS
 
     <title>Nexos - Tarjetas de Presentación Digital</title>

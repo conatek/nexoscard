@@ -7,15 +7,20 @@ use App\Http\Requests\UpdateCardRequest;
 use App\Models\Card;
 use App\Models\Company;
 use App\Services\CloudinaryService;
+use App\Traits\HasCompanyAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CardController extends Controller
 {
+    use HasCompanyAccess;
+
     public function __construct(private CloudinaryService $cloudinary) {}
 
-    public function index(Company $company): JsonResponse
+    public function index(Request $request, Company $company): JsonResponse
     {
+        abort_if(!$request->user()->can('view_cards'), 403, 'No autorizado.');
+
         $cards = $company->cards()->latest()->get();
 
         return response()->json($cards);
@@ -23,7 +28,7 @@ class CardController extends Controller
 
     public function store(StoreCardRequest $request, Company $company): JsonResponse
     {
-        $this->authorizeOwner($request, $company);
+        abort_if(!$request->user()->can('create_card'), 403, 'No autorizado.');
 
         $data = $request->validated();
         $data['company_id'] = $company->id;
@@ -38,8 +43,9 @@ class CardController extends Controller
         return response()->json($card, 201);
     }
 
-    public function show(Company $company, Card $card): JsonResponse
+    public function show(Request $request, Company $company, Card $card): JsonResponse
     {
+        abort_if(!$request->user()->can('view_cards'), 403, 'No autorizado.');
         abort_if($card->company_id !== $company->id, 404);
 
         return response()->json($card);
@@ -47,7 +53,7 @@ class CardController extends Controller
 
     public function update(UpdateCardRequest $request, Company $company, Card $card): JsonResponse
     {
-        $this->authorizeOwner($request, $company);
+        abort_if(!$request->user()->can('edit_card'), 403, 'No autorizado.');
         abort_if($card->company_id !== $company->id, 404);
 
         $data = $request->validated();
@@ -67,7 +73,7 @@ class CardController extends Controller
 
     public function destroy(Request $request, Company $company, Card $card): JsonResponse
     {
-        $this->authorizeOwner($request, $company);
+        abort_if(!$request->user()->can('delete_card'), 403, 'No autorizado.');
         abort_if($card->company_id !== $company->id, 404);
 
         if ($card->photo_path) {
@@ -77,10 +83,5 @@ class CardController extends Controller
         $card->delete();
 
         return response()->json(null, 204);
-    }
-
-    private function authorizeOwner(Request $request, Company $company): void
-    {
-        abort_if($company->user_id !== $request->user()->id, 403, 'No autorizado.');
     }
 }

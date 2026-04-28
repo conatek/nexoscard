@@ -95,7 +95,7 @@
         </main>
 
         <footer class="template-footer" :style="footerStyle">
-            <p style="margin: 0">{{ customization?.footer?.texto || 'by MuyLocal.com' }}</p>
+            <p style="margin: 0">{{ customization?.footer?.texto || 'by NexosCard.com' }}</p>
         </footer>
 
         <!-- Modal Sobre Nosotros -->
