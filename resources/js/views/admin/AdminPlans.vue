@@ -40,8 +40,56 @@
                 </select>
             </div>
 
-            <!-- Tabla -->
-            <div class="section-card">
+            <!-- Cards mobile -->
+            <div class="mobile-cards">
+                <div v-for="row in filteredRows" :key="row.id" class="mobile-card">
+                    <div class="mobile-card-header">
+                        <div>
+                            <div class="mobile-card-title">{{ row.display_name }}</div>
+                            <div class="mobile-card-sub">{{ row.name }}</div>
+                        </div>
+                        <div class="action-buttons">
+                            <router-link :to="{ name: 'admin.plans.edit', params: { id: row.id } }" class="action-btn" title="Editar">
+                                <i class="fa fa-edit"></i>
+                            </router-link>
+                            <button @click="togglePlan(row)" class="action-btn"
+                                    :class="row.is_active ? 'action-warning' : 'action-success'"
+                                    :disabled="toggling === row.id">
+                                <i :class="row.is_active ? 'fa fa-eye-slash' : 'fa fa-eye'"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mobile-card-body">
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Mensual</span>
+                            <span class="fw-600">${{ formatPrice(row.price_monthly) }}</span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Anual</span>
+                            <span class="fw-600">${{ formatPrice(row.price_yearly) }}</span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Estado</span>
+                            <span class="status-badge" :class="row.is_active ? 'status-active' : 'status-inactive'">
+                                {{ row.is_active ? 'Activo' : 'Inactivo' }}
+                            </span>
+                        </div>
+                        <div class="mobile-card-counts">
+                            <span class="count-chip">Tarjetas: {{ row.max_cards ?? '∞' }}</span>
+                            <span class="count-chip">Productos: {{ row.max_products ?? '∞' }}</span>
+                            <span class="count-chip">Servicios: {{ row.max_services ?? '∞' }}</span>
+                            <span class="count-chip">Suscripciones: {{ row.subscriptions_count }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="!filteredRows.length" class="empty-state">
+                    <i class="fa fa-layer-group empty-icon"></i>
+                    <p>No se encontraron planes.</p>
+                </div>
+            </div>
+
+            <!-- Tabla desktop -->
+            <div class="section-card desktop-table">
                 <vue-good-table
                     :columns="columns"
                     :rows="filteredRows"
@@ -352,7 +400,100 @@ export default {
 .empty-state p { margin: 0; font-size: 0.95rem; }
 .loading-state { text-align: center; padding: 4rem 0; }
 
-@media (max-width: 640px) {
+.mobile-cards { display: none; }
+.fw-600 { font-weight: 600; }
+
+@media (max-width: 768px) {
+    .desktop-table { display: none; }
+
+    .filters-bar {
+        flex-direction: column;
+    }
+
+    .filter-search {
+        min-width: 0;
+    }
+
+    .filter-select {
+        width: 100%;
+    }
+
+    .page-title-actions {
+        width: 100%;
+    }
+
+    .btn-create {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .mobile-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .mobile-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .mobile-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .mobile-card-title {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 0.95rem;
+    }
+
+    .mobile-card-sub {
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+
+    .mobile-card-body {
+        padding: 0.75rem 1rem;
+    }
+
+    .mobile-card-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.35rem 0;
+        font-size: 0.875rem;
+        color: #334155;
+    }
+
+    .mobile-card-label {
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+
+    .mobile-card-counts {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        padding-top: 0.5rem;
+        margin-top: 0.25rem;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .count-chip {
+        font-size: 0.78rem;
+        color: #475569;
+        background: #f1f5f9;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+    }
+
     .filter-select { flex: 1; min-width: 0; }
 }
 </style>

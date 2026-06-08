@@ -481,6 +481,10 @@ export default {
 
 /* Responsive */
 @media (max-width: 768px) {
+    .app-header {
+        padding: 0 0.75rem;
+    }
+
     .sidebar-toggle {
         display: none;
     }
@@ -499,6 +503,11 @@ export default {
 
     .dropdown-arrow {
         display: none;
+    }
+
+    .user-dropdown {
+        right: 0;
+        min-width: 200px;
     }
 }
 </style>

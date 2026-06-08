@@ -1,58 +1,114 @@
 <template>
     <footer class="app-footer">
-        <!-- Decorative top border -->
-        <div class="footer-border"></div>
-
-        <div class="footer-content">
-            <div class="footer-left">
-                <div class="footer-brand">
-                    <svg class="footer-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="24" height="24" rx="6" fill="url(#footer-gradient)"/>
-                        <path d="M7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12C17 14.7614 14.7614 17 12 17" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-                        <circle cx="12" cy="12" r="2.5" fill="white"/>
-                        <defs>
-                            <linearGradient id="footer-gradient" x1="0" y1="0" x2="24" y2="24">
-                                <stop stop-color="#8b5cf6"/>
-                                <stop offset="1" stop-color="#ec4899"/>
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <span class="footer-brand-text">NexosCard</span>
+        <!-- Desktop footer -->
+        <div class="footer-desktop">
+            <div class="footer-border"></div>
+            <div class="footer-content">
+                <div class="footer-left">
+                    <div class="footer-brand">
+                        <svg class="footer-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="24" height="24" rx="6" fill="url(#footer-gradient)"/>
+                            <path d="M7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12C17 14.7614 14.7614 17 12 17" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                            <circle cx="12" cy="12" r="2.5" fill="white"/>
+                            <defs>
+                                <linearGradient id="footer-gradient" x1="0" y1="0" x2="24" y2="24">
+                                    <stop stop-color="#8b5cf6"/>
+                                    <stop offset="1" stop-color="#ec4899"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <span class="footer-brand-text">NexosCard</span>
+                    </div>
+                    <span class="footer-separator">|</span>
+                    <span class="footer-copy">
+                        &copy; {{ currentYear }} Tarjetas de Presentacion Digital
+                    </span>
                 </div>
-                <span class="footer-separator">|</span>
-                <span class="footer-copy">
-                    &copy; {{ currentYear }} Tarjetas de Presentacion Digital
-                </span>
+                <div class="footer-right">
+                    <div class="footer-version">
+                        <span class="version-label">Version</span>
+                        <span class="version-badge">1.0.0</span>
+                    </div>
+                </div>
             </div>
-
-            <div class="footer-right">
-                <div class="footer-version">
-                    <span class="version-label">Version</span>
-                    <span class="version-badge">1.0.0</span>
-                </div>
+            <div class="footer-decoration">
+                <div class="decoration-line line-1"></div>
+                <div class="decoration-line line-2"></div>
             </div>
         </div>
 
-        <!-- Decorative elements -->
-        <div class="footer-decoration">
-            <div class="decoration-line line-1"></div>
-            <div class="decoration-line line-2"></div>
-        </div>
+        <!-- Mobile tab bar -->
+        <nav class="footer-mobile">
+            <router-link :to="companyRoute" class="tab-item" :class="{ active: isCompanyActive }">
+                <i class="fa fa-building"></i>
+                <span>{{ isMaster ? 'Empresas' : 'Empresa' }}</span>
+            </router-link>
+
+            <template v-if="isMaster">
+                <router-link to="/admin/planes" class="tab-item" :class="{ active: $route.path.startsWith('/admin/planes') }">
+                    <i class="fa fa-star"></i>
+                    <span>Planes</span>
+                </router-link>
+                <router-link to="/admin/suscripciones" class="tab-item" :class="{ active: $route.path.startsWith('/admin/suscripciones') }">
+                    <i class="fa fa-file-alt"></i>
+                    <span>Suscripciones</span>
+                </router-link>
+                <router-link to="/admin/pagos" class="tab-item" :class="{ active: $route.path.startsWith('/admin/pagos') }">
+                    <i class="fa fa-credit-card"></i>
+                    <span>Pagos</span>
+                </router-link>
+                <router-link to="/admin/usuarios" class="tab-item" :class="{ active: $route.path.startsWith('/admin/usuarios') }">
+                    <i class="fa fa-users"></i>
+                    <span>Usuarios</span>
+                </router-link>
+            </template>
+
+            <template v-else>
+                <router-link v-if="companyId" :to="`/empresas/${companyId}/plantilla`" class="tab-item" :class="{ active: $route.path.includes('/plantilla') }">
+                    <i class="fa fa-palette"></i>
+                    <span>Plantilla</span>
+                </router-link>
+                <router-link to="/mi-suscripcion" class="tab-item" :class="{ active: $route.path.startsWith('/mi-suscripcion') || $route.path.startsWith('/planes') }">
+                    <i class="fa fa-star"></i>
+                    <span>Mi Plan</span>
+                </router-link>
+            </template>
+        </nav>
     </footer>
 </template>
 
 <script>
+import { useAuth } from '@/stores/auth';
+
 export default {
     name: 'AppFooter',
     computed: {
         currentYear() {
             return new Date().getFullYear();
-        }
-    }
+        },
+        isMaster() {
+            const auth = useAuth();
+            return auth.isMaster();
+        },
+        companyId() {
+            const auth = useAuth();
+            return auth.state.user?.company_id;
+        },
+        companyRoute() {
+            if (this.isMaster) return '/admin/empresas';
+            return this.companyId ? `/empresas/${this.companyId}` : '/empresas';
+        },
+        isCompanyActive() {
+            const path = this.$route.path;
+            if (this.isMaster) return path.startsWith('/admin/empresas') || path.startsWith('/empresas');
+            return path.startsWith('/empresas');
+        },
+    },
 }
 </script>
 
 <style scoped>
+/* ===== DESKTOP FOOTER ===== */
 .app-footer {
     position: relative;
     background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
@@ -62,7 +118,10 @@ export default {
     flex-direction: column;
 }
 
-/* Decorative top border */
+.footer-mobile {
+    display: none;
+}
+
 .footer-border {
     position: absolute;
     top: 0;
@@ -89,7 +148,6 @@ export default {
     z-index: 1;
 }
 
-/* Footer Left */
 .footer-left {
     display: flex;
     align-items: center;
@@ -123,11 +181,9 @@ export default {
     color: #64748b;
 }
 
-/* Footer Right */
 .footer-right {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
 }
 
 .footer-version {
@@ -153,7 +209,6 @@ export default {
     border: 1px solid rgba(139, 92, 246, 0.2);
 }
 
-/* Decorative elements */
 .footer-decoration {
     position: absolute;
     inset: 0;
@@ -184,25 +239,59 @@ export default {
     right: 10%;
 }
 
-/* Responsive */
+/* ===== MOBILE TAB BAR ===== */
 @media (max-width: 768px) {
-    .footer-content {
-        padding: 0 1rem;
+    .app-footer {
+        height: auto;
+        background: white;
+        overflow: visible;
     }
 
-    .footer-separator,
-    .footer-copy {
+    .footer-desktop {
         display: none;
     }
 
-    .version-label {
-        display: none;
+    .footer-mobile {
+        display: flex;
+        align-items: stretch;
+        border-top: 1px solid #e2e8f0;
+        padding: 0.25rem 0;
+        padding-bottom: env(safe-area-inset-bottom, 0);
     }
-}
 
-@media (max-width: 480px) {
-    .footer-brand-text {
-        display: none;
+    .tab-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.2rem;
+        padding: 0.5rem 0.25rem;
+        text-decoration: none;
+        color: #94a3b8;
+        font-size: 0.65rem;
+        font-weight: 500;
+        transition: color 0.2s;
+        min-width: 0;
+    }
+
+    .tab-item i {
+        font-size: 1.1rem;
+    }
+
+    .tab-item span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    .tab-item.active {
+        color: #7c3aed;
+    }
+
+    .tab-item.active i {
+        color: #7c3aed;
     }
 }
 </style>

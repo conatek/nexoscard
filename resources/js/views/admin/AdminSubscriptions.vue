@@ -38,8 +38,48 @@
             <div class="spinner-border text-primary"></div>
         </div>
 
-        <!-- Table -->
-        <div v-else class="section-card">
+        <!-- Cards mobile -->
+        <div v-if="!loading" class="mobile-cards">
+            <div v-for="sub in subscriptions" :key="'m'+sub.id" class="mobile-card">
+                <div class="mobile-card-header">
+                    <div>
+                        <div class="mobile-card-title">{{ sub.company?.name }}</div>
+                        <div class="mobile-card-sub">{{ sub.plan?.display_name }}</div>
+                    </div>
+                    <div class="action-buttons">
+                        <router-link :to="{ name: 'admin.subscriptions.show', params: { id: sub.id } }" class="action-btn" title="Ver">
+                            <i class="fa fa-eye"></i>
+                        </router-link>
+                        <button @click="openExtendModal(sub)" class="action-btn" title="Extender">
+                            <i class="fa fa-calendar-plus"></i>
+                        </button>
+                        <button v-if="sub.status !== 'cancelled' && sub.status !== 'expired'" @click="confirmCancel(sub)" class="action-btn action-warning" :disabled="cancelling === sub.id">
+                            <i class="fa fa-ban"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="mobile-card-body">
+                    <div class="mobile-card-row">
+                        <span class="mobile-card-label">Estado</span>
+                        <span class="status-badge" :class="'status-' + sub.status">{{ statusLabel(sub.status) }}</span>
+                    </div>
+                    <div class="mobile-card-row">
+                        <span class="mobile-card-label">Periodo</span>
+                        <span>{{ formatDate(sub.current_period_start) }} - {{ formatDate(sub.current_period_end) }}</span>
+                    </div>
+                    <div class="mobile-card-row">
+                        <span class="mobile-card-label">Dias restantes</span>
+                        <span :class="{ 'text-danger fw-bold': daysLeft(sub) <= 5 && daysLeft(sub) >= 0 }">{{ daysLeft(sub) }}</span>
+                    </div>
+                </div>
+            </div>
+            <div v-if="!subscriptions.length" class="empty-state">
+                <p class="text-muted">No se encontraron suscripciones.</p>
+            </div>
+        </div>
+
+        <!-- Table desktop -->
+        <div v-if="!loading" class="section-card desktop-table">
             <div class="section-body table-responsive">
                 <table class="data-table" v-if="subscriptions.length">
                     <thead>
@@ -90,16 +130,17 @@
                 </div>
             </div>
 
-            <!-- Pagination -->
-            <div v-if="pagination.last_page > 1" class="pagination-bar">
-                <button @click="goToPage(pagination.current_page - 1)" :disabled="pagination.current_page <= 1" class="page-btn">
-                    <i class="fa fa-chevron-left"></i>
-                </button>
-                <span class="page-info">{{ pagination.current_page }} / {{ pagination.last_page }}</span>
-                <button @click="goToPage(pagination.current_page + 1)" :disabled="pagination.current_page >= pagination.last_page" class="page-btn">
-                    <i class="fa fa-chevron-right"></i>
-                </button>
-            </div>
+        </div>
+
+        <!-- Pagination (fuera de desktop-table para ser visible en mobile) -->
+        <div v-if="!loading && pagination.last_page > 1" class="pagination-bar">
+            <button @click="goToPage(pagination.current_page - 1)" :disabled="pagination.current_page <= 1" class="page-btn">
+                <i class="fa fa-chevron-left"></i>
+            </button>
+            <span class="page-info">{{ pagination.current_page }} / {{ pagination.last_page }}</span>
+            <button @click="goToPage(pagination.current_page + 1)" :disabled="pagination.current_page >= pagination.last_page" class="page-btn">
+                <i class="fa fa-chevron-right"></i>
+            </button>
         </div>
 
         <!-- Extend Modal -->
@@ -272,4 +313,70 @@ export default {
 .modal-btn-cancel { background: #f1f5f9; color: #475569; }
 .modal-btn-primary { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; }
 .modal-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+.mobile-cards { display: none; }
+
+@media (max-width: 768px) {
+    .desktop-table { display: none; }
+
+    .filters-bar {
+        flex-direction: column;
+    }
+
+    .filter-select,
+    .filter-input {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .mobile-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .mobile-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .mobile-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .mobile-card-title {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 0.95rem;
+    }
+
+    .mobile-card-sub {
+        font-size: 0.8rem;
+        color: #7c3aed;
+    }
+
+    .mobile-card-body {
+        padding: 0.75rem 1rem;
+    }
+
+    .mobile-card-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.35rem 0;
+        font-size: 0.875rem;
+        color: #334155;
+    }
+
+    .mobile-card-label {
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+}
 </style>

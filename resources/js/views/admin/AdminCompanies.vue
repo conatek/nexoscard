@@ -42,8 +42,50 @@
                 </select>
             </div>
 
-            <!-- Tabla -->
-            <div class="section-card">
+            <!-- Cards mobile -->
+            <div class="mobile-cards">
+                <div v-for="row in filteredRows" :key="row.id" class="mobile-card">
+                    <div class="mobile-card-header">
+                        <div>
+                            <div class="mobile-card-title">{{ row.name }}</div>
+                            <div class="mobile-card-sub">/{{ row.slug }}</div>
+                        </div>
+                        <router-link :to="{ name: 'companies.show', params: { id: row.id }, query: { from: 'admin' } }" class="action-btn" title="Ver">
+                            <i class="fa fa-eye"></i>
+                        </router-link>
+                    </div>
+                    <div class="mobile-card-body">
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Plan</span>
+                            <span>{{ row.current_plan || 'Sin plan' }}</span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Estado</span>
+                            <span v-if="row.subscription_status" class="status-badge" :class="'status-' + row.subscription_status">
+                                {{ statusLabel(row.subscription_status) }}
+                            </span>
+                            <span v-else class="status-badge status-none">Sin suscripcion</span>
+                        </div>
+                        <div class="mobile-card-row" v-if="row.subscription_ends">
+                            <span class="mobile-card-label">Vence</span>
+                            <span>{{ formatDate(row.subscription_ends) }}</span>
+                        </div>
+                        <div class="mobile-card-counts">
+                            <span class="count-chip"><i class="fa fa-id-card"></i> {{ row.cards_count }}</span>
+                            <span class="count-chip"><i class="fa fa-box"></i> {{ row.products_count }}</span>
+                            <span class="count-chip"><i class="fa fa-concierge-bell"></i> {{ row.services_count }}</span>
+                            <span class="count-chip"><i class="fa fa-users"></i> {{ row.users_count }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="!filteredRows.length" class="empty-state">
+                    <i class="fa fa-building empty-icon"></i>
+                    <p>No se encontraron empresas.</p>
+                </div>
+            </div>
+
+            <!-- Tabla desktop -->
+            <div class="section-card desktop-table">
                 <vue-good-table
                     :columns="columns"
                     :rows="filteredRows"
@@ -301,8 +343,102 @@ export default {
 .empty-state p { margin: 0; font-size: 0.95rem; }
 .loading-state { text-align: center; padding: 4rem 0; }
 
-@media (max-width: 640px) {
-    .filter-select { flex: 1; min-width: 0; }
+/* Mobile cards - ocultas en desktop */
+.mobile-cards {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .desktop-table {
+        display: none;
+    }
+
+    .mobile-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .mobile-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .mobile-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .mobile-card-title {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 0.95rem;
+    }
+
+    .mobile-card-sub {
+        font-size: 0.8rem;
+        color: #7c3aed;
+    }
+
+    .mobile-card-body {
+        padding: 0.75rem 1rem;
+    }
+
+    .mobile-card-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.35rem 0;
+        font-size: 0.875rem;
+        color: #334155;
+    }
+
+    .mobile-card-label {
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+
+    .mobile-card-counts {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        padding-top: 0.5rem;
+        margin-top: 0.25rem;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .count-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.78rem;
+        color: #475569;
+        background: #f1f5f9;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+    }
+
+    .count-chip i {
+        font-size: 0.7rem;
+        color: #94a3b8;
+    }
+
+    .filters-bar {
+        flex-direction: column;
+    }
+
+    .filter-search {
+        min-width: 0;
+    }
+
+    .filter-select {
+        width: 100%;
+    }
 }
 </style>
 

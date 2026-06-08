@@ -71,13 +71,17 @@ export function useAuth() {
             localStorage.setItem('auth_user', JSON.stringify(data.user));
             localStorage.setItem('auth_permissions', JSON.stringify(data.permissions || []));
             return data;
-        } catch {
-            state.token = null;
-            state.user = null;
-            state.permissions = [];
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('auth_user');
-            localStorage.removeItem('auth_permissions');
+        } catch (error) {
+            // Solo cerrar sesion si el servidor respondio 401 (token invalido)
+            // Si es error de red (sin conexion), mantener la sesion con datos locales
+            if (error.response && error.response.status === 401) {
+                state.token = null;
+                state.user = null;
+                state.permissions = [];
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('auth_user');
+                localStorage.removeItem('auth_permissions');
+            }
             return null;
         }
     }

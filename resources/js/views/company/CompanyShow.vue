@@ -1111,33 +1111,145 @@ export default {
     cursor: not-allowed;
 }
 
-/* Responsive */
+/* Responsive - Card layout para mobile */
 @media (max-width: 768px) {
+    /* KPI cards: icono arriba, numero y label abajo */
     .stats-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+
+    .stat-card {
+        padding: 0.75rem 0.5rem;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.5rem;
+    }
+
+    .stat-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+
+    .stat-number {
+        font-size: 1.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+    }
+
+    /* Listas como cards */
+    .items-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 0.75rem;
     }
 
     .list-item {
+        display: flex;
         flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 0;
+        padding: 0;
+        border-bottom: none;
+        border-radius: 10px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .list-item:last-child {
+        border-bottom: none;
+    }
+
+    .list-item:hover {
+        background: #f8fafc;
+    }
+
+    /* ---- FILA 1: avatar + info (ancho completo) ---- */
+    .item-avatar,
+    .item-image {
+        width: 44px;
+        height: 44px;
+        margin: 0.875rem 0 0 0.875rem;
+        flex-shrink: 0;
     }
 
     .item-info {
-        flex: 1 1 60%;
+        flex: 1;
+        min-width: 0;
+        padding: 0.875rem 0.875rem 0.75rem 0.75rem;
     }
 
-    .item-url,
-    .item-price,
-    .item-order {
+    .item-name {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+        font-size: 0.95rem;
+        line-height: 1.3;
+    }
+
+    .item-meta {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+        font-size: 0.8rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+        margin-top: 0.15rem;
+    }
+
+    .meta-separator {
         display: none;
     }
 
-    .item-status {
-        order: 1;
-        flex: 0 0 auto;
+    /* ---- FILA 2: url + status + order + price + acciones ---- */
+    .item-url,
+    .item-price,
+    .item-order,
+    .item-status,
+    .item-actions {
+        padding: 0;
+    }
+
+    .item-url {
+        flex-basis: 100%;
+        padding: 0 0.875rem 0.5rem;
+    }
+
+    .item-url a {
+        font-size: 0.78rem;
+    }
+
+    /* Fila de footer: estado/orden/precio + acciones */
+    .item-status,
+    .item-order,
+    .item-price {
+        padding-left: 0.875rem;
+        padding-bottom: 0.75rem;
     }
 
     .item-actions {
-        order: 2;
+        margin-left: auto;
+        padding-right: 0.875rem;
+        padding-bottom: 0.75rem;
+    }
+
+    /* Section header en mobile */
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .btn-add {
+        width: 100%;
+        justify-content: center;
     }
 }
 </style>

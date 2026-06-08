@@ -412,4 +412,18 @@ export default {
 .sidebar-nav::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3);
 }
+
+@media (max-width: 768px) {
+    .app-sidebar {
+        position: fixed;
+        top: 60px;
+        bottom: 0;
+        left: 0;
+        width: min(280px, 85vw);
+        min-width: 0;
+        z-index: 1000;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+    }
+}
 </style>

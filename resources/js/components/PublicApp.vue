@@ -30,7 +30,7 @@
         <div class="app-main">
             <main-sidebar :isCollapsed="isCollapsed" :sidebarStatus="sidebarStatus" @updateSidebar="toggleSidebar" />
 
-            <div class="app-main__outer">
+            <div class="app-main__outer" @click="closeMobileSidebar">
 
                 <div class="app-main__inner">
                     <router-view />
@@ -101,11 +101,22 @@ export default {
         openSidebarMobile() {
             this.isOpenSidebarMobile = !this.isOpenSidebarMobile;
         },
+        closeMobileSidebar() {
+            if (this.isOpenSidebarMobile) {
+                this.isOpenSidebarMobile = false;
+            }
+        },
     },
 };
 </script>
 
 <style>
+/* Evitar scroll horizontal en mobile */
+html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
 /* Layout base para el panel admin */
 .app-container {
     display: flex;
@@ -160,6 +171,7 @@ export default {
 @media (max-width: 768px) {
     .app-container {
         padding: 0;
+        overflow-x: hidden;
     }
 
     .app-header .app-header__logo {
@@ -189,21 +201,41 @@ export default {
         background-repeat: no-repeat;
     }
 
-    .app-sidebar {
-        position: fixed;
-        top: 60px;
-        left: 0;
-        z-index: 1000;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease-in-out !important;
+    .sidebar-mobile-open .app-sidebar {
+        transform: translateX(0) !important;
     }
 
-    .sidebar-mobile-open .app-sidebar {
-        transform: translateX(0);
+    /* Overlay para cerrar sidebar al tocar fuera */
+    .sidebar-mobile-open .app-main__outer::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 999;
+    }
+
+    .app-main__outer {
+        width: 100% !important;
+        max-width: 100vw !important;
+        padding-left: 0 !important;
     }
 
     .app-main .app-main__inner {
         padding: 0.75rem !important;
+        overflow-x: hidden;
+    }
+
+    /* Corregir page-title en mobile */
+    .app-page-title .page-title-wrapper {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.75rem;
+    }
+
+    .app-page-title .page-title-actions {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 0.5rem;
     }
 }
 

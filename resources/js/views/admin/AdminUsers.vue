@@ -41,8 +41,43 @@
                 </select>
             </div>
 
-            <!-- Tabla -->
-            <div class="section-card">
+            <!-- Cards mobile -->
+            <div class="mobile-cards">
+                <div v-for="row in filteredRows" :key="row.id" class="mobile-card">
+                    <div class="mobile-card-header">
+                        <div>
+                            <div class="mobile-card-title">{{ row.name }}</div>
+                            <div class="mobile-card-sub">{{ row.email }}</div>
+                        </div>
+                        <button @click="openDetail(row)" class="action-btn" title="Ver detalle">
+                            <i class="fa fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="mobile-card-body">
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Rol</span>
+                            <span class="role-badge" :class="'role-' + roleName(row).toLowerCase()">
+                                {{ roleName(row) }}
+                            </span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Empresa</span>
+                            <span>{{ row.company?.name || '-' }}</span>
+                        </div>
+                        <div class="mobile-card-row">
+                            <span class="mobile-card-label">Registro</span>
+                            <span>{{ formatDate(row.created_at) }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="!filteredRows.length" class="empty-state">
+                    <i class="fa fa-users empty-icon"></i>
+                    <p>No se encontraron usuarios.</p>
+                </div>
+            </div>
+
+            <!-- Tabla desktop -->
+            <div class="section-card desktop-table">
                 <vue-good-table
                     :columns="columns"
                     :rows="filteredRows"
@@ -464,7 +499,73 @@ export default {
 
 .modal-link:hover { color: #6d28d9; text-decoration: underline; }
 
-@media (max-width: 640px) {
+.mobile-cards { display: none; }
+
+@media (max-width: 768px) {
+    .desktop-table { display: none; }
+
+    .filters-bar {
+        flex-direction: column;
+    }
+
+    .filter-search {
+        min-width: 0;
+    }
+
+    .filter-select {
+        width: 100%;
+    }
+
+    .mobile-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .mobile-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .mobile-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .mobile-card-title {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 0.95rem;
+    }
+
+    .mobile-card-sub {
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+
+    .mobile-card-body {
+        padding: 0.75rem 1rem;
+    }
+
+    .mobile-card-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.35rem 0;
+        font-size: 0.875rem;
+        color: #334155;
+    }
+
+    .mobile-card-label {
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+
     .filter-select { flex: 1; min-width: 0; }
 }
 </style>

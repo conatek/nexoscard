@@ -41,8 +41,52 @@
             <div class="spinner-border text-primary"></div>
         </div>
 
-        <!-- Table -->
-        <div v-else class="section-card">
+        <!-- Cards mobile -->
+        <div v-if="!loading" class="mobile-cards">
+            <div v-for="p in payments" :key="'m'+p.id" class="mobile-card">
+                <div class="mobile-card-header">
+                    <div>
+                        <div class="mobile-card-title">{{ p.company?.name }}</div>
+                        <div class="mobile-card-sub">{{ formatDate(p.paid_at || p.created_at) }}</div>
+                    </div>
+                    <div class="action-buttons">
+                        <router-link :to="{ name: 'admin.payments.show', params: { id: p.id } }" class="action-btn" title="Ver">
+                            <i class="fa fa-eye"></i>
+                        </router-link>
+                        <button v-if="p.status === 'pending'" @click="approve(p)" class="action-btn action-success" :disabled="acting === p.id">
+                            <i class="fa fa-check"></i>
+                        </button>
+                        <button v-if="p.status === 'approved'" @click="refund(p)" class="action-btn action-warning" :disabled="acting === p.id">
+                            <i class="fa fa-undo"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="mobile-card-body">
+                    <div class="mobile-card-row">
+                        <span class="mobile-card-label">Monto</span>
+                        <span style="font-weight:600">${{ Number(p.amount).toLocaleString('es-CO') }}</span>
+                    </div>
+                    <div class="mobile-card-row">
+                        <span class="mobile-card-label">Estado</span>
+                        <span class="status-badge" :class="'status-' + p.status">{{ statusLabel(p.status) }}</span>
+                    </div>
+                    <div class="mobile-card-row" v-if="p.payment_method">
+                        <span class="mobile-card-label">Metodo</span>
+                        <span>{{ p.payment_method }}</span>
+                    </div>
+                    <div class="mobile-card-row" v-if="p.payu_reference_code">
+                        <span class="mobile-card-label">Ref</span>
+                        <span style="font-size:0.78rem;color:#64748b">{{ p.payu_reference_code }}</span>
+                    </div>
+                </div>
+            </div>
+            <div v-if="!payments.length" class="empty-state">
+                <p class="text-muted">No se encontraron pagos.</p>
+            </div>
+        </div>
+
+        <!-- Table desktop -->
+        <div v-if="!loading" class="section-card desktop-table">
             <div class="section-body table-responsive">
                 <table class="data-table" v-if="payments.length">
                     <thead>
@@ -85,15 +129,17 @@
                 </div>
             </div>
 
-            <div v-if="pagination.last_page > 1" class="pagination-bar">
-                <button @click="goToPage(pagination.current_page - 1)" :disabled="pagination.current_page <= 1" class="page-btn">
-                    <i class="fa fa-chevron-left"></i>
-                </button>
-                <span class="page-info">{{ pagination.current_page }} / {{ pagination.last_page }}</span>
-                <button @click="goToPage(pagination.current_page + 1)" :disabled="pagination.current_page >= pagination.last_page" class="page-btn">
-                    <i class="fa fa-chevron-right"></i>
-                </button>
-            </div>
+        </div>
+
+        <!-- Pagination (fuera de desktop-table para ser visible en mobile) -->
+        <div v-if="!loading && pagination.last_page > 1" class="pagination-bar">
+            <button @click="goToPage(pagination.current_page - 1)" :disabled="pagination.current_page <= 1" class="page-btn">
+                <i class="fa fa-chevron-left"></i>
+            </button>
+            <span class="page-info">{{ pagination.current_page }} / {{ pagination.last_page }}</span>
+            <button @click="goToPage(pagination.current_page + 1)" :disabled="pagination.current_page >= pagination.last_page" class="page-btn">
+                <i class="fa fa-chevron-right"></i>
+            </button>
         </div>
     </div>
 </template>
@@ -215,4 +261,74 @@ export default {
 
 .empty-state { text-align: center; padding: 3rem 0; }
 .loading-state { text-align: center; padding: 4rem 0; }
+
+.mobile-cards { display: none; }
+
+@media (max-width: 768px) {
+    .desktop-table { display: none; }
+
+    .filters-bar {
+        flex-direction: column;
+    }
+
+    .filter-select,
+    .filter-input {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .filter-input[type="date"] {
+        width: 100% !important;
+    }
+
+    .mobile-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .mobile-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .mobile-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .mobile-card-title {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 0.95rem;
+    }
+
+    .mobile-card-sub {
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+
+    .mobile-card-body {
+        padding: 0.75rem 1rem;
+    }
+
+    .mobile-card-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.35rem 0;
+        font-size: 0.875rem;
+        color: #334155;
+    }
+
+    .mobile-card-label {
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+}
 </style>
