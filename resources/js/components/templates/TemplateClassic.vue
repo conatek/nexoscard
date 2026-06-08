@@ -34,9 +34,7 @@
                 </h1>
                 <p :style="jobTitleStyle">{{ card?.job_title }}</p>
 
-                <p v-if="card?.description" :style="bioStyle">
-                    "{{ card.description }}"
-                </p>
+                <div v-if="card?.description" :style="bioStyle" v-html="'&ldquo;' + card.description + '&rdquo;'"></div>
 
                 <div class="contact-block" :style="contactBlockStyle">
                     <div v-if="card?.mobile_phone" class="contact-line">
@@ -81,7 +79,7 @@
                             <i class="bi bi-diamond-fill" :style="bulletIconStyle"></i>
                             <div>
                                 <strong :style="itemTitleStyle">{{ service.name }}</strong>
-                                <p v-if="service.description" :style="itemDescStyle">{{ service.description }}</p>
+                                <div v-if="service.description" :style="itemDescStyle" v-html="service.description"></div>
                             </div>
                         </li>
                     </ul>
@@ -92,7 +90,7 @@
                     <div class="products-grid">
                         <div v-for="product in products" :key="`p-${product.id}`" class="product-card" :style="productCardStyle">
                             <h4 :style="itemTitleStyle">{{ product.name }}</h4>
-                            <p v-if="product.description" :style="itemDescStyle">{{ product.description }}</p>
+                            <div v-if="product.description" :style="itemDescStyle" v-html="product.description"></div>
                             <p v-if="product.price" :style="priceStyle">
                                 <span v-if="product.discount" class="old-price" :style="oldPriceStyle">${{ product.price }}</span>
                                 ${{ product.discount || product.price }}

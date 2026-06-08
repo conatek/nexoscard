@@ -133,7 +133,7 @@
                         <i class="bi" :class="openAccordion === 'about' ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
                     </button>
                     <div class="accordion-content" v-show="openAccordion === 'about'">
-                        <p>{{ card.description }}</p>
+                        <div v-html="card.description"></div>
                     </div>
                 </div>
 
@@ -218,38 +218,41 @@
             <p class="footer-company-name">{{ company?.name || 'Empresa' }}</p>
         </footer>
 
-        <!-- Modal para Servicios/Productos -->
-        <div class="modal-overlay" v-if="modalOpen" @click.self="closeModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5>{{ modalData?.name }}</h5>
-                    <button class="modal-close" @click="closeModal">&times;</button>
+    </div>
+
+    <!-- Modal para Servicios/Productos -->
+    <Teleport to="body">
+    <div class="dm-overlay" v-if="modalOpen" @click.self="closeModal">
+        <div class="dm-box">
+            <div class="dm-header">
+                <h5>{{ modalData?.name }}</h5>
+                <button class="dm-close" @click="closeModal">&times;</button>
+            </div>
+            <div class="dm-body">
+                <img
+                    v-if="modalData?.image_path"
+                    :src="modalData.image_path"
+                    :alt="modalData.name"
+                    class="dm-image"
+                >
+                <div v-if="modalType === 'product' && modalData?.price" class="dm-price-section">
+                    <p v-if="modalData.discount" class="dm-original-price">
+                        Antes: <span>${{ modalData.price }}</span>
+                    </p>
+                    <p class="dm-current-price">
+                        {{ modalData.discount ? 'Ahora:' : 'Precio:' }}
+                        ${{ modalData.discount || modalData.price }}
+                    </p>
+                    <p v-if="modalData.comment" class="dm-price-comment">{{ modalData.comment }}</p>
                 </div>
-                <div class="modal-body">
-                    <img
-                        v-if="modalData?.image_path"
-                        :src="modalData.image_path"
-                        :alt="modalData.name"
-                        class="modal-image"
-                    >
-                    <div v-if="modalType === 'product' && modalData?.price" class="price-section">
-                        <p v-if="modalData.discount" class="original-price">
-                            Antes: <span>${{ modalData.price }}</span>
-                        </p>
-                        <p class="current-price">
-                            {{ modalData.discount ? 'Ahora:' : 'Precio:' }}
-                            ${{ modalData.discount || modalData.price }}
-                        </p>
-                        <p v-if="modalData.comment" class="price-comment">{{ modalData.comment }}</p>
-                    </div>
-                    <p class="modal-description">{{ modalData?.description }}</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn-close-modal" @click="closeModal">Cerrar</button>
-                </div>
+                <div class="dm-description" v-html="modalData?.description"></div>
+            </div>
+            <div class="dm-footer">
+                <button class="dm-btn-close" @click="closeModal">Cerrar</button>
             </div>
         </div>
     </div>
+    </Teleport>
 </template>
 
 <script>
@@ -588,7 +591,7 @@ export default {
     font-family: var(--general-font-family, 'Montserrat', sans-serif);
     color: var(--general-color-fuente, #333333);
     background-color: var(--general-color-fondo, #ffffff);
-    min-height: 100%;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
@@ -822,6 +825,28 @@ export default {
     border-top: none;
 }
 
+.accordion-content :deep(p),
+.accordion-content :deep(li p) {
+    margin-bottom: 0;
+}
+
+.accordion-content :deep(ul),
+.accordion-content :deep(ol) {
+    padding-left: 1.5em;
+    margin: 0.5rem 0;
+}
+
+.dm-description :deep(p),
+.dm-description :deep(li p) {
+    margin-bottom: 0;
+}
+
+.dm-description :deep(ul),
+.dm-description :deep(ol) {
+    padding-left: 1.5em;
+    margin: 0.5rem 0;
+}
+
 /* Redondeo en el contenido del último elemento (cuando está abierto) */
 .accordion-item:last-child .accordion-content {
     border-bottom-left-radius: var(--accordion-radio, 8px);
@@ -883,118 +908,142 @@ export default {
         var(--footer-color-borde, #e0e0e0);
 }
 
+.template-footer p,
 .footer-company-name {
-    margin: 0;
+    margin: 0 !important;
     color: var(--footer-color-fuente, #666666);
     font-size: var(--footer-tamano-fuente, 0.9em);
     font-weight: var(--footer-peso-fuente, 400);
     text-align: center;
 }
 
-/* Modal */
-.modal-overlay {
+/* Modal (dm- prefix to avoid Bootstrap conflicts) */
+.dm-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
-    padding: 1rem;
+    padding: 3rem 1.5rem;
+    z-index: 99999;
 }
 
-.modal-content {
+.dm-box {
     background: white;
-    border-radius: 12px;
-    max-width: 400px;
+    border-radius: 16px;
+    max-width: 420px;
     width: 100%;
-    max-height: 80vh;
+    max-height: calc(100vh - 6rem);
     overflow-y: auto;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
 }
 
-.modal-header {
+.dm-box::-webkit-scrollbar { width: 6px; }
+.dm-box::-webkit-scrollbar-track { background: transparent; }
+.dm-box::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.dm-box::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+.dm-header {
+    padding: 1.25rem 1.25rem 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid #eee;
 }
 
-.modal-header h5 {
+.dm-header h5 {
     margin: 0;
+    font-size: 1.1rem;
     font-weight: 600;
+    color: #1e293b;
 }
 
-.modal-close {
-    background: none;
+.dm-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
     border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: #666;
-}
-
-.modal-body {
-    padding: 1rem;
-}
-
-.modal-image {
-    width: 100%;
     border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s;
+}
+
+.dm-close:hover {
+    background: #f5f3ff;
+    color: #7c3aed;
+}
+
+.dm-body {
+    padding: 1rem 1.25rem 1.25rem;
+}
+
+.dm-image {
+    width: 100%;
+    border-radius: 10px;
     margin-bottom: 1rem;
 }
 
-.price-section {
+.dm-price-section {
     margin-bottom: 1rem;
 }
 
-.original-price {
-    color: #666;
+.dm-original-price {
+    color: #64748b;
     font-style: italic;
 }
 
-.original-price span {
+.dm-original-price span {
     text-decoration: line-through;
 }
 
-.current-price {
-    background: #28a745;
+.dm-current-price {
+    background: #7c3aed;
     color: white;
     padding: 0.75rem;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 1.25rem;
     font-weight: bold;
     text-align: center;
 }
 
-.price-comment {
+.dm-price-comment {
     text-align: center;
     font-style: italic;
-    color: #666;
+    color: #64748b;
     margin-top: 0.5rem;
 }
 
-.modal-description {
-    color: #333;
+.dm-description {
+    color: #475569;
     line-height: 1.6;
+    font-size: 0.95rem;
 }
 
-.modal-footer {
-    padding: 1rem;
-    border-top: 1px solid #eee;
+.dm-footer {
+    padding: 0 1.25rem 1.25rem;
 }
 
-.btn-close-modal {
+.dm-btn-close {
     width: 100%;
-    padding: 0.75rem;
-    background: #333;
+    padding: 0.7rem;
+    background: #7c3aed;
     color: white;
     border: none;
-    border-radius: 6px;
-    font-size: 1rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
     cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dm-btn-close:hover {
+    background: #6d28d9;
 }
 
 .btn-close-modal:hover {

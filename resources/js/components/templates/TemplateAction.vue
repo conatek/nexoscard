@@ -98,87 +98,93 @@
             <p style="margin: 0">{{ customization?.footer?.texto || 'by NexosCard.com' }}</p>
         </footer>
 
-        <!-- Modal Sobre Nosotros -->
-        <div v-if="activeModal === 'about'" class="modal-overlay" @click.self="activeModal = null">
-            <div class="modal-container">
-                <div class="modal-header">
-                    <h3 class="modal-title">{{ customization?.actionButtons?.textoBoton1 || 'Sobre nosotros' }}</h3>
-                    <button class="modal-close" @click="activeModal = null">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div v-if="company?.logo_path" class="modal-about-logo">
-                        <img :src="company.logo_path" :alt="company.name">
-                    </div>
-                    <h4 class="modal-about-name">{{ company?.name }}</h4>
-                    <p v-if="card?.description" class="modal-about-desc">{{ card.description }}</p>
-                    <div v-if="company?.address" class="modal-about-item">
-                        <i class="bi bi-geo-alt-fill"></i>
-                        <span>{{ company.address }}</span>
-                    </div>
-                    <div v-if="company?.web" class="modal-about-item">
-                        <i class="bi bi-globe"></i>
-                        <a :href="company.web" target="_blank">{{ company.web }}</a>
-                    </div>
-                    <div v-if="company?.my_business" class="modal-about-item">
-                        <i class="bi bi-google"></i>
-                        <a :href="company.my_business" target="_blank">Google My Business</a>
-                    </div>
-                    <div v-if="card?.mobile_phone" class="modal-about-item">
-                        <i class="bi bi-telephone-fill"></i>
-                        <a :href="`tel:${card.mobile_phone}`">{{ card.mobile_phone }}</a>
-                    </div>
-                    <div v-if="card?.email" class="modal-about-item">
-                        <i class="bi bi-envelope-fill"></i>
-                        <a :href="`mailto:${card.email}`">{{ card.email }}</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal Servicios -->
-        <div v-if="activeModal === 'services'" class="modal-overlay" @click.self="activeModal = null">
-            <div class="modal-container">
-                <div class="modal-header">
-                    <h3 class="modal-title">{{ customization?.actionButtons?.textoBoton2 || 'Nuestros servicios' }}</h3>
-                    <button class="modal-close" @click="activeModal = null">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div v-if="services.length === 0" class="modal-empty">
-                        <i class="bi bi-journal-text"></i>
-                        <p>No hay servicios disponibles</p>
-                    </div>
-                    <div v-for="service in services" :key="service.id" class="modal-service-item">
-                        <img v-if="service.image_path" :src="service.image_path" :alt="service.name" class="modal-service-img">
-                        <div class="modal-service-info">
-                            <h5 class="modal-service-name">{{ service.name }}</h5>
-                            <p v-if="service.description" class="modal-service-desc">{{ service.description }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal QR -->
-        <div v-if="activeModal === 'qr'" class="modal-overlay" @click.self="activeModal = null">
-            <div class="modal-container modal-container-sm">
-                <div class="modal-header">
-                    <h3 class="modal-title">{{ customization?.actionButtons?.textoBoton3 || 'Codigo QR' }}</h3>
-                    <button class="modal-close" @click="activeModal = null">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                </div>
-                <div class="modal-body modal-qr-body">
-                    <img :src="qrCodeUrl" alt="Codigo QR" class="modal-qr-img">
-                    <p class="modal-qr-hint">Escanea este codigo para acceder a la tarjeta</p>
-                </div>
-            </div>
-        </div>
-
     </div>
+
+    <!-- Modal Sobre Nosotros -->
+    <Teleport to="body">
+    <div v-if="activeModal === 'about'" class="dm-overlay" @click.self="activeModal = null">
+        <div class="dm-box">
+            <div class="dm-header">
+                <h3 class="dm-title">{{ customization?.actionButtons?.textoBoton1 || 'Sobre nosotros' }}</h3>
+                <button class="dm-close" @click="activeModal = null">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="dm-body">
+                <div v-if="company?.logo_path" class="dm-about-logo">
+                    <img :src="company.logo_path" :alt="company.name">
+                </div>
+                <h4 class="dm-about-name">{{ company?.name }}</h4>
+                <div v-if="card?.description" class="dm-about-desc" v-html="card.description"></div>
+                <div v-if="company?.address" class="dm-about-item">
+                    <i class="bi bi-geo-alt-fill"></i>
+                    <span>{{ company.address }}</span>
+                </div>
+                <div v-if="company?.web" class="dm-about-item">
+                    <i class="bi bi-globe"></i>
+                    <a :href="company.web" target="_blank">{{ company.web }}</a>
+                </div>
+                <div v-if="company?.my_business" class="dm-about-item">
+                    <i class="bi bi-google"></i>
+                    <a :href="company.my_business" target="_blank">Google My Business</a>
+                </div>
+                <div v-if="card?.mobile_phone" class="dm-about-item">
+                    <i class="bi bi-telephone-fill"></i>
+                    <a :href="`tel:${card.mobile_phone}`">{{ card.mobile_phone }}</a>
+                </div>
+                <div v-if="card?.email" class="dm-about-item">
+                    <i class="bi bi-envelope-fill"></i>
+                    <a :href="`mailto:${card.email}`">{{ card.email }}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    </Teleport>
+
+    <!-- Modal Servicios -->
+    <Teleport to="body">
+    <div v-if="activeModal === 'services'" class="dm-overlay" @click.self="activeModal = null">
+        <div class="dm-box">
+            <div class="dm-header">
+                <h3 class="dm-title">{{ customization?.actionButtons?.textoBoton2 || 'Nuestros servicios' }}</h3>
+                <button class="dm-close" @click="activeModal = null">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="dm-body">
+                <div v-if="services.length === 0" class="dm-empty">
+                    <i class="bi bi-journal-text"></i>
+                    <p>No hay servicios disponibles</p>
+                </div>
+                <div v-for="service in services" :key="service.id" class="dm-service-item">
+                    <img v-if="service.image_path" :src="service.image_path" :alt="service.name" class="dm-service-img">
+                    <div class="dm-service-info">
+                        <h5 class="dm-service-name">{{ service.name }}</h5>
+                        <div v-if="service.description" class="dm-service-desc" v-html="service.description"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </Teleport>
+
+    <!-- Modal QR -->
+    <Teleport to="body">
+    <div v-if="activeModal === 'qr'" class="dm-overlay" @click.self="activeModal = null">
+        <div class="dm-box dm-box-sm">
+            <div class="dm-header">
+                <h3 class="dm-title">{{ customization?.actionButtons?.textoBoton3 || 'Codigo QR' }}</h3>
+                <button class="dm-close" @click="activeModal = null">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="dm-body dm-qr-body">
+                <img :src="qrCodeUrl" alt="Codigo QR" class="dm-qr-img">
+                <p class="dm-qr-hint">Escanea este codigo para acceder a la tarjeta</p>
+            </div>
+        </div>
+    </div>
+    </Teleport>
 </template>
 
 <script>
@@ -439,6 +445,9 @@ export default {
 .card-template.action {
     position: relative;
     box-sizing: border-box;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .hero-section {
@@ -533,8 +542,8 @@ export default {
     transition: all 0.2s ease;
 }
 
-/* Modales */
-.modal-overlay {
+/* Modales (dm- prefix to avoid Bootstrap conflicts) */
+.dm-overlay {
     position: fixed;
     inset: 0;
     background: rgba(15, 23, 42, 0.6);
@@ -542,24 +551,29 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
-    padding: 1rem;
+    z-index: 99999;
+    padding: 3rem 1.5rem;
 }
 
-.modal-container {
+.dm-box {
     background: white;
     border-radius: 16px;
     width: min(480px, 95vw);
-    max-height: 85vh;
+    max-height: calc(100vh - 6rem);
     overflow-y: auto;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
 }
 
-.modal-container-sm {
+.dm-box::-webkit-scrollbar { width: 6px; }
+.dm-box::-webkit-scrollbar-track { background: transparent; }
+.dm-box::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.dm-box::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+.dm-box-sm {
     width: min(360px, 90vw);
 }
 
-.modal-header {
+.dm-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -567,14 +581,14 @@ export default {
     border-bottom: 1px solid #e2e8f0;
 }
 
-.modal-title {
+.dm-title {
     font-size: 1.1rem;
     font-weight: 600;
     color: #1e293b;
     margin: 0;
 }
 
-.modal-close {
+.dm-close {
     width: 32px;
     height: 32px;
     background: #f1f5f9;
@@ -588,28 +602,28 @@ export default {
     transition: all 0.2s ease;
 }
 
-.modal-close:hover {
-    background: #e2e8f0;
-    color: #1e293b;
+.dm-close:hover {
+    background: #f5f3ff;
+    color: #7c3aed;
 }
 
-.modal-body {
+.dm-body {
     padding: 1.5rem;
 }
 
 /* Modal Sobre Nosotros */
-.modal-about-logo {
+.dm-about-logo {
     text-align: center;
     margin-bottom: 1rem;
 }
 
-.modal-about-logo img {
+.dm-about-logo img {
     max-width: 120px;
     height: auto;
     border-radius: 12px;
 }
 
-.modal-about-name {
+.dm-about-name {
     font-size: 1.15rem;
     font-weight: 700;
     color: #1e293b;
@@ -617,7 +631,7 @@ export default {
     margin: 0 0 0.75rem 0;
 }
 
-.modal-about-desc {
+.dm-about-desc {
     font-size: 0.9rem;
     color: #475569;
     line-height: 1.6;
@@ -625,7 +639,7 @@ export default {
     text-align: center;
 }
 
-.modal-about-item {
+.dm-about-item {
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -635,7 +649,7 @@ export default {
     color: #334155;
 }
 
-.modal-about-item i {
+.dm-about-item i {
     color: #8b5cf6;
     font-size: 1rem;
     width: 20px;
@@ -643,34 +657,34 @@ export default {
     flex-shrink: 0;
 }
 
-.modal-about-item a {
+.dm-about-item a {
     color: #7c3aed;
     text-decoration: none;
     word-break: break-all;
 }
 
-.modal-about-item a:hover {
+.dm-about-item a:hover {
     text-decoration: underline;
 }
 
 /* Modal Servicios */
-.modal-service-item {
+.dm-service-item {
     display: flex;
     gap: 1rem;
     padding: 1rem 0;
     border-bottom: 1px solid #f1f5f9;
 }
 
-.modal-service-item:first-child {
+.dm-service-item:first-child {
     padding-top: 0;
 }
 
-.modal-service-item:last-child {
+.dm-service-item:last-child {
     border-bottom: none;
     padding-bottom: 0;
 }
 
-.modal-service-img {
+.dm-service-img {
     width: 64px;
     height: 64px;
     border-radius: 10px;
@@ -678,57 +692,57 @@ export default {
     flex-shrink: 0;
 }
 
-.modal-service-info {
+.dm-service-info {
     min-width: 0;
 }
 
-.modal-service-name {
+.dm-service-name {
     font-size: 0.95rem;
     font-weight: 600;
     color: #1e293b;
     margin: 0 0 0.25rem 0;
 }
 
-.modal-service-desc {
+.dm-service-desc {
     font-size: 0.85rem;
     color: #64748b;
     line-height: 1.5;
     margin: 0;
 }
 
-.modal-empty {
+.dm-empty {
     text-align: center;
     padding: 2rem 0;
     color: #94a3b8;
 }
 
-.modal-empty i {
+.dm-empty i {
     font-size: 2.5rem;
     display: block;
     margin-bottom: 0.75rem;
 }
 
-.modal-empty p {
+.dm-empty p {
     font-size: 0.9rem;
     margin: 0;
 }
 
 /* Modal QR */
-.modal-qr-body {
+.dm-qr-body {
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 2rem 1.5rem;
 }
 
-.modal-qr-img {
+.dm-qr-img {
     width: 200px;
     height: 200px;
     border-radius: 12px;
     border: 1px solid #e2e8f0;
 }
 
-.modal-qr-hint {
+.dm-qr-hint {
     font-size: 0.85rem;
     color: #64748b;
     margin: 1rem 0 0 0;

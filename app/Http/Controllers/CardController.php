@@ -33,9 +33,18 @@ class CardController extends Controller
         $data = $request->validated();
         $data['company_id'] = $company->id;
 
+        if (isset($data['is_active'])) {
+            $data['is_active'] = filter_var($data['is_active'], FILTER_VALIDATE_BOOLEAN);
+        }
+
         if ($request->hasFile('photo')) {
             $uploaded = $this->cloudinary->upload($request->file('photo'), 'companies/cards');
             $data['photo_path'] = $uploaded['url'];
+        }
+
+        if ($request->hasFile('thumbnail')) {
+            $uploaded = $this->cloudinary->upload($request->file('thumbnail'), 'companies/cards/thumbnails');
+            $data['thumbnail_path'] = $uploaded['url'];
         }
 
         $card = Card::create($data);
@@ -58,12 +67,24 @@ class CardController extends Controller
 
         $data = $request->validated();
 
+        if (isset($data['is_active'])) {
+            $data['is_active'] = filter_var($data['is_active'], FILTER_VALIDATE_BOOLEAN);
+        }
+
         if ($request->hasFile('photo')) {
             if ($card->photo_path) {
                 $this->cloudinary->destroy($card->photo_path);
             }
             $uploaded = $this->cloudinary->upload($request->file('photo'), 'companies/cards');
             $data['photo_path'] = $uploaded['url'];
+        }
+
+        if ($request->hasFile('thumbnail')) {
+            if ($card->thumbnail_path) {
+                $this->cloudinary->destroy($card->thumbnail_path);
+            }
+            $uploaded = $this->cloudinary->upload($request->file('thumbnail'), 'companies/cards/thumbnails');
+            $data['thumbnail_path'] = $uploaded['url'];
         }
 
         $card->update($data);
@@ -78,6 +99,10 @@ class CardController extends Controller
 
         if ($card->photo_path) {
             $this->cloudinary->destroy($card->photo_path);
+        }
+
+        if ($card->thumbnail_path) {
+            $this->cloudinary->destroy($card->thumbnail_path);
         }
 
         $card->delete();

@@ -70,9 +70,13 @@
                                         <span>Seleccionar imagen</span>
                                     </div>
                                 </div>
+                                <label class="cropper-toggle">
+                                    <input type="checkbox" v-model="enableCropper" />
+                                    <span>Recortar imagen</span>
+                                </label>
                                 <div v-if="photoPreview" class="image-preview">
                                     <img :src="photoPreview" class="preview-avatar" />
-                                    <button type="button" class="btn-crop" @click="openCropper">
+                                    <button v-if="enableCropper" type="button" class="btn-crop" @click="openCropper">
                                         <i class="fa fa-crop"></i> Recortar
                                     </button>
                                 </div>
@@ -80,8 +84,25 @@
 
                             <div class="form-group">
                                 <label class="form-label">Perfil profesional</label>
-                                <textarea v-model="form.description" class="form-input" rows="3"
-                                    placeholder="Breve descripcion profesional..."></textarea>
+                                <RichEditor v-model="form.description" placeholder="Breve descripcion profesional..." />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Miniatura para redes sociales</label>
+                                <div class="file-upload file-upload-sm">
+                                    <input ref="thumbnailInput" type="file" class="file-input" accept="image/*" @change="onThumbnailSelected" />
+                                    <div class="file-upload-content">
+                                        <i class="fa fa-image"></i>
+                                        <span>Seleccionar miniatura</span>
+                                    </div>
+                                </div>
+                                <small class="form-hint">Imagen para WhatsApp/redes. Se recortara 1:1</small>
+                                <div v-if="thumbnailPreview" class="thumbnail-preview">
+                                    <img :src="thumbnailPreview" />
+                                    <button type="button" class="btn-crop" @click="openThumbCropper">
+                                        <i class="fa fa-crop"></i> Recortar
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -194,19 +215,54 @@
                 </div>
             </div>
         </Teleport>
+
+        <!-- Modal de recorte miniatura -->
+        <Teleport to="body">
+            <div v-if="thumbCropperOpen" class="cropper-modal-overlay" @click.self="cancelThumbCrop">
+                <div class="cropper-modal-container">
+                    <div class="cropper-modal-header">
+                        <h4>Recortar miniatura</h4>
+                        <button type="button" class="cropper-modal-close" @click="cancelThumbCrop">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div class="cropper-modal-info">
+                        <span class="ratio-badge">Proporcion 1:1 (cuadrada)</span>
+                    </div>
+
+                    <div class="cropper-modal-canvas">
+                        <Cropper
+                            ref="thumbCropper"
+                            :src="thumbCropperSrc"
+                            :stencil-props="{ aspectRatio: 1 }"
+                            class="cropper"
+                        />
+                    </div>
+
+                    <div class="cropper-modal-actions">
+                        <button type="button" class="btn-cancel" @click="cancelThumbCrop">Cancelar</button>
+                        <button type="button" class="btn-submit" @click="confirmThumbCrop">
+                            <i class="fa fa-check"></i> Aplicar recorte
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </div>
 </template>
 
 <script>
 import { Cropper } from 'vue-advanced-cropper';
 import 'vue-advanced-cropper/dist/style.css';
+import RichEditor from '@/components/shared/RichEditor.vue';
 import cardService    from '@/services/cardService.js';
 import companyService from '@/services/companyService.js';
 
 export default {
     name: 'CardCreate',
 
-    components: { Cropper },
+    components: { Cropper, RichEditor },
 
     data() {
         return {
@@ -216,8 +272,13 @@ export default {
             generalError: null,
             photoPreview: null,
             photoFile: null,
+            thumbnailPreview: null,
+            thumbnailFile: null,
+            thumbCropperOpen: false,
+            thumbCropperSrc: null,
             cropperOpen: false,
             cropperSrc: null,
+            enableCropper: true,
             form: {
                 first_name: '', last_name: '', slug: '', job_title: '',
                 mobile_phone: '', whatsapp: '', email: '', linkedin: '',
@@ -239,8 +300,14 @@ export default {
         onFileSelected(e) {
             const file = e.target.files[0];
             if (!file) return;
-            this.cropperSrc = URL.createObjectURL(file);
-            this.cropperOpen = true;
+            if (this.enableCropper) {
+                this.cropperSrc = URL.createObjectURL(file);
+                this.cropperOpen = true;
+            } else {
+                this.photoFile = file;
+                if (this.photoPreview) URL.revokeObjectURL(this.photoPreview);
+                this.photoPreview = URL.createObjectURL(file);
+            }
         },
 
         openCropper() {
@@ -256,6 +323,36 @@ export default {
                 this.photoPreview = URL.createObjectURL(blob);
                 this.cropperOpen = false;
             }, 'image/png');
+        },
+
+        onThumbnailSelected(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            this.thumbCropperSrc = URL.createObjectURL(file);
+            this.thumbCropperOpen = true;
+        },
+
+        openThumbCropper() {
+            this.thumbCropperSrc = this.thumbnailPreview;
+            this.thumbCropperOpen = true;
+        },
+
+        confirmThumbCrop() {
+            const { canvas } = this.$refs.thumbCropper.getResult();
+            canvas.toBlob((blob) => {
+                this.thumbnailFile = new File([blob], 'thumbnail.png', { type: 'image/png' });
+                if (this.thumbnailPreview) URL.revokeObjectURL(this.thumbnailPreview);
+                this.thumbnailPreview = URL.createObjectURL(blob);
+                this.thumbCropperOpen = false;
+            }, 'image/png');
+        },
+
+        cancelThumbCrop() {
+            this.thumbCropperOpen = false;
+            if (!this.thumbnailFile) {
+                this.thumbCropperSrc = null;
+                this.$refs.thumbnailInput.value = '';
+            }
         },
 
         cancelCrop() {
@@ -276,6 +373,7 @@ export default {
                 if (v !== null && v !== '') payload.append(k, v);
             });
             if (this.photoFile) payload.append('photo', this.photoFile);
+            if (this.thumbnailFile) payload.append('thumbnail', this.thumbnailFile);
 
             try {
                 await cardService.store(this.$route.params.companyId, payload);
@@ -512,6 +610,33 @@ textarea.form-input {
     border-radius: 50%;
 }
 
+.file-upload-sm {
+    padding: 0.5rem;
+}
+
+.file-upload-sm .file-upload-content {
+    font-size: 0.85rem;
+}
+
+.form-hint {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+.thumbnail-preview {
+    margin-top: 0.5rem;
+}
+
+.thumbnail-preview img {
+    width: 120px;
+    height: 63px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
 .btn-crop {
     padding: 0.375rem 0.75rem;
     font-size: 0.8rem;
@@ -525,6 +650,20 @@ textarea.form-input {
 
 .btn-crop:hover {
     background: #f1f5f9;
+}
+
+.cropper-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #475569;
+    cursor: pointer;
+}
+
+.cropper-toggle input[type="checkbox"] {
+    accent-color: #7c3aed;
 }
 
 /* Toggle Switch */

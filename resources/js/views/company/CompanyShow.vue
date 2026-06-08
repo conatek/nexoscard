@@ -210,7 +210,7 @@
                             <div class="item-info">
                                 <div class="item-name">{{ service.name }}</div>
                                 <div class="item-meta" v-if="service.description">
-                                    {{ service.description.substring(0, 60) }}{{ service.description.length > 60 ? '...' : '' }}
+                                    {{ stripHtml(service.description).substring(0, 60) }}{{ stripHtml(service.description).length > 60 ? '...' : '' }}
                                 </div>
                             </div>
                             <div class="item-order">
@@ -453,6 +453,11 @@ export default {
     },
 
     methods: {
+        stripHtml(html) {
+            const tmp = document.createElement('DIV');
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || '';
+        },
         async load() {
             this.loading = true;
             try {

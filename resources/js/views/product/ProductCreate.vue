@@ -40,8 +40,7 @@
 
                             <div class="form-group">
                                 <label class="form-label">Descripcion</label>
-                                <textarea v-model="form.description" class="form-input" rows="3"
-                                    placeholder="Descripcion del producto..."></textarea>
+                                <RichEditor v-model="form.description" placeholder="Descripcion del producto..." />
                             </div>
 
                             <div class="form-group">
@@ -53,9 +52,13 @@
                                         <span>Seleccionar imagen</span>
                                     </div>
                                 </div>
+                                <label class="cropper-toggle">
+                                    <input type="checkbox" v-model="enableCropper" />
+                                    <span>Recortar imagen</span>
+                                </label>
                                 <div v-if="imagePreview" class="image-preview">
                                     <img :src="imagePreview" class="preview-image" />
-                                    <button type="button" class="btn-crop" @click="openCropper">
+                                    <button v-if="enableCropper" type="button" class="btn-crop" @click="openCropper">
                                         <i class="fa fa-crop"></i> Recortar
                                     </button>
                                 </div>
@@ -184,13 +187,14 @@
 <script>
 import { Cropper } from 'vue-advanced-cropper';
 import 'vue-advanced-cropper/dist/style.css';
+import RichEditor from '@/components/shared/RichEditor.vue';
 import productService from '@/services/productService.js';
 import companyService from '@/services/companyService.js';
 
 export default {
     name: 'ProductCreate',
 
-    components: { Cropper },
+    components: { Cropper, RichEditor },
 
     data() {
         return {
@@ -202,6 +206,7 @@ export default {
             imageFile: null,
             cropperOpen: false,
             cropperSrc: null,
+            enableCropper: true,
             selectedRatio: 1,
             ratios: [
                 { label: '1:1', value: 1 },
@@ -229,8 +234,14 @@ export default {
         onFileSelected(e) {
             const file = e.target.files[0];
             if (!file) return;
-            this.cropperSrc = URL.createObjectURL(file);
-            this.cropperOpen = true;
+            if (this.enableCropper) {
+                this.cropperSrc = URL.createObjectURL(file);
+                this.cropperOpen = true;
+            } else {
+                this.imageFile = file;
+                if (this.imagePreview) URL.revokeObjectURL(this.imagePreview);
+                this.imagePreview = URL.createObjectURL(file);
+            }
         },
 
         openCropper() {
@@ -542,6 +553,20 @@ textarea.form-input {
 
 .btn-crop:hover {
     background: #f1f5f9;
+}
+
+.cropper-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #475569;
+    cursor: pointer;
+}
+
+.cropper-toggle input[type="checkbox"] {
+    accent-color: #7c3aed;
 }
 
 /* Toggle Switch */

@@ -37,6 +37,16 @@
 
     @cloudinaryJS
 
+    @if(!empty($ogTitle))
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="{{ $ogUrl }}" />
+    <meta property="og:title" content="{{ $ogTitle }}" />
+    <meta property="og:description" content="{{ $ogDescription }}" />
+    @if(!empty($ogImage))
+    <meta property="og:image" content="{{ $ogImage }}" />
+    @endif
+    @endif
+
     <title>Nexos - Tarjetas de Presentación Digital</title>
 </head>
 <body>

@@ -31,9 +31,7 @@
                     <h2 :style="jobTitleStyle">{{ card?.job_title }}</h2>
                 </div>
 
-                <p v-if="card?.description" :style="bioStyle">
-                    {{ card.description }}
-                </p>
+                <div v-if="card?.description" :style="bioStyle" v-html="card.description"></div>
             </section>
 
             <section class="quick-contact" :style="flexAlignStyle">
@@ -58,7 +56,7 @@
                 <div class="list-container">
                     <div v-for="service in services" :key="`srv-${service.id}`" :style="listItemStyle">
                         <h4 :style="itemTitleStyle">{{ service.name }}</h4>
-                        <p v-if="service.description" :style="itemDescStyle">{{ service.description }}</p>
+                        <div v-if="service.description" :style="itemDescStyle" v-html="service.description"></div>
                     </div>
                 </div>
             </section>
@@ -73,7 +71,7 @@
                                 ${{ product.discount || product.price }}
                             </span>
                         </div>
-                        <p v-if="product.description" :style="itemDescStyle">{{ product.description }}</p>
+                        <div v-if="product.description" :style="itemDescStyle" v-html="product.description"></div>
                     </div>
                 </div>
             </section>
