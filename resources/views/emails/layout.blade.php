@@ -14,7 +14,7 @@
                     {{-- Header con logo --}}
                     <tr>
                         <td align="center" style="background: #7c3aed; border-radius: 16px 16px 0 0; padding: 28px 32px;">
-                            <img src="{{ \App\Helpers\EmailHelper::logoBase64() }}" alt="NexosCard" width="160" style="display: block; height: auto; max-width: 160px;">
+                            <img src="{{ asset('images/nexos-logo-email.png') }}" alt="NexosCard" width="160" style="display: block; height: auto; max-width: 160px;">
                         </td>
                     </tr>
 
