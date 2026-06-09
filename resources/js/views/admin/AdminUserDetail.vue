@@ -67,16 +67,6 @@
                             </div>
                         </div>
 
-                        <div v-if="currentRole === 'Guest'" class="form-group">
-                            <label class="form-label">Promover a Admin</label>
-                            <div class="inline-action">
-                                <span class="promote-label">Cambiar rol de Guest a Admin</span>
-                                <button @click="promoteToAdmin" class="btn-sm btn-primary" :disabled="saving">
-                                    {{ saving ? 'Cambiando...' : 'Promover' }}
-                                </button>
-                            </div>
-                        </div>
-
                         <div v-if="user.company" class="mt-1">
                             <router-link :to="{ name: 'companies.show', params: { id: user.company_id }, query: { from: 'admin' } }" class="link-company">
                                 <i class="fa fa-external-link-alt me-1"></i> Ver empresa
@@ -163,7 +153,6 @@ export default {
 .role-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; }
 .role-master { background: linear-gradient(135deg, #ede9fe, #f3e8ff); color: #7c3aed; }
 .role-admin { background: linear-gradient(135deg, #dbeafe, #e0f2fe); color: #2563eb; }
-.role-guest { background: #f1f5f9; color: #64748b; }
 
 .inline-action { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
 .promote-label { font-size: 0.9rem; color: #334155; }

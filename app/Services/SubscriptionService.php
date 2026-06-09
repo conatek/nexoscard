@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AppSetting;
 use App\Models\Company;
 use App\Models\Plan;
 use App\Models\Subscription;
@@ -10,15 +11,17 @@ class SubscriptionService
 {
     public function createTrialSubscription(Company $company): Subscription
     {
-        $guestPlan = Plan::where('name', 'guest')->firstOrFail();
+        $guestPlan = Plan::where('name', 'free')->firstOrFail();
+
+        $trialDays = AppSetting::getTrialDays();
 
         return Subscription::create([
             'company_id'           => $company->id,
             'plan_id'              => $guestPlan->id,
             'status'               => 'trial',
-            'trial_ends_at'        => now()->addDays(30),
+            'trial_ends_at'        => now()->addDays($trialDays),
             'current_period_start' => now(),
-            'current_period_end'   => now()->addDays(30),
+            'current_period_end'   => now()->addDays($trialDays),
         ]);
     }
 

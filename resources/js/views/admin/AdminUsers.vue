@@ -32,7 +32,6 @@
                     <option value="">Todos los roles</option>
                     <option value="Master">Master</option>
                     <option value="Admin">Admin</option>
-                    <option value="Guest">Guest</option>
                 </select>
                 <select v-model="filterCompany" class="filter-select">
                     <option value="">Todas las empresas</option>
@@ -357,7 +356,6 @@ export default {
 .role-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
 .role-master { background: linear-gradient(135deg, #ede9fe, #f3e8ff); color: #7c3aed; }
 .role-admin { background: linear-gradient(135deg, #dbeafe, #e0f2fe); color: #2563eb; }
-.role-guest { background: #f1f5f9; color: #64748b; }
 .role-sin { background: #fef2f2; color: #dc2626; }
 
 /* Boton accion tabla */

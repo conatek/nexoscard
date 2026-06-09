@@ -1,414 +1,472 @@
 <template>
     <div>
-        <div class="app-page-title">
-            <div class="page-title-wrapper">
-                <div class="page-title-heading">
-                    <div class="page-title-icon">
-                        <i class="fa fa-chart-line icon-gradient bg-mean-fruit"></i>
+        <!-- Loading -->
+        <div v-if="loading" class="loading-state">
+            <div class="spinner-border text-primary"></div>
+        </div>
+
+        <template v-else>
+            <!-- Saludo personalizado -->
+            <div class="welcome-header">
+                <div class="welcome-greeting">
+                    <h1 class="greeting-text">
+                        {{ greeting }}, <span class="gradient-text">{{ firstName }}</span>
+                    </h1>
+                    <p class="greeting-sub" v-if="data.subscription">
+                        {{ planLabel }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Stats de la empresa -->
+            <div v-if="data.stats" class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">
+                        <i class="fa fa-id-card"></i>
                     </div>
-                    <div>
-                        Panel de Control
-                        <div class="page-title-subheading text-muted">
-                            Bienvenido a NexosCard
-                        </div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ data.stats.cards.current }}</span>
+                        <span class="stat-label">
+                            Tarjetas
+                            <span v-if="data.stats.cards.limit" class="stat-limit">/ {{ data.stats.cards.limit }}</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #ec4899, #f472b6);">
+                        <i class="fa fa-box"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ data.stats.products.current }}</span>
+                        <span class="stat-label">
+                            Productos
+                            <span v-if="data.stats.products.limit" class="stat-limit">/ {{ data.stats.products.limit }}</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                        <i class="fa fa-concierge-bell"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ data.stats.services.current }}</span>
+                        <span class="stat-label">
+                            Servicios
+                            <span v-if="data.stats.services.limit" class="stat-limit">/ {{ data.stats.services.limit }}</span>
+                        </span>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Banner upgrade para Guest -->
-        <div v-if="isGuest" class="upgrade-banner">
-            <div class="banner-content">
-                <div class="banner-text">
-                    <i class="fa fa-info-circle me-2"></i>
-                    <span>Estas en <strong>modo prueba</strong>. Mejora tu plan para desbloquear todas las funcionalidades.</span>
+            <!-- Acciones rapidas -->
+            <div class="quick-section">
+                <h2 class="section-title">Accesos rapidos</h2>
+                <div class="quick-grid">
+                    <router-link v-if="companyId" :to="`/empresas/${companyId}`" class="quick-card">
+                        <div class="quick-icon" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+                            <i class="fa fa-building"></i>
+                        </div>
+                        <div class="quick-text">
+                            <h3>Mi Empresa</h3>
+                            <p>Gestiona tarjetas, productos y servicios</p>
+                        </div>
+                        <i class="fa fa-chevron-right quick-arrow"></i>
+                    </router-link>
+
+                    <router-link v-if="companyId && data.stats?.cards.current > 0" :to="`/empresas/${companyId}/plantilla`" class="quick-card">
+                        <div class="quick-icon" style="background: linear-gradient(135deg, #ec4899, #f97316);">
+                            <i class="fa fa-palette"></i>
+                        </div>
+                        <div class="quick-text">
+                            <h3>Personalizar Plantilla</h3>
+                            <p>Ajusta el diseno de tus tarjetas</p>
+                        </div>
+                        <i class="fa fa-chevron-right quick-arrow"></i>
+                    </router-link>
+
+                    <router-link to="/mi-suscripcion" class="quick-card">
+                        <div class="quick-icon" style="background: linear-gradient(135deg, #f59e0b, #fbbf24);">
+                            <i class="fa fa-star"></i>
+                        </div>
+                        <div class="quick-text">
+                            <h3>Mi Plan</h3>
+                            <p>Revisa tu suscripcion y limites</p>
+                        </div>
+                        <i class="fa fa-chevron-right quick-arrow"></i>
+                    </router-link>
+
+                    <a v-if="publicUrl" :href="publicUrl" target="_blank" class="quick-card">
+                        <div class="quick-icon" style="background: linear-gradient(135deg, #10b981, #34d399);">
+                            <i class="fa fa-external-link-alt"></i>
+                        </div>
+                        <div class="quick-text">
+                            <h3>Ver Tarjeta Publica</h3>
+                            <p>{{ publicUrl }}</p>
+                        </div>
+                        <i class="fa fa-chevron-right quick-arrow"></i>
+                    </a>
                 </div>
-                <router-link :to="{ name: 'subscription.plans' }" class="banner-btn">
-                    Ver planes
+            </div>
+
+            <!-- Tip / Call to action -->
+            <div v-if="showTip" class="tip-card">
+                <div class="tip-icon">
+                    <i class="fa fa-lightbulb"></i>
+                </div>
+                <div class="tip-content">
+                    <h3>{{ tipTitle }}</h3>
+                    <p>{{ tipMessage }}</p>
+                </div>
+                <router-link v-if="tipRoute" :to="tipRoute" class="tip-btn">
+                    {{ tipAction }}
                 </router-link>
             </div>
-        </div>
-
-        <!-- Hero Section -->
-        <div class="welcome-hero">
-            <div class="hero-content">
-                <div class="hero-text">
-                    <h1 class="hero-title">
-                        Tu identidad digital,
-                        <span class="gradient-text">al alcance de todos</span>
-                    </h1>
-                    <p class="hero-description">
-                        Crea tarjetas de presentacion digitales impactantes para tu empresa y equipo.
-                        Comparte tu informacion de contacto de forma moderna, ecologica y memorable.
-                    </p>
-                    <router-link :to="{ name: 'companies.index' }" class="btn-start">
-                        <i class="fa fa-rocket me-2"></i>
-                        Comenzar ahora
-                    </router-link>
-                </div>
-                <div class="hero-illustration">
-                    <!-- SVG Illustration -->
-                    <svg viewBox="0 0 400 300" class="cards-illustration">
-                        <!-- Background circles -->
-                        <circle cx="200" cy="150" r="120" fill="url(#gradient1)" opacity="0.1">
-                            <animate attributeName="r" values="120;130;120" dur="4s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="200" cy="150" r="80" fill="url(#gradient2)" opacity="0.15">
-                            <animate attributeName="r" values="80;90;80" dur="3s" repeatCount="indefinite"/>
-                        </circle>
-
-                        <!-- Card 1 (back) -->
-                        <g transform="translate(100, 60) rotate(-8)">
-                            <rect x="0" y="0" width="160" height="100" rx="12" fill="#6366f1" opacity="0.9"/>
-                            <rect x="15" y="15" width="40" height="40" rx="20" fill="white" opacity="0.3"/>
-                            <rect x="65" y="20" width="70" height="8" rx="4" fill="white" opacity="0.5"/>
-                            <rect x="65" y="35" width="50" height="6" rx="3" fill="white" opacity="0.3"/>
-                            <rect x="15" y="70" width="130" height="6" rx="3" fill="white" opacity="0.2"/>
-                            <rect x="15" y="82" width="100" height="6" rx="3" fill="white" opacity="0.2"/>
-                        </g>
-
-                        <!-- Card 2 (middle) -->
-                        <g transform="translate(120, 90) rotate(3)">
-                            <rect x="0" y="0" width="160" height="100" rx="12" fill="#8b5cf6"/>
-                            <circle cx="35" cy="35" r="20" fill="white" opacity="0.9"/>
-                            <circle cx="35" cy="35" r="15" fill="#8b5cf6" opacity="0.5"/>
-                            <rect x="65" y="20" width="80" height="10" rx="5" fill="white" opacity="0.9"/>
-                            <rect x="65" y="38" width="60" height="6" rx="3" fill="white" opacity="0.5"/>
-                            <rect x="15" y="65" width="50" height="6" rx="3" fill="white" opacity="0.3"/>
-                            <rect x="15" y="78" width="130" height="6" rx="3" fill="white" opacity="0.3"/>
-                            <!-- Social icons -->
-                            <circle cx="100" cy="68" r="8" fill="white" opacity="0.4"/>
-                            <circle cx="122" cy="68" r="8" fill="white" opacity="0.4"/>
-                            <circle cx="144" cy="68" r="8" fill="white" opacity="0.4"/>
-                        </g>
-
-                        <!-- Card 3 (front) -->
-                        <g transform="translate(140, 120) rotate(-2)">
-                            <defs>
-                                <linearGradient id="cardGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#ec4899"/>
-                                    <stop offset="100%" style="stop-color:#f97316"/>
-                                </linearGradient>
-                            </defs>
-                            <rect x="0" y="0" width="160" height="100" rx="12" fill="url(#cardGradient)"/>
-                            <!-- Profile photo -->
-                            <circle cx="35" cy="35" r="22" fill="white"/>
-                            <circle cx="35" cy="30" r="10" fill="#fbbf24"/>
-                            <ellipse cx="35" cy="48" rx="14" ry="8" fill="#fbbf24"/>
-                            <!-- Text lines -->
-                            <rect x="68" y="18" width="75" height="12" rx="6" fill="white"/>
-                            <rect x="68" y="36" width="55" height="8" rx="4" fill="white" opacity="0.7"/>
-                            <!-- Contact info -->
-                            <rect x="15" y="68" width="8" height="8" rx="2" fill="white" opacity="0.8"/>
-                            <rect x="28" y="70" width="60" height="4" rx="2" fill="white" opacity="0.6"/>
-                            <rect x="15" y="82" width="8" height="8" rx="2" fill="white" opacity="0.8"/>
-                            <rect x="28" y="84" width="80" height="4" rx="2" fill="white" opacity="0.6"/>
-                            <!-- QR Code hint -->
-                            <rect x="120" y="60" width="30" height="30" rx="4" fill="white" opacity="0.9"/>
-                            <rect x="125" y="65" width="8" height="8" fill="#ec4899" opacity="0.8"/>
-                            <rect x="137" y="65" width="8" height="8" fill="#ec4899" opacity="0.8"/>
-                            <rect x="125" y="77" width="8" height="8" fill="#ec4899" opacity="0.8"/>
-                            <rect x="137" y="77" width="5" height="5" fill="#ec4899" opacity="0.8"/>
-                        </g>
-
-                        <!-- Floating elements -->
-                        <circle cx="320" cy="60" r="8" fill="#fbbf24" opacity="0.8">
-                            <animate attributeName="cy" values="60;50;60" dur="2s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="80" cy="200" r="6" fill="#10b981" opacity="0.8">
-                            <animate attributeName="cy" values="200;210;200" dur="2.5s" repeatCount="indefinite"/>
-                        </circle>
-                        <circle cx="350" cy="180" r="10" fill="#6366f1" opacity="0.6">
-                            <animate attributeName="cy" values="180;170;180" dur="3s" repeatCount="indefinite"/>
-                        </circle>
-
-                        <!-- Sparkles -->
-                        <g fill="#fbbf24">
-                            <path d="M60 80 L63 86 L60 92 L57 86 Z" opacity="0.8">
-                                <animate attributeName="opacity" values="0.8;0.3;0.8" dur="1.5s" repeatCount="indefinite"/>
-                            </path>
-                            <path d="M340 120 L343 126 L340 132 L337 126 Z" opacity="0.8">
-                                <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite"/>
-                            </path>
-                        </g>
-
-                        <!-- Gradients definitions -->
-                        <defs>
-                            <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#8b5cf6"/>
-                                <stop offset="100%" style="stop-color:#ec4899"/>
-                            </linearGradient>
-                            <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#6366f1"/>
-                                <stop offset="100%" style="stop-color:#8b5cf6"/>
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <!-- Features Section -->
-        <div class="features-section">
-            <div class="feature-card">
-                <div class="feature-icon" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                        <rect x="3" y="4" width="18" height="16" rx="2"/>
-                        <circle cx="9" cy="10" r="2"/>
-                        <path d="M15 8h2M15 12h2M7 16h10"/>
-                    </svg>
-                </div>
-                <h3>Tarjetas Personalizadas</h3>
-                <p>Diseña tarjetas unicas con multiples plantillas y estilos para cada miembro de tu equipo.</p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon" style="background: linear-gradient(135deg, #ec4899, #f97316);">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                        <path d="M2 17l10 5 10-5"/>
-                        <path d="M2 12l10 5 10-5"/>
-                    </svg>
-                </div>
-                <h3>Multiples Plantillas</h3>
-                <p>Elige entre 6 plantillas profesionales: Modern, Classic, Minimal, Creative, Cyber y Vibrant.</p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon" style="background: linear-gradient(135deg, #10b981, #34d399);">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                        <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
-                        <polyline points="16 6 12 2 8 6"/>
-                        <line x1="12" y1="2" x2="12" y2="15"/>
-                    </svg>
-                </div>
-                <h3>Comparte al Instante</h3>
-                <p>Genera enlaces unicos y codigos QR para compartir tu tarjeta en segundos.</p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon" style="background: linear-gradient(135deg, #f59e0b, #fbbf24);">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
-                    </svg>
-                </div>
-                <h3>Personaliza Todo</h3>
-                <p>Ajusta colores, tipografias, sombras y mas con nuestro editor visual en tiempo real.</p>
-            </div>
-        </div>
+        </template>
     </div>
 </template>
 
 <script>
 import { useAuth } from '@/stores/auth';
+import api from '@/services/api.js';
 
 export default {
     name: 'Home',
+
+    data() {
+        return {
+            loading: true,
+            data: {
+                user: null,
+                company: null,
+                subscription: null,
+                stats: null,
+            },
+        };
+    },
+
     computed: {
-        isGuest() {
-            const auth = useAuth();
-            return auth.hasRole('Guest');
+        firstName() {
+            const name = this.data.user?.name || '';
+            return name.split(' ')[0];
+        },
+
+        greeting() {
+            const hour = new Date().getHours();
+            if (hour < 12) return 'Buenos dias';
+            if (hour < 18) return 'Buenas tardes';
+            return 'Buenas noches';
+        },
+
+        companyId() {
+            return this.data.company?.id;
+        },
+
+        publicUrl() {
+            const companySlug = this.data.company?.slug;
+            const cardSlug = this.data.company?.first_card_slug;
+            if (!companySlug || !cardSlug) return null;
+            return `/${companySlug}/${cardSlug}`;
+        },
+
+        planLabel() {
+            const sub = this.data.subscription;
+            if (!sub) return '';
+            if (sub.status === 'trial') return `Plan de prueba - ${sub.days_remaining} dias restantes`;
+            if (sub.status === 'active') return `Plan ${sub.plan_name} activo`;
+            if (sub.status === 'past_due') return 'Suscripcion vencida - renueva tu plan';
+            if (sub.status === 'expired') return 'Periodo expirado';
+            return '';
+        },
+
+        showTip() {
+            const stats = this.data.stats;
+            if (!stats) return false;
+            return stats.cards.current === 0 || this.data.subscription?.status === 'trial';
+        },
+
+        tipTitle() {
+            if (this.data.stats?.cards.current === 0) return 'Crea tu primera tarjeta';
+            return 'Saca el maximo provecho';
+        },
+
+        tipMessage() {
+            if (this.data.stats?.cards.current === 0) {
+                return 'Aun no tienes tarjetas de presentacion. Crea una ahora y compartela con tus contactos.';
+            }
+            return 'Personaliza tu plantilla, agrega productos y servicios para que tu tarjeta sea mas completa.';
+        },
+
+        tipRoute() {
+            if (this.data.stats?.cards.current === 0 && this.companyId) {
+                return `/empresas/${this.companyId}`;
+            }
+            if (this.companyId) return `/empresas/${this.companyId}/plantilla`;
+            return null;
+        },
+
+        tipAction() {
+            if (this.data.stats?.cards.current === 0) return 'Crear tarjeta';
+            return 'Personalizar';
         },
     },
-}
+
+    async created() {
+        const auth = useAuth();
+        if (auth.isMaster()) {
+            this.$router.replace({ name: 'admin.dashboard' });
+            return;
+        }
+        await this.load();
+    },
+
+    methods: {
+        async load() {
+            this.loading = true;
+            try {
+                const { data } = await api.get('/dashboard');
+                this.data = data;
+            } catch {
+                // Silenciar
+            } finally {
+                this.loading = false;
+            }
+        },
+    },
+};
 </script>
 
 <style scoped>
-/* Upgrade Banner */
-.upgrade-banner {
-    background: linear-gradient(135deg, #ede9fe, #fce7f3);
-    border: 1px solid #ddd6fe;
-    border-radius: 12px;
-    padding: 1rem 1.5rem;
+/* Saludo */
+.welcome-header {
     margin-bottom: 1.5rem;
 }
 
-.banner-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-}
-
-.banner-text {
-    font-size: 0.95rem;
-    color: #5b21b6;
-}
-
-.banner-btn {
-    white-space: nowrap;
-    padding: 0.5rem 1.25rem;
-    background: linear-gradient(135deg, #8b5cf6, #ec4899);
-    color: white;
-    font-weight: 600;
-    font-size: 0.85rem;
-    border-radius: 8px;
-    text-decoration: none;
-    transition: all 0.2s;
-}
-
-.banner-btn:hover {
-    transform: translateY(-1px);
-    color: white;
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
-}
-
-@media (max-width: 576px) {
-    .banner-content {
-        flex-direction: column;
-        text-align: center;
-    }
-}
-
-/* Hero Section */
-.welcome-hero {
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    border-radius: 20px;
-    padding: 3rem;
-    margin-bottom: 2rem;
-    overflow: hidden;
-}
-
-.hero-content {
-    display: flex;
-    align-items: center;
-    gap: 3rem;
-}
-
-.hero-text {
-    flex: 1;
-}
-
-.hero-title {
-    font-size: 2.5rem;
+.greeting-text {
+    font-size: 1.75rem;
     font-weight: 700;
     color: #1e293b;
-    line-height: 1.2;
-    margin-bottom: 1.5rem;
+    margin: 0 0 0.25rem;
 }
 
 .gradient-text {
-    background: linear-gradient(135deg, #8b5cf6, #ec4899, #f97316);
+    background: linear-gradient(135deg, #8b5cf6, #ec4899);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
-.hero-description {
-    font-size: 1.1rem;
+.greeting-sub {
+    font-size: 0.9rem;
     color: #64748b;
-    line-height: 1.7;
-    margin-bottom: 2rem;
-}
-
-.btn-start {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.875rem 2rem;
-    background: linear-gradient(135deg, #8b5cf6, #ec4899);
-    color: white;
-    font-weight: 600;
-    border-radius: 12px;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
-}
-
-.btn-start:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
-    color: white;
-}
-
-.hero-illustration {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-}
-
-.cards-illustration {
-    width: 100%;
-    max-width: 400px;
-    height: auto;
-}
-
-/* Features Section */
-.features-section {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-}
-
-.feature-card {
-    background: white;
-    border-radius: 16px;
-    padding: 1.75rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
-    border: 1px solid #f1f5f9;
-}
-
-.feature-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-}
-
-.feature-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1.25rem;
-}
-
-.feature-card h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1e293b;
-    margin-bottom: 0.75rem;
-}
-
-.feature-card p {
-    font-size: 0.95rem;
-    color: #64748b;
-    line-height: 1.6;
     margin: 0;
 }
 
-/* Responsive */
-@media (max-width: 992px) {
-    .hero-content {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .hero-title {
-        font-size: 2rem;
-    }
-
-    .hero-illustration {
-        order: -1;
-    }
-
-    .cards-illustration {
-        max-width: 300px;
-    }
+/* Stats */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.75rem;
 }
 
-@media (max-width: 576px) {
-    .welcome-hero {
-        padding: 2rem 1.5rem;
+.stat-card {
+    background: white;
+    border-radius: 14px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.stat-limit {
+    color: #94a3b8;
+}
+
+/* Acciones rapidas */
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 1rem;
+}
+
+.quick-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.75rem;
+}
+
+.quick-card {
+    background: white;
+    border-radius: 14px;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    border: 1px solid #e2e8f0;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.quick-card:hover {
+    border-color: #c4b5fd;
+    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.1);
+    transform: translateY(-1px);
+}
+
+.quick-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.quick-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.quick-text h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 0.15rem;
+}
+
+.quick-text p {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.quick-arrow {
+    color: #cbd5e1;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+}
+
+/* Tip */
+.tip-card {
+    background: linear-gradient(135deg, #ede9fe, #fce7f3);
+    border: 1px solid #ddd6fe;
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.tip-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #f59e0b;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.tip-content {
+    flex: 1;
+}
+
+.tip-content h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 0.2rem;
+}
+
+.tip-content p {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.tip-btn {
+    padding: 0.45rem 1rem;
+    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    color: white;
+    font-weight: 600;
+    font-size: 0.8rem;
+    border-radius: 8px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.tip-btn:hover {
+    transform: translateY(-1px);
+    color: white;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.loading-state {
+    text-align: center;
+    padding: 4rem 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .greeting-text {
+        font-size: 1.4rem;
     }
 
-    .hero-title {
-        font-size: 1.75rem;
+    .stats-grid {
+        grid-template-columns: 1fr;
     }
 
-    .hero-description {
-        font-size: 1rem;
+    .quick-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tip-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
     }
 }
 </style>

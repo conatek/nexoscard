@@ -98,18 +98,19 @@ export default {
 
     methods: {
         async checkResult() {
-            const referenceCode = this.$route.query.referenceCode;
-            const transactionState = this.$route.query.transactionState;
+            const status = this.$route.query.status || this.$route.query.collection_status;
+            const externalRef = this.$route.query.external_reference;
+            const paymentId = this.$route.query.payment_id;
 
-            if (!referenceCode) {
+            if (!status && !externalRef) {
                 this.state = 'unknown';
                 this.loading = false;
                 return;
             }
 
             try {
-                const { data } = await paymentService.result(referenceCode, transactionState);
-                this.state = data.transaction_state;
+                const { data } = await paymentService.result(status, externalRef, paymentId);
+                this.state = data.status;
                 this.paymentData = data;
             } catch {
                 this.state = 'unknown';

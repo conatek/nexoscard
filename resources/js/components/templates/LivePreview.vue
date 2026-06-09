@@ -52,16 +52,7 @@ export default {
         },
         sampleCard: {
             type: Object,
-            default: () => ({
-                first_name: 'Juan',
-                last_name: 'Pérez',
-                job_title: 'Director Comercial',
-                email: 'juan@empresa.com',
-                mobile_phone: '+52 55 1234 5678',
-                whatsapp: '5551234567',
-                description: 'Profesional con más de 10 años de experiencia.',
-                photo_path: null,
-            }),
+            default: () => ({}),
         },
         services: {
             type: Array,

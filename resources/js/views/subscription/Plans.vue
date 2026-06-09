@@ -89,7 +89,7 @@
                     <button v-if="isCurrentPlan(plan)" class="btn-plan btn-current" disabled>
                         Plan actual
                     </button>
-                    <button v-else-if="plan.name === 'guest'" class="btn-plan btn-guest" disabled>
+                    <button v-else-if="plan.name === 'free'" class="btn-plan btn-free" disabled>
                         Incluido
                     </button>
                     <router-link v-else
@@ -168,7 +168,7 @@ export default {
 
         planIcon(plan) {
             const icons = {
-                guest: 'fa fa-user',
+                free: 'fa fa-user',
                 basico: 'fa fa-star',
                 pro: 'fa fa-crown',
             };
@@ -299,7 +299,7 @@ export default {
     font-size: 1.25rem;
 }
 
-.icon-guest {
+.icon-free {
     background: #f1f5f9;
     color: #64748b;
 }
@@ -394,7 +394,7 @@ export default {
     cursor: default;
 }
 
-.btn-guest {
+.btn-free {
     background: #f1f5f9;
     color: #94a3b8;
     cursor: default;

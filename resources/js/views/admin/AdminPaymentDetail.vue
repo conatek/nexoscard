@@ -58,6 +58,18 @@
                             <span>Fecha creacion</span>
                             <span>{{ formatDate(payment.created_at) }}</span>
                         </div>
+                        <div class="detail-row" v-if="payment.mercadopago_payment_id">
+                            <span>ID Pago MercadoPago</span>
+                            <span class="mono">{{ payment.mercadopago_payment_id }}</span>
+                        </div>
+                        <div class="detail-row" v-if="payment.mercadopago_preference_id">
+                            <span>Preference ID</span>
+                            <span class="mono">{{ payment.mercadopago_preference_id }}</span>
+                        </div>
+                        <div class="detail-row" v-if="payment.mercadopago_order_id">
+                            <span>Orden MercadoPago</span>
+                            <span class="mono">{{ payment.mercadopago_order_id }}</span>
+                        </div>
                         <div class="detail-row" v-if="payment.payu_reference_code">
                             <span>Referencia PayU</span>
                             <span class="mono">{{ payment.payu_reference_code }}</span>
@@ -105,7 +117,7 @@
                     <div class="section-card" v-if="payment.metadata && Object.keys(payment.metadata).length">
                         <div class="section-header">
                             <i class="fa fa-code section-icon icon-purple"></i>
-                            <span>Metadata PayU</span>
+                            <span>Metadata</span>
                             <button @click="showMetadata = !showMetadata" class="toggle-meta">
                                 {{ showMetadata ? 'Ocultar' : 'Mostrar' }}
                             </button>

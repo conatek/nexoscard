@@ -278,12 +278,11 @@ export default {
         confirmCrop() {
             const { canvas } = this.$refs.cropper.getResult();
             canvas.toBlob((blob) => {
-                const filename = 'logo.png';
-                this.logoFile = new File([blob], filename, { type: 'image/png' });
+                this.logoFile = new File([blob], 'logo.jpg', { type: 'image/jpeg' });
                 if (this.logoPreview) URL.revokeObjectURL(this.logoPreview);
                 this.logoPreview = URL.createObjectURL(blob);
                 this.cropperOpen = false;
-            }, 'image/png');
+            }, 'image/jpeg', 0.85);
         },
 
         cancelCrop() {

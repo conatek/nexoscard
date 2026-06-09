@@ -22,6 +22,7 @@
                         <i class="fa fa-arrow-left me-1"></i> Volver
                     </router-link>
                     <button
+                        v-if="hasCards"
                         class="btn-editor btn-editor-reset"
                         @click="resetToDefaults"
                         :disabled="saving"
@@ -29,6 +30,7 @@
                         <i class="fa fa-undo me-1"></i> Restablecer
                     </button>
                     <button
+                        v-if="hasCards"
                         class="btn-editor btn-editor-save"
                         @click="saveSettings"
                         :disabled="saving || !hasChanges"
@@ -76,12 +78,23 @@
                 </div>
 
                 <!-- Boton vista previa inline (mobile) -->
-                <button class="mobile-preview-inline-btn" @click="mobilePreviewOpen = true">
+                <button v-if="hasCards" class="mobile-preview-inline-btn" @click="mobilePreviewOpen = true">
                     <i class="fa fa-eye"></i> Ver vista previa
                 </button>
 
+                <!-- Mensaje si no hay tarjetas -->
+                <div v-if="!hasCards" class="no-cards-notice">
+                    <div class="no-cards-icon">
+                        <i class="fa fa-id-card"></i>
+                    </div>
+                    <p class="no-cards-text">Para personalizar la plantilla, primero debes crear al menos una tarjeta de presentacion.</p>
+                    <router-link :to="`/empresas/${companyId}`" class="no-cards-btn">
+                        <i class="fa fa-plus me-1"></i> Crear tarjeta
+                    </router-link>
+                </div>
+
                 <!-- Acordeón de Secciones -->
-                <div class="accordion" id="settingsAccordion">
+                <div v-if="hasCards" class="accordion" id="settingsAccordion">
                     <div
                         class="accordion-item"
                         v-for="(section, sectionKey) in schema"
@@ -262,7 +275,20 @@
                 </div>
 
                 <div class="preview-with-selector">
+                    <!-- Sin tarjetas: mensaje -->
+                    <div v-if="!hasCards" class="no-cards-notice preview-no-cards">
+                        <div class="no-cards-icon">
+                            <i class="fa fa-id-card"></i>
+                        </div>
+                        <p class="no-cards-text">Crea al menos una tarjeta de presentacion para ver la vista previa de tu plantilla.</p>
+                        <router-link :to="`/empresas/${companyId}`" class="no-cards-btn">
+                            <i class="fa fa-plus me-1"></i> Crear tarjeta
+                        </router-link>
+                    </div>
+
+                    <!-- Con tarjetas: preview normal -->
                     <div
+                        v-else
                         class="preview-frame"
                         :class="previewMode"
                         :style="cssVariables"
@@ -331,7 +357,12 @@
                         </select>
                     </div>
                     <div class="mobile-preview-body" :style="cssVariables">
+                        <div v-if="!hasCards" class="no-cards-notice preview-no-cards">
+                            <div class="no-cards-icon"><i class="fa fa-id-card"></i></div>
+                            <p class="no-cards-text">Crea al menos una tarjeta para ver la vista previa.</p>
+                        </div>
                         <LivePreview
+                            v-else
                             :customization="customization"
                             :template-name="selectedTemplate"
                             :company="company"
@@ -412,16 +443,6 @@ export default {
             services: [],
             products: [],
             selectedCardIndex: null,
-            defaultCard: {
-                first_name: 'Juan',
-                last_name: 'Pérez',
-                job_title: 'Director Comercial',
-                email: 'juan@empresa.com',
-                mobile_phone: '+52 55 1234 5678',
-                whatsapp: '5551234567',
-                description: 'Profesional con más de 10 años de experiencia en ventas y desarrollo de negocios.',
-                photo_path: null,
-            },
             // Cropper
             cropperOpen: false,
             cropperSrc: null,
@@ -436,11 +457,15 @@ export default {
             return this.$route.params.companyId
         },
 
+        hasCards() {
+            return this.cards.length > 0
+        },
+
         sampleCard() {
             if (this.selectedCardIndex !== null && this.cards[this.selectedCardIndex]) {
                 return this.cards[this.selectedCardIndex]
             }
-            return this.defaultCard
+            return null
         },
 
         hasChanges() {
@@ -493,7 +518,7 @@ export default {
                 ])
 
                 this.templates = templatesRes.data.templates
-                this.company = companyRes.data
+                this.company = companyRes.data.company
                 this.services = servicesRes.data.data || servicesRes.data || []
                 this.products = productsRes.data.data || productsRes.data || []
 
@@ -709,7 +734,7 @@ export default {
                 this.imageUploading = true
 
                 try {
-                    const file = new File([blob], 'hero-bg.png', { type: 'image/png' })
+                    const file = new File([blob], 'hero-bg.jpg', { type: 'image/jpeg' })
                     const { data } = await settingService.uploadImage(this.companyId, file)
                     this.setValue(this.cropperTarget.sectionKey, this.cropperTarget.fieldKey, data.url)
                 } catch (error) {
@@ -727,7 +752,7 @@ export default {
                         this.cropperSrc = null
                     }
                 }
-            }, 'image/png')
+            }, 'image/jpeg', 0.85)
         },
 
         cancelCrop() {
@@ -1240,6 +1265,63 @@ export default {
     }
 }
 
+/* Sin tarjetas - panel de controles */
+.no-cards-notice {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px dashed #cbd5e1;
+}
+
+.no-cards-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #ede9fe, #fce7f3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.3rem;
+    color: #7c3aed;
+}
+
+.no-cards-text {
+    font-size: 0.9rem;
+    color: #64748b;
+    line-height: 1.5;
+    margin: 0 0 1rem;
+}
+
+.no-cards-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1.25rem;
+    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.no-cards-btn:hover {
+    transform: translateY(-1px);
+    color: white;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+/* Sin tarjetas - panel de preview (ocupa todo el espacio disponible) */
+.preview-no-cards {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+}
 
 </style>
 

@@ -19,10 +19,6 @@
             <h2 class="forbidden-title">Acceso denegado</h2>
             <p class="forbidden-message">No tienes permisos para acceder a esta seccion.</p>
 
-            <p v-if="isGuest" class="forbidden-upgrade">
-                Mejora tu plan para desbloquear mas funciones.
-            </p>
-
             <div class="forbidden-actions">
                 <router-link :to="{ name: 'home' }" class="btn-back">
                     <i class="fa fa-arrow-left me-2"></i> Volver al panel
@@ -33,16 +29,8 @@
 </template>
 
 <script>
-import { useAuth } from '@/stores/auth';
-
 export default {
     name: 'Forbidden',
-    computed: {
-        isGuest() {
-            const auth = useAuth();
-            return auth.hasRole('Guest');
-        },
-    },
 };
 </script>
 

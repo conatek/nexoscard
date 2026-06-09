@@ -10,7 +10,7 @@ class PlanSeeder extends Seeder
     public function run(): void
     {
         Plan::firstOrCreate(
-            ['name' => 'guest'],
+            ['name' => 'free'],
             [
                 'display_name'        => 'Gratis',
                 'price_monthly'       => 0,

@@ -36,7 +36,7 @@
                         <span>Plan actual</span>
                     </div>
                     <div class="info-body">
-                        <div class="plan-badge" :class="'badge-' + (plan?.name || 'guest')">
+                        <div class="plan-badge" :class="'badge-' + (plan?.name || 'free')">
                             {{ plan?.display_name || 'Sin plan' }}
                         </div>
                         <div class="plan-meta" v-if="subscription">
@@ -252,7 +252,7 @@ export default {
     margin-bottom: 1rem;
 }
 
-.badge-guest { background: #f1f5f9; color: #64748b; }
+.badge-free { background: #f1f5f9; color: #64748b; }
 .badge-basico { background: linear-gradient(135deg, #dbeafe, #e0f2fe); color: #2563eb; }
 .badge-pro { background: linear-gradient(135deg, #f3e8ff, #fce7f3); color: #8b5cf6; }
 

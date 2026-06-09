@@ -36,6 +36,8 @@ class PaymentAdminController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('payu_reference_code', 'like', "%{$search}%")
+                  ->orWhere('mercadopago_payment_id', 'like', "%{$search}%")
+                  ->orWhere('mercadopago_preference_id', 'like', "%{$search}%")
                   ->orWhereHas('company', fn ($q2) => $q2->where('name', 'like', "%{$search}%"));
             });
         }
@@ -75,11 +77,11 @@ class PaymentAdminController extends Controller
 
         if ($company) {
             // Determinar plan desde metadata o suscripción
-            $planId = $payment->metadata['extra1'] ?? $payment->subscription?->plan_id;
+            $planId = $payment->metadata['plan_id'] ?? $payment->subscription?->plan_id;
             $plan = $planId ? Plan::find($planId) : null;
 
             if ($plan) {
-                $billingPeriod = $payment->metadata['extra2'] ?? 'monthly';
+                $billingPeriod = $payment->metadata['billing_period'] ?? 'monthly';
                 $subscription = $subscriptionService->activateSubscription($company, $plan, 'manual');
 
                 if ($billingPeriod === 'yearly') {
@@ -87,12 +89,6 @@ class PaymentAdminController extends Controller
                 }
 
                 $payment->update(['subscription_id' => $subscription->id]);
-
-                // Promover owner a Admin
-                $owner = $company->owner;
-                if ($owner && $owner->hasRole('Guest')) {
-                    $owner->syncRoles(['Admin']);
-                }
             }
         }
 

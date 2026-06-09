@@ -78,4 +78,13 @@ export default {
     getCompanies(params = {}) {
         return api.get('/admin/companies', { params });
     },
+
+    // Settings
+    getSettings() {
+        return api.get('/admin/settings');
+    },
+
+    updateSettings(settings) {
+        return api.put('/admin/settings', { settings });
+    },
 };

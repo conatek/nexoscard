@@ -57,7 +57,20 @@ class CompanyController extends Controller
 
         $company->load(['cards', 'services', 'products']);
 
-        return response()->json($company);
+        $plan = $company->currentPlan();
+        $limits = null;
+        if ($plan) {
+            $limits = [
+                'cards'    => ['current' => $company->cards->count(), 'limit' => $plan->max_cards],
+                'products' => ['current' => $company->products->count(), 'limit' => $plan->max_products],
+                'services' => ['current' => $company->services->count(), 'limit' => $plan->max_services],
+            ];
+        }
+
+        return response()->json([
+            'company' => $company,
+            'limits'  => $limits,
+        ]);
     }
 
     public function update(UpdateCompanyRequest $request, Company $company): JsonResponse

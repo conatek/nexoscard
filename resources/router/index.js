@@ -38,6 +38,7 @@ import AdminPaymentDetail      from '../js/views/admin/AdminPaymentDetail.vue';
 import AdminUsers              from '../js/views/admin/AdminUsers.vue';
 import AdminUserDetail         from '../js/views/admin/AdminUserDetail.vue';
 import AdminCompanies          from '../js/views/admin/AdminCompanies.vue';
+import AdminSettings           from '../js/views/admin/AdminSettings.vue';
 
 // Suscripcion y pagos
 import Plans            from '../js/views/subscription/Plans.vue';
@@ -147,6 +148,12 @@ const routes = [
         component: AdminCompanies,
         meta: { requiresAuth: true, roles: ['Master'] },
     },
+    {
+        path: '/admin/configuracion',
+        name: 'admin.settings',
+        component: AdminSettings,
+        meta: { requiresAuth: true, roles: ['Master'] },
+    },
 
     // --- Acceso denegado ---
     {
@@ -161,7 +168,7 @@ const routes = [
         path: '/empresas',
         name: 'companies.index',
         component: CompanyIndex,
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, roles: ['Master'] },
     },
     {
         path: '/empresas/crear',

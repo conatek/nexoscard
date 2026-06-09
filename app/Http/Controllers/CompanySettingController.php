@@ -53,6 +53,10 @@ class CompanySettingController extends Controller
         abort_if(!$user->can('view_settings'), 403, 'No autorizado.');
         $this->enforceCompanyAccess($user, $company);
 
+        if (!$user->hasRole('Master') && $company->cards()->count() === 0) {
+            abort(403, 'Debes crear al menos una tarjeta antes de acceder al editor de plantilla.');
+        }
+
         $settings = $company->getOrCreateSettings();
         $schema = config("templates.schemas.{$settings->template_name}", []);
 
@@ -71,6 +75,10 @@ class CompanySettingController extends Controller
         $user = $request->user();
         abort_if(!$user->can('edit_settings'), 403, 'No autorizado.');
         $this->enforceCompanyAccess($user, $company);
+
+        if (!$user->hasRole('Master') && $company->cards()->count() === 0) {
+            abort(403, 'Debes crear al menos una tarjeta antes de editar la plantilla.');
+        }
 
         $validated = $request->validate([
             'template_name' => 'sometimes|string|in:' . implode(',', array_keys(config('templates.available', []))),
@@ -111,6 +119,10 @@ class CompanySettingController extends Controller
         $user = $request->user();
         abort_if(!$user->can('edit_settings'), 403, 'No autorizado.');
         $this->enforceCompanyAccess($user, $company);
+
+        if (!$user->hasRole('Master') && $company->cards()->count() === 0) {
+            abort(403, 'Debes crear al menos una tarjeta antes de editar la plantilla.');
+        }
 
         $settings = $company->getOrCreateSettings();
         $defaults = config("templates.schemas.{$settings->template_name}", []);

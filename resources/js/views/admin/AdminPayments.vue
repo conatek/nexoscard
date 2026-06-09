@@ -74,9 +74,9 @@
                         <span class="mobile-card-label">Metodo</span>
                         <span>{{ p.payment_method }}</span>
                     </div>
-                    <div class="mobile-card-row" v-if="p.payu_reference_code">
+                    <div class="mobile-card-row" v-if="p.mercadopago_payment_id || p.payu_reference_code">
                         <span class="mobile-card-label">Ref</span>
-                        <span style="font-size:0.78rem;color:#64748b">{{ p.payu_reference_code }}</span>
+                        <span style="font-size:0.78rem;color:#64748b">{{ p.mercadopago_payment_id || p.payu_reference_code }}</span>
                     </div>
                 </div>
             </div>
@@ -107,7 +107,7 @@
                             <td>${{ Number(p.amount).toLocaleString('es-CO') }}</td>
                             <td>{{ p.payment_method || '-' }}</td>
                             <td><span class="status-badge" :class="'status-' + p.status">{{ statusLabel(p.status) }}</span></td>
-                            <td class="ref-cell">{{ p.payu_reference_code || '-' }}</td>
+                            <td class="ref-cell">{{ p.mercadopago_payment_id || p.payu_reference_code || '-' }}</td>
                             <td>
                                 <div class="action-buttons">
                                     <router-link :to="{ name: 'admin.payments.show', params: { id: p.id } }" class="action-btn" title="Ver detalle">

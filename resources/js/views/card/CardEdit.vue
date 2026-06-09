@@ -331,11 +331,11 @@ export default {
         confirmCrop() {
             const { canvas } = this.$refs.cropper.getResult();
             canvas.toBlob((blob) => {
-                this.photoFile = new File([blob], 'photo.png', { type: 'image/png' });
+                this.photoFile = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
                 if (this.photoPreview) URL.revokeObjectURL(this.photoPreview);
                 this.photoPreview = URL.createObjectURL(blob);
                 this.cropperOpen = false;
-            }, 'image/png');
+            }, 'image/jpeg', 0.85);
         },
 
         onThumbnailSelected(e) {
@@ -353,11 +353,11 @@ export default {
         confirmThumbCrop() {
             const { canvas } = this.$refs.thumbCropper.getResult();
             canvas.toBlob((blob) => {
-                this.thumbnailFile = new File([blob], 'thumbnail.png', { type: 'image/png' });
+                this.thumbnailFile = new File([blob], 'thumbnail.jpg', { type: 'image/jpeg' });
                 if (this.thumbnailPreview) URL.revokeObjectURL(this.thumbnailPreview);
                 this.thumbnailPreview = URL.createObjectURL(blob);
                 this.thumbCropperOpen = false;
-            }, 'image/png');
+            }, 'image/jpeg', 0.85);
         },
 
         cancelThumbCrop() {
@@ -398,8 +398,7 @@ export default {
                     this.$route.params.cardId,
                     payload
                 );
-                this.success = true;
-                window.scrollTo(0, 0);
+                this.$router.push({ name: 'companies.show', params: { id: this.$route.params.companyId } });
             } catch (err) {
                 if (err.response?.status === 422) {
                     this.errors = err.response.data.errors;

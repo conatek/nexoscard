@@ -115,17 +115,14 @@ export default {
         userRole() {
             const auth = useAuth();
             const roles = auth.state.user?.roles || [];
-            const role = roles.length > 0 ? roles[0].name : '';
-            if (role === 'Guest') return 'Gratis';
-            return role;
+            return roles.length > 0 ? roles[0].name : '';
         },
         roleBadgeClass() {
             const auth = useAuth();
             const roles = auth.state.user?.roles || [];
             const role = roles.length > 0 ? roles[0].name : '';
             if (role === 'Master') return 'role-badge-master';
-            if (role === 'Admin') return 'role-badge-admin';
-            return 'role-badge-guest';
+            return 'role-badge-admin';
         },
     },
     mounted() {
@@ -394,11 +391,6 @@ export default {
     border: 1px solid #bfdbfe;
 }
 
-.role-badge-guest {
-    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-    color: #64748b;
-    border: 1px solid #cbd5e1;
-}
 
 .dropdown-divider {
     height: 1px;

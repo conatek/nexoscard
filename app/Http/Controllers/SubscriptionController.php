@@ -30,9 +30,10 @@ class SubscriptionController extends Controller
         $plan = $subscription->plan;
 
         return response()->json([
-            'subscription' => $subscription,
-            'plan'         => $plan,
-            'usage'        => [
+            'subscription'   => $subscription,
+            'plan'           => $plan,
+            'days_remaining' => $subscription->daysRemaining(),
+            'usage'          => [
                 'cards'    => [
                     'current' => $company->cards()->count(),
                     'limit'   => $plan->max_cards,

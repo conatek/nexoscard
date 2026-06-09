@@ -42,7 +42,7 @@ class UserAdminController extends Controller
     public function update(Request $request, User $user): JsonResponse
     {
         $data = $request->validate([
-            'role'       => 'sometimes|string|in:Master,Admin,Guest',
+            'role'       => 'sometimes|string|in:Master,Admin',
             'company_id' => 'sometimes|nullable|exists:companies,id',
         ]);
 

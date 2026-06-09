@@ -373,6 +373,7 @@ export default {
     data() {
         return {
             company: {},
+            limits: null,
             loading: true,
             cardToDelete: null,
             serviceToDelete: null,
@@ -408,11 +409,14 @@ export default {
         },
         canEditSettings() {
             const auth = useAuth();
-            return auth.can('edit_settings');
+            return auth.can('edit_settings') && (this.company.cards?.length > 0);
         },
         canCreateCard() {
             const auth = useAuth();
-            return auth.can('create_card');
+            if (!auth.can('create_card')) return false;
+            if (!this.limits) return true;
+            const l = this.limits.cards;
+            return l.limit === null || l.current < l.limit;
         },
         canEditCard() {
             const auth = useAuth();
@@ -424,7 +428,10 @@ export default {
         },
         canCreateService() {
             const auth = useAuth();
-            return auth.can('create_service');
+            if (!auth.can('create_service')) return false;
+            if (!this.limits) return true;
+            const l = this.limits.services;
+            return l.limit === null || l.current < l.limit;
         },
         canEditService() {
             const auth = useAuth();
@@ -436,7 +443,10 @@ export default {
         },
         canCreateProduct() {
             const auth = useAuth();
-            return auth.can('create_product');
+            if (!auth.can('create_product')) return false;
+            if (!this.limits) return true;
+            const l = this.limits.products;
+            return l.limit === null || l.current < l.limit;
         },
         canEditProduct() {
             const auth = useAuth();
@@ -462,7 +472,8 @@ export default {
             this.loading = true;
             try {
                 const { data } = await companyService.get(this.$route.params.id);
-                this.company = data;
+                this.company = data.company;
+                this.limits = data.limits;
             } finally {
                 this.loading = false;
             }
@@ -481,6 +492,7 @@ export default {
             try {
                 await cardService.destroy(this.company.id, this.cardToDelete.id);
                 this.company.cards = this.company.cards.filter(c => c.id !== this.cardToDelete.id);
+                if (this.limits?.cards) this.limits.cards.current--;
                 this.cardToDelete = null;
             } finally {
                 this.deleting = false;
@@ -496,6 +508,7 @@ export default {
             try {
                 await serviceService.destroy(this.company.id, this.serviceToDelete.id);
                 this.company.services = this.company.services.filter(s => s.id !== this.serviceToDelete.id);
+                if (this.limits?.services) this.limits.services.current--;
                 this.serviceToDelete = null;
             } finally {
                 this.deleting = false;
@@ -511,6 +524,7 @@ export default {
             try {
                 await productService.destroy(this.company.id, this.productToDelete.id);
                 this.company.products = this.company.products.filter(p => p.id !== this.productToDelete.id);
+                if (this.limits?.products) this.limits.products.current--;
                 this.productToDelete = null;
             } finally {
                 this.deleting = false;

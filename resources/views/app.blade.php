@@ -108,5 +108,7 @@
     @vite('resources/js/app.js')
 
     <script>window.mapboxToken = "{{ env('MAPBOX_TOKEN') }}";</script>
+    <script>window.mercadoPagoPublicKey = "{{ env('MERCADOPAGO_PUBLIC_KEY') }}";</script>
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
 </body>
 </html>

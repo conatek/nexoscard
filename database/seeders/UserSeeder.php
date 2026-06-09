@@ -56,7 +56,7 @@ class UserSeeder extends Seeder
             'email'      => 'guest@muyhumano.com',
             'password'   => Hash::make('password'),
         ]);
-        $guest2->assignRole('Guest');
+        $guest2->assignRole('Admin');
 
         // ── CONATEK (guest) ───────────────────────────────────────
         $guest1 = User::create([
@@ -65,6 +65,6 @@ class UserSeeder extends Seeder
             'email'      => 'guest@conatek.com',
             'password'   => Hash::make('password'),
         ]);
-        $guest1->assignRole('Guest');
+        $guest1->assignRole('Admin');
     }
 }

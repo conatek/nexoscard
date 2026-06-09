@@ -197,7 +197,7 @@ export default {
 
     async created() {
         const { data } = await companyService.get(this.$route.params.companyId);
-        this.companyName = data.name;
+        this.companyName = data.company.name;
     },
 
     methods: {
@@ -222,11 +222,11 @@ export default {
         confirmCrop() {
             const { canvas } = this.$refs.cropper.getResult();
             canvas.toBlob((blob) => {
-                this.imageFile = new File([blob], 'image.png', { type: 'image/png' });
+                this.imageFile = new File([blob], 'image.jpg', { type: 'image/jpeg' });
                 if (this.imagePreview) URL.revokeObjectURL(this.imagePreview);
                 this.imagePreview = URL.createObjectURL(blob);
                 this.cropperOpen = false;
-            }, 'image/png');
+            }, 'image/jpeg', 0.85);
         },
 
         cancelCrop() {

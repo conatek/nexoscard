@@ -261,18 +261,19 @@ export default {
 
     async created() {
         const { data } = await companyService.get(this.$route.params.id);
+        const c = data.company;
         this.form = {
-            name: data.name,
-            slug: data.slug,
-            logo_path: data.logo_path,
-            address: data.address || '',
-            web: data.web || '',
-            my_business: data.my_business || '',
-            facebook: data.facebook || '',
-            instagram: data.instagram || '',
-            twitter: data.twitter || '',
-            youtube: data.youtube || '',
-            tiktok: data.tiktok || '',
+            name: c.name,
+            slug: c.slug,
+            logo_path: c.logo_path,
+            address: c.address || '',
+            web: c.web || '',
+            my_business: c.my_business || '',
+            facebook: c.facebook || '',
+            instagram: c.instagram || '',
+            twitter: c.twitter || '',
+            youtube: c.youtube || '',
+            tiktok: c.tiktok || '',
         };
         this.loading = false;
     },
@@ -297,11 +298,11 @@ export default {
         confirmCrop() {
             const { canvas } = this.$refs.cropper.getResult();
             canvas.toBlob((blob) => {
-                this.logoFile = new File([blob], 'logo.png', { type: 'image/png' });
+                this.logoFile = new File([blob], 'logo.jpg', { type: 'image/jpeg' });
                 if (this.logoPreview) URL.revokeObjectURL(this.logoPreview);
                 this.logoPreview = URL.createObjectURL(blob);
                 this.cropperOpen = false;
-            }, 'image/png');
+            }, 'image/jpeg', 0.85);
         },
 
         cancelCrop() {

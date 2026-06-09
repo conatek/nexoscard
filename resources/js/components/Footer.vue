@@ -64,7 +64,7 @@
             </template>
 
             <template v-else>
-                <router-link v-if="companyId" :to="`/empresas/${companyId}/plantilla`" class="tab-item" :class="{ active: $route.path.includes('/plantilla') }">
+                <router-link v-if="companyId && hasCards" :to="`/empresas/${companyId}/plantilla`" class="tab-item" :class="{ active: $route.path.includes('/plantilla') }">
                     <i class="fa fa-palette"></i>
                     <span>Plantilla</span>
                 </router-link>
@@ -79,9 +79,25 @@
 
 <script>
 import { useAuth } from '@/stores/auth';
+import api from '@/services/api.js';
 
 export default {
     name: 'AppFooter',
+
+    data() {
+        return { hasCards: false };
+    },
+
+    async created() {
+        const auth = useAuth();
+        if (!auth.isMaster() && auth.state.user?.company_id) {
+            try {
+                const { data } = await api.get('/dashboard');
+                this.hasCards = (data.stats?.cards?.current || 0) > 0;
+            } catch { /* silenciar */ }
+        }
+    },
+
     computed: {
         currentYear() {
             return new Date().getFullYear();
@@ -116,6 +132,13 @@ export default {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+}
+
+.footer-desktop {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
 }
 
 .footer-mobile {

@@ -2,48 +2,56 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\ProcessPayUNotification;
+use App\Jobs\ProcessMercadoPagoNotification;
+use App\Mail\SubscriptionActivatedMail;
 use App\Models\Payment;
 use App\Models\Plan;
-use App\Services\PayUService;
+use App\Services\MercadoPagoService;
+use App\Services\SubscriptionService;
 use App\Traits\HasCompanyAccess;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class PaymentController extends Controller
 {
     use HasCompanyAccess;
 
-    public function __construct(private PayUService $payUService) {}
+    public function __construct(
+        private MercadoPagoService $mpService,
+        private SubscriptionService $subscriptionService,
+    ) {}
 
     /**
-     * Iniciar proceso de pago (checkout).
-     * POST /api/payments/checkout
+     * Procesar pago con token del Brick (CardPayment).
+     * POST /api/payments/process
      */
-    public function checkout(Request $request): JsonResponse
+    public function processPayment(Request $request): JsonResponse
     {
         $request->validate([
-            'plan_id'        => 'required|exists:plans,id',
-            'billing_period' => 'required|in:monthly,yearly',
+            'plan_id'             => 'required|exists:plans,id',
+            'billing_period'      => 'required|in:monthly,yearly',
+            'token'               => 'required|string',
+            'payment_method_id'   => 'required|string',
+            'installments'        => 'required|integer|min:1',
+            'issuer_id'           => 'nullable|string',
+            'payer_email'         => 'required|email',
+            'identification_type' => 'nullable|string',
+            'identification_number' => 'nullable|string',
         ]);
 
         $user    = $request->user();
         $company = $user->company;
 
         if (!$company) {
-            return response()->json([
-                'message' => 'No tienes una empresa asociada.',
-            ], 422);
+            return response()->json(['message' => 'No tienes una empresa asociada.'], 422);
         }
 
         $plan = Plan::active()->findOrFail($request->plan_id);
 
-        // No permitir contratar el plan gratuito
-        if ($plan->name === 'guest') {
-            return response()->json([
-                'message' => 'El plan gratuito no requiere pago.',
-            ], 422);
+        if ($plan->name === 'free') {
+            return response()->json(['message' => 'El plan gratuito no requiere pago.'], 422);
         }
 
         $amount = $request->billing_period === 'yearly'
@@ -54,22 +62,78 @@ class PaymentController extends Controller
         $payment = Payment::create([
             'company_id' => $company->id,
             'amount'     => $amount,
-            'currency'   => config('payu.currency', 'COP'),
+            'currency'   => config('mercadopago.currency', 'COP'),
             'status'     => 'pending',
+            'metadata'   => [
+                'plan_id'        => $plan->id,
+                'billing_period' => $request->billing_period,
+                'plan_name'      => $plan->display_name,
+            ],
         ]);
 
-        // Generar datos para WebCheckout
-        $checkoutData = $this->payUService->generateCheckoutData($payment, $plan, $request->billing_period);
+        // Crear pago en MercadoPago via Payments API
+        $mpResult = $this->mpService->createPayment([
+            'transaction_amount'    => (float) $amount,
+            'token'                 => $request->token,
+            'installments'          => $request->installments,
+            'payment_method_id'     => $request->payment_method_id,
+            'issuer_id'             => $request->issuer_id,
+            'payer_email'           => $request->payer_email,
+            'identification_type'   => $request->identification_type,
+            'identification_number' => $request->identification_number,
+        ]);
 
-        // Guardar plan_id y billing_period en extra fields para el webhook
-        // PayU permite enviar extra1, extra2, extra3
-        $checkoutData['extra1'] = (string) $plan->id;
-        $checkoutData['extra2'] = $request->billing_period;
+        // Mapear estado
+        $internalStatus = $mpResult['id']
+            ? $this->mpService->mapStatus($mpResult['status'])
+            : 'declined';
+
+        $paymentMethod = $this->mpService->mapPaymentMethod(
+            $mpResult['payment_method_id'] ?? '',
+            $mpResult['payment_type_id'] ?? ''
+        );
+
+        // Actualizar payment local
+        $payment->update([
+            'mercadopago_payment_id' => $mpResult['id'],
+            'status'                 => $internalStatus,
+            'payment_method'         => $paymentMethod,
+            'response_code'          => $mpResult['status_detail'],
+            'paid_at'                => $internalStatus === 'approved'
+                ? ($mpResult['date_approved'] ?? now())
+                : null,
+            'metadata'               => array_merge(
+                $payment->metadata ?? [],
+                ['mp_response' => $mpResult]
+            ),
+        ]);
+
+        // Si aprobado, activar suscripcion
+        if ($internalStatus === 'approved') {
+            $subscription = $this->subscriptionService->activateSubscription($company, $plan, 'mercadopago');
+
+            if ($request->billing_period === 'yearly') {
+                $subscription->update(['current_period_end' => now()->addYear()]);
+            }
+
+            $payment->update(['subscription_id' => $subscription->id]);
+
+            // Email de activacion
+            $owner = $company->owner;
+            if ($owner) {
+                Mail::to($owner->email)->queue(
+                    new SubscriptionActivatedMail($owner, $company, $plan, $subscription, $payment)
+                );
+            }
+        }
 
         return response()->json([
-            'checkout_url' => $this->payUService->getCheckoutUrl(),
-            'form_data'    => $checkoutData,
-            'payment_id'   => $payment->id,
+            'status'        => $internalStatus,
+            'status_detail' => $mpResult['status_detail'] ?? null,
+            'payment_id'    => $payment->id,
+            'mp_payment_id' => $mpResult['id'],
+            'amount'        => $payment->amount,
+            'currency'      => $payment->currency,
         ]);
     }
 
@@ -100,62 +164,30 @@ class PaymentController extends Controller
     }
 
     /**
-     * Webhook de confirmación de PayU (público, sin auth).
-     * POST /api/payu/webhook
+     * Webhook de MercadoPago (publico, sin auth).
+     * POST /api/mercadopago/webhook
      */
     public function webhook(Request $request): JsonResponse
     {
-        $data = $request->all();
+        $xSignature = $request->header('x-signature', '');
+        $xRequestId = $request->header('x-request-id', '');
+        $dataId     = $request->input('data.id', '');
 
-        Log::info('PayU webhook recibido', ['reference' => $data['reference_sale'] ?? 'N/A']);
-
-        // Validar firma
-        if (!$this->payUService->validateWebhookSignature($data)) {
-            Log::warning('PayU webhook: firma inválida', ['data' => $data]);
-            return response()->json(['message' => 'Firma inválida'], 400);
+        if (!$this->mpService->validateWebhookSignature($xSignature, $xRequestId, (string) $dataId)) {
+            Log::warning('MercadoPago webhook: firma invalida');
+            return response()->json(['message' => 'Firma invalida'], 400);
         }
 
-        // Despachar job para procesamiento asíncrono
-        ProcessPayUNotification::dispatch($data);
+        $type = $request->input('type');
+        if ($type !== 'payment') {
+            return response()->json(['message' => 'OK']);
+        }
 
-        // Responder 200 inmediatamente (PayU reintenta si no recibe 200)
+        $mpPaymentId = $request->input('data.id');
+        if ($mpPaymentId) {
+            ProcessMercadoPagoNotification::dispatch((string) $mpPaymentId);
+        }
+
         return response()->json(['message' => 'OK']);
-    }
-
-    /**
-     * Página de resultado tras pago (retorno de PayU).
-     * GET /api/payments/result
-     */
-    public function result(Request $request): JsonResponse
-    {
-        $referenceCode   = $request->query('referenceCode');
-        $transactionState = $request->query('transactionState');
-
-        if (!$referenceCode) {
-            return response()->json(['message' => 'Referencia no proporcionada'], 400);
-        }
-
-        $payment = Payment::where('payu_reference_code', $referenceCode)->first();
-
-        if (!$payment) {
-            return response()->json(['message' => 'Pago no encontrado'], 404);
-        }
-
-        // Mapear transactionState de PayU a un estado legible
-        // 4 = Aprobada, 6 = Rechazada, 5 = Expirada, 7 = Pendiente
-        $stateMap = [
-            '4' => 'approved',
-            '6' => 'declined',
-            '5' => 'expired',
-            '7' => 'pending',
-        ];
-
-        return response()->json([
-            'reference_code'    => $referenceCode,
-            'transaction_state' => $stateMap[$transactionState] ?? 'unknown',
-            'payment_status'    => $payment->status,
-            'amount'            => $payment->amount,
-            'currency'          => $payment->currency,
-        ]);
     }
 }

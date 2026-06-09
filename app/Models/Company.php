@@ -88,7 +88,7 @@ class Company extends Model
         $settings = $this->settings()->first();
 
         if (!$settings) {
-            $templateName = 'modern';
+            $templateName = 'action';
             $defaults = config("templates.schemas.{$templateName}", []);
 
             // Extraer solo los valores del schema

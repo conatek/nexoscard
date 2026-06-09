@@ -59,7 +59,7 @@ class CreateNewUser implements CreatesNewUsers
             'password' => Hash::make($input['password']),
         ]);
 
-        $user->assignRole('Guest');
+        $user->assignRole('Admin');
 
         // $client = Client::create([
         //     'user_id' => $user['id']

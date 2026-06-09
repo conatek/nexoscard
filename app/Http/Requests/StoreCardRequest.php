@@ -14,7 +14,8 @@ class StoreCardRequest extends FormRequest
 
     public function rules(): array
     {
-        $companyId = $this->route('company');
+        $company = $this->route('company');
+        $companyId = $company instanceof \App\Models\Company ? $company->id : $company;
 
         return [
             'first_name'   => ['required', 'string', 'max:80'],

@@ -51,7 +51,7 @@
                                     <div class="input-with-prefix">
                                         <span class="input-prefix">/</span>
                                         <input v-model="form.slug" type="text" class="form-input" :class="{ 'has-error': errors.slug }"
-                                            @input="form.slug = slugify(form.slug)" />
+                                            @input="form.slug = slugify(form.slug); slugManuallyEdited = true" />
                                     </div>
                                     <span v-if="errors.slug" class="error-text">{{ errors.slug[0] }}</span>
                                 </div>
@@ -279,6 +279,7 @@ export default {
             cropperOpen: false,
             cropperSrc: null,
             enableCropper: true,
+            slugManuallyEdited: false,
             form: {
                 first_name: '', last_name: '', slug: '', job_title: '',
                 mobile_phone: '', whatsapp: '', email: '', linkedin: '',
@@ -289,10 +290,21 @@ export default {
 
     async created() {
         const { data } = await companyService.get(this.$route.params.companyId);
-        this.companyName = data.name;
+        this.companyName = data.company.name;
+    },
+
+    watch: {
+        'form.first_name'() { this.autoSlug(); },
+        'form.last_name'() { this.autoSlug(); },
     },
 
     methods: {
+        autoSlug() {
+            if (this.slugManuallyEdited) return;
+            const name = `${this.form.first_name} ${this.form.last_name}`.trim();
+            this.form.slug = this.slugify(name);
+        },
+
         slugify(v) {
             return v.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-_]/g, '');
         },
@@ -318,11 +330,11 @@ export default {
         confirmCrop() {
             const { canvas } = this.$refs.cropper.getResult();
             canvas.toBlob((blob) => {
-                this.photoFile = new File([blob], 'photo.png', { type: 'image/png' });
+                this.photoFile = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
                 if (this.photoPreview) URL.revokeObjectURL(this.photoPreview);
                 this.photoPreview = URL.createObjectURL(blob);
                 this.cropperOpen = false;
-            }, 'image/png');
+            }, 'image/jpeg', 0.85);
         },
 
         onThumbnailSelected(e) {
@@ -340,11 +352,11 @@ export default {
         confirmThumbCrop() {
             const { canvas } = this.$refs.thumbCropper.getResult();
             canvas.toBlob((blob) => {
-                this.thumbnailFile = new File([blob], 'thumbnail.png', { type: 'image/png' });
+                this.thumbnailFile = new File([blob], 'thumbnail.jpg', { type: 'image/jpeg' });
                 if (this.thumbnailPreview) URL.revokeObjectURL(this.thumbnailPreview);
                 this.thumbnailPreview = URL.createObjectURL(blob);
                 this.thumbCropperOpen = false;
-            }, 'image/png');
+            }, 'image/jpeg', 0.85);
         },
 
         cancelThumbCrop() {
@@ -380,7 +392,10 @@ export default {
                 this.$router.push({ name: 'companies.show', params: { id: this.$route.params.companyId } });
             } catch (err) {
                 if (err.response?.status === 422) {
-                    this.errors = err.response.data.errors;
+                    this.errors = err.response.data.errors || {};
+                    if (!Object.keys(this.errors).length) {
+                        this.generalError = err.response.data.message || 'Verifica los datos ingresados.';
+                    }
                 } else {
                     this.generalError = err.response?.data?.message || 'Error al crear la tarjeta.';
                 }

@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\WelcomeTrialMail;
+use App\Models\AppSetting;
 use App\Models\Company;
 use App\Models\User;
 use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -102,11 +105,16 @@ class AuthController extends Controller
         // Asignar el usuario como owner de la empresa
         $company->update(['user_id' => $user->id]);
 
-        $user->assignRole('Guest');
+        $user->assignRole('Admin');
 
         // Crear suscripción trial
         $subscriptionService = app(SubscriptionService::class);
-        $subscriptionService->createTrialSubscription($company);
+        $subscription = $subscriptionService->createTrialSubscription($company);
+
+        // Email de bienvenida
+        Mail::to($user->email)->queue(new WelcomeTrialMail(
+            $user, $company, AppSetting::getTrialDays(), $subscription->trial_ends_at
+        ));
 
         // Crear token
         $token = $user->createToken('auth_token')->plainTextToken;

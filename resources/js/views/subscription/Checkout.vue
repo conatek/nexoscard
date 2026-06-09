@@ -9,7 +9,7 @@
                     <div>
                         Confirmar Plan
                         <div class="page-title-subheading text-muted">
-                            Revisa los detalles antes de proceder al pago
+                            Revisa los detalles y completa el pago
                         </div>
                     </div>
                 </div>
@@ -29,6 +29,7 @@
 
         <!-- Checkout content -->
         <div v-else-if="plan" class="checkout-container">
+            <!-- Resumen del pedido -->
             <div class="checkout-card">
                 <div class="checkout-header">
                     <h3>Resumen del pedido</h3>
@@ -48,19 +49,45 @@
                         <span class="value">${{ formatPrice }} COP</span>
                     </div>
                 </div>
-                <div class="checkout-footer">
+            </div>
+
+            <!-- Resultado del pago -->
+            <div v-if="paymentResult" class="result-card" :class="'result-' + paymentResult.status">
+                <div class="result-icon">
+                    <i v-if="paymentResult.status === 'approved'" class="fa fa-check-circle"></i>
+                    <i v-else-if="paymentResult.status === 'pending'" class="fa fa-clock"></i>
+                    <i v-else class="fa fa-times-circle"></i>
+                </div>
+                <h3 class="result-title">{{ resultTitle }}</h3>
+                <p class="result-message">{{ resultMessage }}</p>
+                <router-link v-if="paymentResult.status === 'approved'" :to="{ name: 'home' }" class="btn-result">
+                    <i class="fa fa-home me-2"></i> Ir al panel
+                </router-link>
+                <button v-else-if="paymentResult.status === 'declined'" class="btn-result btn-retry" @click="resetPayment">
+                    <i class="fa fa-redo me-2"></i> Intentar de nuevo
+                </button>
+            </div>
+
+            <!-- Formulario de pago (Brick) -->
+            <div v-show="!paymentResult" class="checkout-card payment-card">
+                <div class="checkout-header">
+                    <h3>Datos de pago</h3>
+                </div>
+                <div class="checkout-body">
                     <div v-if="error" class="error-alert">
                         <i class="fa fa-exclamation-circle"></i>
                         {{ error }}
                     </div>
-                    <button class="btn-checkout" :disabled="processing" @click="proceedToPayment">
-                        <span v-if="processing" class="spinner"></span>
-                        <i v-else class="fa fa-lock me-2"></i>
-                        {{ processing ? 'Procesando...' : 'Proceder al pago' }}
-                    </button>
+                    <div id="cardPaymentBrick_container"></div>
+                    <div v-if="loadingBrick" class="loading-brick">
+                        <div class="spinner-border spinner-border-sm text-primary"></div>
+                        <span class="text-muted ms-2">Cargando formulario de pago...</span>
+                    </div>
+                </div>
+                <div class="checkout-footer">
                     <p class="checkout-note">
                         <i class="fa fa-shield-alt me-1"></i>
-                        Seras redirigido a PayU para completar el pago de forma segura.
+                        Pago seguro procesado por MercadoPago. Tus datos estan protegidos.
                     </p>
                 </div>
             </div>
@@ -79,9 +106,12 @@ export default {
         return {
             plan: null,
             loadingPlan: true,
+            loadingBrick: true,
             processing: false,
             error: null,
             billingPeriod: 'monthly',
+            paymentResult: null,
+            brickController: null,
         };
     },
 
@@ -91,11 +121,37 @@ export default {
             const price = this.billingPeriod === 'yearly' ? this.plan.price_yearly : this.plan.price_monthly;
             return Number(price).toLocaleString('es-CO', { maximumFractionDigits: 0 });
         },
+        totalAmount() {
+            if (!this.plan) return 0;
+            return this.billingPeriod === 'yearly'
+                ? Number(this.plan.price_yearly)
+                : Number(this.plan.price_monthly);
+        },
+        resultTitle() {
+            if (!this.paymentResult) return '';
+            const map = { approved: 'Pago aprobado', pending: 'Pago pendiente', declined: 'Pago no aprobado' };
+            return map[this.paymentResult.status] || 'Estado desconocido';
+        },
+        resultMessage() {
+            if (!this.paymentResult) return '';
+            const map = {
+                approved: 'Tu plan ha sido activado exitosamente. Ya puedes disfrutar de todas las funcionalidades.',
+                pending: 'Tu pago esta siendo procesado. Te notificaremos cuando se confirme.',
+                declined: 'Tu pago no pudo ser procesado. Puedes intentar nuevamente.',
+            };
+            return map[this.paymentResult.status] || 'No pudimos determinar el estado de tu pago.';
+        },
     },
 
     async created() {
         this.billingPeriod = this.$route.query.period || 'monthly';
         await this.loadPlan();
+    },
+
+    beforeUnmount() {
+        if (this.brickController) {
+            this.brickController.unmount();
+        }
     },
 
     methods: {
@@ -108,6 +164,8 @@ export default {
 
                 if (!this.plan) {
                     this.error = 'Plan no encontrado.';
+                } else {
+                    this.$nextTick(() => this.initBrick());
                 }
             } catch {
                 this.error = 'Error al cargar el plan.';
@@ -116,32 +174,78 @@ export default {
             }
         },
 
-        async proceedToPayment() {
+        async initBrick() {
+            if (!window.MercadoPago) {
+                this.error = 'Error al cargar MercadoPago SDK.';
+                this.loadingBrick = false;
+                return;
+            }
+
+            const mp = new window.MercadoPago(window.mercadoPagoPublicKey, { locale: 'es-CO' });
+            const bricksBuilder = mp.bricks();
+
+            try {
+                this.brickController = await bricksBuilder.create('cardPayment', 'cardPaymentBrick_container', {
+                    initialization: {
+                        amount: this.totalAmount,
+                    },
+                    customization: {
+                        visual: {
+                            style: {
+                                theme: 'default',
+                            },
+                        },
+                        paymentMethods: {
+                            maxInstallments: 12,
+                        },
+                    },
+                    callbacks: {
+                        onReady: () => {
+                            this.loadingBrick = false;
+                        },
+                        onSubmit: async (cardFormData) => {
+                            await this.handlePayment(cardFormData);
+                        },
+                        onError: (error) => {
+                            console.error('Brick error:', error);
+                        },
+                    },
+                });
+            } catch (err) {
+                console.error('Error creating Brick:', err);
+                this.error = 'Error al inicializar el formulario de pago.';
+                this.loadingBrick = false;
+            }
+        },
+
+        async handlePayment(cardFormData) {
             this.processing = true;
             this.error = null;
 
             try {
-                const { data } = await paymentService.checkout(this.plan.id, this.billingPeriod);
+                const { data } = await paymentService.process({
+                    plan_id:               this.plan.id,
+                    billing_period:        this.billingPeriod,
+                    token:                 cardFormData.token,
+                    payment_method_id:     cardFormData.payment_method_id,
+                    installments:          cardFormData.installments,
+                    issuer_id:             cardFormData.issuer_id,
+                    payer_email:           cardFormData.payer?.email || '',
+                    identification_type:   cardFormData.payer?.identification?.type || 'CC',
+                    identification_number: cardFormData.payer?.identification?.number || '',
+                });
 
-                // Crear form oculto y enviar a PayU WebCheckout
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = data.checkout_url;
-
-                for (const [key, value] of Object.entries(data.form_data)) {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = key;
-                    input.value = value;
-                    form.appendChild(input);
-                }
-
-                document.body.appendChild(form);
-                form.submit();
+                this.paymentResult = data;
             } catch (err) {
-                this.error = err.response?.data?.message || 'Error al iniciar el pago.';
+                this.error = err.response?.data?.message || 'Error al procesar el pago.';
+            } finally {
                 this.processing = false;
             }
+        },
+
+        resetPayment() {
+            this.paymentResult = null;
+            this.error = null;
         },
     },
 };
@@ -149,8 +253,11 @@ export default {
 
 <style scoped>
 .checkout-container {
-    max-width: 480px;
+    max-width: 520px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
 }
 
 .checkout-card {
@@ -207,43 +314,15 @@ export default {
 }
 
 .checkout-footer {
-    padding: 1.5rem;
+    padding: 1rem 1.5rem;
     border-top: 1px solid #e2e8f0;
-}
-
-.btn-checkout {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 0.875rem;
-    background: linear-gradient(135deg, #8b5cf6, #ec4899);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
-}
-
-.btn-checkout:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
-}
-
-.btn-checkout:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
 }
 
 .checkout-note {
     text-align: center;
     font-size: 0.8rem;
     color: #94a3b8;
-    margin-top: 1rem;
-    margin-bottom: 0;
+    margin: 0;
 }
 
 .error-alert {
@@ -259,18 +338,69 @@ export default {
     margin-bottom: 1rem;
 }
 
-.spinner {
-    width: 18px;
-    height: 18px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-right: 0.5rem;
+.loading-brick {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 0;
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
+/* Resultado */
+.result-card {
+    text-align: center;
+    background: white;
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.result-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+}
+
+.result-approved .result-icon { color: #10b981; }
+.result-pending .result-icon  { color: #f59e0b; }
+.result-declined .result-icon { color: #ef4444; }
+
+.result-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.result-message {
+    font-size: 0.95rem;
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.btn-result {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    background: linear-gradient(135deg, #10b981, #34d399);
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-result:hover {
+    transform: translateY(-1px);
+    color: white;
+}
+
+.btn-retry {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
 .loading-state {

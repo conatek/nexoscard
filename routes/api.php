@@ -17,6 +17,8 @@ use App\Http\Controllers\Admin\PlanAdminController;
 use App\Http\Controllers\Admin\SubscriptionAdminController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\Admin\CompanyAdminController;
+use App\Http\Controllers\Admin\AppSettingController;
+use App\Http\Controllers\DashboardClientController;
 
 // Rutas públicas de autenticación
 Route::post('/login', [AuthController::class, 'login']);
@@ -32,11 +34,8 @@ Route::prefix('public')->group(function () {
 Route::get('/templates', [CompanySettingController::class, 'templates']);
 Route::get('/templates/{templateName}/schema', [CompanySettingController::class, 'schema']);
 
-// PayU webhook (público, sin auth - PayU envía confirmaciones aquí)
-Route::post('/payu/webhook', [PaymentController::class, 'webhook']);
-
-// Resultado de pago (público con referenceCode)
-Route::get('/payments/result', [PaymentController::class, 'result']);
+// MercadoPago webhook (público, sin auth)
+Route::post('/mercadopago/webhook', [PaymentController::class, 'webhook']);
 
 // Planes disponibles (público)
 Route::get('/plans', [PlanController::class, 'index']);
@@ -77,10 +76,17 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Empresas (vista admin con suscripción)
         Route::get('companies', [CompanyAdminController::class, 'index']);
+
+        // Configuracion global
+        Route::get('settings', [AppSettingController::class, 'index']);
+        Route::put('settings', [AppSettingController::class, 'update']);
     });
 
+    // Dashboard cliente
+    Route::get('dashboard', [DashboardClientController::class, 'index']);
+
     // Pagos y suscripciones
-    Route::post('payments/checkout', [PaymentController::class, 'checkout']);
+    Route::post('payments/process', [PaymentController::class, 'processPayment']);
     Route::get('payments/history', [PaymentController::class, 'history']);
     Route::get('subscription', [SubscriptionController::class, 'current']);
 

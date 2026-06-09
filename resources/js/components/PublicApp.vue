@@ -31,6 +31,7 @@
             <main-sidebar :isCollapsed="isCollapsed" :sidebarStatus="sidebarStatus" @updateSidebar="toggleSidebar" />
 
             <div class="app-main__outer" @click="closeMobileSidebar">
+                <subscription-banner />
 
                 <div class="app-main__inner">
                     <router-view />
@@ -62,8 +63,10 @@
 
 <script>
 import { useAuth } from '@/stores/auth';
+import SubscriptionBanner from './SubscriptionBanner.vue';
 
 export default {
+    components: { SubscriptionBanner },
     data() {
         return {
             isCollapsed: true,
