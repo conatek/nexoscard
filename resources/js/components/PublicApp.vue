@@ -22,10 +22,23 @@
                 <i class="fa fa-cog fa-w-16 fa-spin fa-2x" style="color: black;"></i>
             </button>
             <div class="theme-settings__inner">
-                <div class="scrollbar-container">
-                </div>
+                <!-- Se monta solo al abrir: si no, cada carga de pagina pediria /dashboard
+                     aunque el usuario nunca abra el panel. El :key fuerza recarga de datos
+                     en cada apertura, para que no muestre cifras viejas. -->
+                <account-drawer
+                    v-if="isOpenRightSettings"
+                    :key="settingsOpenCount"
+                    @close="isOpenRightSettings = false"
+                />
             </div>
         </div>
+
+        <!-- Capa para cerrar el panel al hacer clic fuera -->
+        <div
+            v-if="isOpenRightSettings"
+            class="settings-overlay"
+            @click="isOpenRightSettings = false"
+        ></div>
 
         <div class="app-main">
             <main-sidebar :isCollapsed="isCollapsed" :sidebarStatus="sidebarStatus" @updateSidebar="toggleSidebar" />
@@ -64,15 +77,17 @@
 <script>
 import { useAuth } from '@/stores/auth';
 import SubscriptionBanner from './SubscriptionBanner.vue';
+import AccountDrawer from './AccountDrawer.vue';
 
 export default {
-    components: { SubscriptionBanner },
+    components: { SubscriptionBanner, AccountDrawer },
     data() {
         return {
             isCollapsed: true,
             sidebarStatus: false,
             isOpenRightDrawer: false,
             isOpenRightSettings: false,
+            settingsOpenCount: 0,
             isOpenSidebarMobile: false,
         };
     },
@@ -100,6 +115,10 @@ export default {
         },
         openRightSettings() {
             this.isOpenRightSettings = !this.isOpenRightSettings;
+
+            if (this.isOpenRightSettings) {
+                this.settingsOpenCount++;
+            }
         },
         openSidebarMobile() {
             this.isOpenSidebarMobile = !this.isOpenSidebarMobile;
@@ -259,6 +278,20 @@ html, body {
         background-size: contain;
         background-repeat: no-repeat;
     }
+}
+
+/* Capa de cierre del panel lateral. z-index por debajo del panel (155) y por
+   encima del contenido. */
+.settings-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.25);
+    z-index: 154;
+}
+
+/* El panel trae padding 0 desde base.css: el contenido gestiona su propio scroll */
+.ui-theme-settings .theme-settings__inner {
+    overflow: hidden;
 }
 
 /* Footer - dentro del flujo de app-main__outer */

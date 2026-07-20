@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppSetting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -18,6 +19,7 @@ class DashboardClientController extends Controller
                 'company'      => null,
                 'subscription' => null,
                 'stats'        => null,
+                'contact'      => AppSetting::publicContact(),
             ]);
         }
 
@@ -42,12 +44,19 @@ class DashboardClientController extends Controller
                 'plan_name'      => $plan?->display_name,
                 'days_remaining' => $subscription->daysRemaining(),
                 'period_end'     => $subscription->current_period_end,
+                // Para el CTA de activar: el precio vigente lo resuelve el plan.
+                'plan_id'         => $plan?->id,
+                'plan_price'      => $plan?->effectivePrice(),
+                'plan_period'     => $plan?->billing_period,
+                'is_offer_active' => $plan?->isOfferActive(),
             ] : null,
             'stats' => [
                 'cards'    => ['current' => $company->cards_count, 'limit' => $plan?->max_cards],
                 'products' => ['current' => $company->products_count, 'limit' => $plan?->max_products],
                 'services' => ['current' => $company->services_count, 'limit' => $plan?->max_services],
             ],
+            // Canales de soporte, editables por el Master: la UI no debe hardcodearlos.
+            'contact' => AppSetting::publicContact(),
         ]);
     }
 }

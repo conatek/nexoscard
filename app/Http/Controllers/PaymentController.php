@@ -31,7 +31,10 @@ class PaymentController extends Controller
     {
         $request->validate([
             'plan_id'             => 'required|exists:plans,id',
-            'billing_period'      => 'required|in:monthly,yearly',
+            // El monto real siempre lo decide el servidor. Este campo es solo el precio
+            // que el cliente tenía en pantalla, para abortar si la oferta venció entre
+            // que se pintó el checkout y se envió el token.
+            'expected_amount'     => 'nullable|numeric',
             'token'               => 'required|string',
             'payment_method_id'   => 'required|string',
             'installments'        => 'required|integer|min:1',
@@ -50,13 +53,23 @@ class PaymentController extends Controller
 
         $plan = Plan::active()->findOrFail($request->plan_id);
 
-        if ($plan->name === 'free') {
-            return response()->json(['message' => 'El plan gratuito no requiere pago.'], 422);
+        // Precio del servidor, nunca el que mande el cliente.
+        $amount = $plan->effectivePrice();
+
+        if ($amount <= 0) {
+            return response()->json(['message' => 'Este plan no requiere pago.'], 422);
         }
 
-        $amount = $request->billing_period === 'yearly'
-            ? $plan->price_yearly
-            : $plan->price_monthly;
+        // La oferta pudo vencer mientras el usuario completaba el formulario: antes de
+        // cobrar de más, se aborta y el front recarga el precio.
+        if ($request->filled('expected_amount')
+            && abs((float) $request->expected_amount - $amount) > 0.01) {
+            return response()->json([
+                'message'        => 'El precio cambió mientras completabas el pago. Revisa el nuevo valor antes de continuar.',
+                'price_changed'  => true,
+                'current_amount' => $amount,
+            ], 422);
+        }
 
         // Crear payment pendiente
         $payment = Payment::create([
@@ -66,8 +79,10 @@ class PaymentController extends Controller
             'status'     => 'pending',
             'metadata'   => [
                 'plan_id'        => $plan->id,
-                'billing_period' => $request->billing_period,
                 'plan_name'      => $plan->display_name,
+                'billing_period' => $plan->billing_period,
+                'price_regular'  => (float) $plan->price_regular,
+                'offer_applied'  => $plan->isOfferActive(),
             ],
         ]);
 
@@ -111,10 +126,6 @@ class PaymentController extends Controller
         // Si aprobado, activar suscripcion
         if ($internalStatus === 'approved') {
             $subscription = $this->subscriptionService->activateSubscription($company, $plan, 'mercadopago');
-
-            if ($request->billing_period === 'yearly') {
-                $subscription->update(['current_period_end' => now()->addYear()]);
-            }
 
             $payment->update(['subscription_id' => $subscription->id]);
 

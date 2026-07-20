@@ -17,7 +17,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/{companySlug}/{cardSlug}', function (string $companySlug, string $cardSlug) {
     $company = Company::where('slug', $companySlug)->first();
 
-    if ($company) {
+    // Sin suscripción vigente no se emiten OG tags: si no, WhatsApp y Facebook seguirían
+    // mostrando nombre, cargo y foto de una tarjeta que ya está fuera de línea.
+    if ($company && $company->hasPublicAccess()) {
         $card = $company->cards()
             ->where('slug', $cardSlug)
             ->where('is_active', true)

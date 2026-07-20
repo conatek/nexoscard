@@ -23,6 +23,11 @@ export default {
         return api.patch(`/admin/plans/${id}/toggle`);
     },
 
+    // Catalogo de plantillas, para elegir cuales incluye cada plan
+    getTemplates() {
+        return api.get('/templates');
+    },
+
     // Subscriptions
     getSubscriptions(params = {}) {
         return api.get('/admin/subscriptions', { params });

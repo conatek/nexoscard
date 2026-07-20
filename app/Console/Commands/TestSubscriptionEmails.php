@@ -38,11 +38,11 @@ class TestSubscriptionEmails extends Command
             'expired'              => new TrialExpiredMail($user, $company),
             'activated'            => new SubscriptionActivatedMail(
                 $user, $company,
-                Plan::where('name', 'basico')->first() ?? Plan::first(),
+                Plan::default() ?? Plan::first(),
                 Subscription::first() ?? new Subscription(['current_period_end' => now()->addMonth()]),
                 Payment::first() ?? new Payment(['amount' => 49900, 'currency' => 'COP']),
             ),
-            'subscription-expired' => new SubscriptionExpiredMail($user, $company, Plan::where('name', 'basico')->first()),
+            'subscription-expired' => new SubscriptionExpiredMail($user, $company, Plan::default()),
             default                => null,
         };
 

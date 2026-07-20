@@ -88,6 +88,73 @@
                                         </label>
                                     </div>
                                 </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Plan por defecto</label>
+                                    <div class="toggle-wrapper">
+                                        <label class="toggle-label">
+                                            <input type="checkbox" v-model="form.is_default" class="toggle-input" />
+                                            <span class="toggle-switch-inline"></span>
+                                            <span>{{ form.is_default ? 'Si' : 'No' }}</span>
+                                        </label>
+                                    </div>
+                                    <span class="field-hint">
+                                        Es el plan sobre el que corre la prueba de los nuevos registros.
+                                        Solo puede haber uno.
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Plantillas incluidas -->
+                        <div class="section-card">
+                            <div class="section-header">
+                                <i class="fa fa-palette section-icon"></i>
+                                <span>Plantillas incluidas</span>
+                            </div>
+                            <div class="section-body">
+                                <label class="check-label mb-2">
+                                    <input type="checkbox" v-model="allTemplates" @change="onAllTemplates" />
+                                    <span>Todas las plantillas</span>
+                                </label>
+
+                                <div v-if="!allTemplates" class="template-list">
+                                    <label v-for="(tpl, key) in templates" :key="key" class="check-label">
+                                        <input type="checkbox" :value="key"
+                                               :checked="isTemplateSelected(key)"
+                                               @change="toggleTemplate(key)" />
+                                        <span>{{ tpl.name }}</span>
+                                    </label>
+                                </div>
+
+                                <span v-if="!allTemplates && !selectedTemplates.length" class="error-text">
+                                    Selecciona al menos una plantilla.
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Bullets comerciales -->
+                        <div class="section-card">
+                            <div class="section-header">
+                                <i class="fa fa-list-check section-icon"></i>
+                                <span>Que incluye (bullets)</span>
+                            </div>
+                            <div class="section-body">
+                                <p class="field-hint mb-2">
+                                    Se muestran como lista en la pagina de planes.
+                                </p>
+
+                                <div v-for="(item, i) in form.features" :key="i" class="feature-row">
+                                    <input v-model="form.features[i]" type="text" class="form-input"
+                                           placeholder="ej: Codigo QR personalizado" />
+                                    <button type="button" class="btn-remove-feature" @click="removeFeature(i)">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+
+                                <button type="button" class="btn-add-feature" @click="addFeature">
+                                    <i class="fa fa-plus me-1"></i> Agregar linea
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -102,19 +169,49 @@
                             <div class="section-body">
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label class="form-label">Precio mensual (COP) <span class="required">*</span></label>
-                                        <input v-model.number="form.price_monthly" type="number" class="form-input"
-                                               :class="{ 'has-error': errors.price_monthly }"
+                                        <label class="form-label">Precio normal (COP) <span class="required">*</span></label>
+                                        <input v-model.number="form.price_regular" type="number" class="form-input"
+                                               :class="{ 'has-error': errors.price_regular }"
                                                min="0" step="100" />
-                                        <span v-if="errors.price_monthly" class="error-text">{{ errors.price_monthly[0] }}</span>
+                                        <span v-if="errors.price_regular" class="error-text">{{ errors.price_regular[0] }}</span>
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label">Precio anual (COP) <span class="required">*</span></label>
-                                        <input v-model.number="form.price_yearly" type="number" class="form-input"
-                                               :class="{ 'has-error': errors.price_yearly }"
-                                               min="0" step="100" />
-                                        <span v-if="errors.price_yearly" class="error-text">{{ errors.price_yearly[0] }}</span>
+                                        <label class="form-label">Ciclo de cobro <span class="required">*</span></label>
+                                        <select v-model="form.billing_period" class="form-input">
+                                            <option value="yearly">Anual</option>
+                                            <option value="monthly">Mensual</option>
+                                        </select>
                                     </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Precio de oferta (COP)</label>
+                                        <input v-model.number="form.offer_price" type="number" class="form-input"
+                                               :class="{ 'has-error': errors.offer_price }"
+                                               min="0" step="100" placeholder="Vacio = sin oferta" />
+                                        <span v-if="errors.offer_price" class="error-text">{{ errors.offer_price[0] }}</span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">La oferta termina el</label>
+                                        <input v-model="form.offer_ends_at" type="datetime-local" class="form-input"
+                                               :class="{ 'has-error': errors.offer_ends_at }" />
+                                        <span v-if="errors.offer_ends_at" class="error-text">{{ errors.offer_ends_at[0] }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Resumen de lo que se va a cobrar de verdad -->
+                                <div class="offer-preview" :class="{ 'is-off': !offerPreview.active }">
+                                    <i class="fa" :class="offerPreview.active ? 'fa-bolt' : 'fa-info-circle'"></i>
+                                    <span v-if="offerPreview.active">
+                                        Se cobrara <strong>${{ offerPreview.price }}</strong>
+                                        ({{ offerPreview.discount }}% de descuento)
+                                        <template v-if="form.offer_ends_at"> hasta el {{ offerPreview.until }}</template>
+                                        <template v-else>, sin fecha de fin</template>
+                                    </span>
+                                    <span v-else>
+                                        Sin oferta vigente: se cobrara <strong>${{ offerPreview.price }}</strong>
+                                    </span>
                                 </div>
 
                                 <div class="form-group">
@@ -177,21 +274,14 @@ export default {
 
     data() {
         return {
-            form: {
-                name: '',
-                display_name: '',
-                price_monthly: 0,
-                price_yearly: 0,
-                max_cards: 1,
-                max_products: 3,
-                max_services: 3,
-                available_templates: null,
-                show_watermark: false,
-                is_active: true,
-                sort_order: 0,
-            },
+            form: this.emptyForm(),
             unlimitedProducts: false,
             unlimitedServices: false,
+            // `available_templates = null` significa "todas". Se maneja con estos dos
+            // campos y se convierte al enviar.
+            allTemplates: true,
+            selectedTemplates: [],
+            templates: {},
             errors: {},
             generalError: null,
             saving: false,
@@ -203,9 +293,35 @@ export default {
         isEdit() {
             return !!this.$route.params.id;
         },
+
+        // Refleja exactamente la regla del backend (Plan::isOfferActive/effectivePrice)
+        // para que el Master vea qué se va a cobrar antes de guardar.
+        offerPreview() {
+            const regular = Number(this.form.price_regular) || 0;
+            const offer = this.form.offer_price;
+            const hasOffer = offer !== null && offer !== '' && Number.isFinite(Number(offer));
+
+            const endsAt = this.form.offer_ends_at ? new Date(this.form.offer_ends_at) : null;
+            const notExpired = !endsAt || endsAt > new Date();
+            const active = hasOffer && notExpired;
+
+            const price = active ? Number(offer) : regular;
+            const discount = active && regular > 0
+                ? Math.round((1 - price / regular) * 100)
+                : 0;
+
+            return {
+                active,
+                discount,
+                price: price.toLocaleString('es-CO', { maximumFractionDigits: 0 }),
+                until: endsAt ? endsAt.toLocaleString('es-CO') : '',
+            };
+        },
     },
 
     async created() {
+        await this.loadTemplates();
+
         if (this.isEdit) {
             await this.loadPlan();
         }
@@ -224,31 +340,69 @@ export default {
     },
 
     methods: {
+        emptyForm() {
+            return {
+                name: '',
+                display_name: '',
+                price_regular: 0,
+                offer_price: null,
+                offer_ends_at: '',
+                billing_period: 'yearly',
+                max_cards: 1,
+                max_products: null,
+                max_services: null,
+                available_templates: null,
+                show_watermark: false,
+                features: [],
+                is_active: true,
+                is_default: false,
+                sort_order: 0,
+            };
+        },
+
+        async loadTemplates() {
+            try {
+                const { data } = await adminService.getTemplates();
+                this.templates = data.templates || {};
+            } catch {
+                this.templates = {};
+            }
+        },
+
         async loadPlan() {
             this.loadingPlan = true;
             try {
                 const { data } = await adminService.getPlans();
                 const planId = parseInt(this.$route.params.id);
                 const plan = data.find(p => p.id === planId);
-                if (plan) {
-                    this.form = {
-                        name: plan.name,
-                        display_name: plan.display_name,
-                        price_monthly: Number(plan.price_monthly),
-                        price_yearly: Number(plan.price_yearly),
-                        max_cards: plan.max_cards,
-                        max_products: plan.max_products,
-                        max_services: plan.max_services,
-                        available_templates: plan.available_templates,
-                        show_watermark: plan.show_watermark,
-                        is_active: plan.is_active,
-                        sort_order: plan.sort_order,
-                    };
-                    this.unlimitedProducts = plan.max_products === null;
-                    this.unlimitedServices = plan.max_services === null;
-                } else {
+
+                if (!plan) {
                     this.generalError = 'Plan no encontrado.';
+                    return;
                 }
+
+                this.form = {
+                    name: plan.name,
+                    display_name: plan.display_name,
+                    price_regular: Number(plan.price_regular),
+                    offer_price: plan.offer_price === null ? null : Number(plan.offer_price),
+                    offer_ends_at: this.toLocalInput(plan.offer_ends_at),
+                    billing_period: plan.billing_period || 'yearly',
+                    max_cards: plan.max_cards,
+                    max_products: plan.max_products,
+                    max_services: plan.max_services,
+                    available_templates: plan.available_templates,
+                    show_watermark: plan.show_watermark,
+                    features: Array.isArray(plan.features) ? [...plan.features] : [],
+                    is_active: plan.is_active,
+                    is_default: plan.is_default,
+                    sort_order: plan.sort_order,
+                };
+
+                this.unlimitedProducts = plan.max_products === null;
+                this.unlimitedServices = plan.max_services === null;
+                this.allTemplates = plan.available_templates === null;
+                this.selectedTemplates = plan.available_templates || [];
             } catch {
                 this.generalError = 'Error al cargar el plan.';
             } finally {
@@ -257,23 +411,50 @@ export default {
         },
 
         resetForm() {
-            this.form = {
-                name: '',
-                display_name: '',
-                price_monthly: 0,
-                price_yearly: 0,
-                max_cards: 1,
-                max_products: 3,
-                max_services: 3,
-                available_templates: null,
-                show_watermark: false,
-                is_active: true,
-                sort_order: 0,
-            };
-            this.unlimitedProducts = false;
-            this.unlimitedServices = false;
+            this.form = this.emptyForm();
+            this.unlimitedProducts = true;
+            this.unlimitedServices = true;
+            this.allTemplates = true;
+            this.selectedTemplates = [];
             this.errors = {};
             this.generalError = null;
+        },
+
+        /** ISO del backend -> valor que entiende <input type="datetime-local"> */
+        toLocalInput(iso) {
+            if (!iso) return '';
+            const d = new Date(iso);
+            if (Number.isNaN(d.getTime())) return '';
+            const pad = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+                + `T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        },
+
+        onAllTemplates() {
+            if (this.allTemplates) {
+                this.selectedTemplates = [];
+            }
+        },
+
+        isTemplateSelected(key) {
+            return this.selectedTemplates.includes(key);
+        },
+
+        toggleTemplate(key) {
+            const i = this.selectedTemplates.indexOf(key);
+            if (i === -1) {
+                this.selectedTemplates.push(key);
+            } else {
+                this.selectedTemplates.splice(i, 1);
+            }
+        },
+
+        addFeature() {
+            this.form.features.push('');
+        },
+
+        removeFeature(i) {
+            this.form.features.splice(i, 1);
         },
 
         onUnlimitedProducts() {
@@ -292,16 +473,41 @@ export default {
             }
         },
 
+        /**
+         * Arma el payload real. Antes se enviaba `this.form` tal cual, y como
+         * `available_templates` estaba en el form sin ningun input que lo modificara,
+         * cada guardado lo mandaba en null y borraba la whitelist del plan.
+         */
+        buildPayload() {
+            return {
+                ...this.form,
+                available_templates: this.allTemplates ? null : this.selectedTemplates,
+                // Se descartan las lineas vacias del repeater.
+                features: (this.form.features || [])
+                    .map(f => (f || '').trim())
+                    .filter(Boolean),
+                offer_price: this.form.offer_price === '' ? null : this.form.offer_price,
+                offer_ends_at: this.form.offer_ends_at || null,
+            };
+        },
+
         async submit() {
+            if (!this.allTemplates && !this.selectedTemplates.length) {
+                this.generalError = 'Selecciona al menos una plantilla o marca "Todas".';
+                return;
+            }
+
             this.saving = true;
             this.errors = {};
             this.generalError = null;
 
             try {
+                const payload = this.buildPayload();
+
                 if (this.isEdit) {
-                    await adminService.updatePlan(this.$route.params.id, this.form);
+                    await adminService.updatePlan(this.$route.params.id, payload);
                 } else {
-                    await adminService.storePlan(this.form);
+                    await adminService.storePlan(payload);
                 }
                 this.$router.push({ name: 'admin.plans' });
             } catch (err) {
@@ -555,6 +761,93 @@ export default {
 .btn-action.btn-back:hover { background: #e2e8f0; }
 
 .loading-state { text-align: center; padding: 4rem 0; }
+
+/* ===== Ayuda bajo un campo ===== */
+.field-hint {
+    display: block;
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-top: 0.35rem;
+    line-height: 1.4;
+}
+
+/* ===== Vista previa de la oferta ===== */
+.offer-preview {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.offer-preview.is-off {
+    background: #f1f5f9;
+    color: #475569;
+    border-color: #e2e8f0;
+}
+
+.offer-preview i {
+    margin-top: 0.15rem;
+}
+
+/* ===== Plantillas incluidas ===== */
+.template-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.mb-2 { margin-bottom: 0.5rem; }
+
+/* ===== Repeater de bullets ===== */
+.feature-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.feature-row .form-input { flex: 1; }
+
+.btn-remove-feature {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #dc2626;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-remove-feature:hover { background: #fee2e2; }
+
+.btn-add-feature {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 0.9rem;
+    border: 1px dashed #cbd5e1;
+    background: #f8fafc;
+    color: #475569;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-add-feature:hover {
+    border-color: #7c3aed;
+    color: #7c3aed;
+    background: #f5f3ff;
+}
 
 @media (max-width: 768px) {
     .form-grid { grid-template-columns: 1fr; }

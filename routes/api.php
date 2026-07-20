@@ -24,8 +24,9 @@ use App\Http\Controllers\DashboardClientController;
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
-// Rutas públicas de tarjetas (sin auth)
-Route::prefix('public')->group(function () {
+// Rutas públicas de tarjetas (sin auth). El middleware saca de línea las tarjetas de
+// empresas con la suscripción vencida o cancelada.
+Route::prefix('public')->middleware('public.active')->group(function () {
     Route::get('/{companySlug}',             [PublicCardController::class, 'company']);
     Route::get('/{companySlug}/{cardSlug}',  [PublicCardController::class, 'card']);
 });
@@ -39,6 +40,7 @@ Route::post('/mercadopago/webhook', [PaymentController::class, 'webhook']);
 
 // Planes disponibles (público)
 Route::get('/plans', [PlanController::class, 'index']);
+Route::get('/plans/{plan}', [PlanController::class, 'show']);
 
 // Rutas protegidas con Sanctum
 Route::middleware('auth:sanctum')->group(function () {

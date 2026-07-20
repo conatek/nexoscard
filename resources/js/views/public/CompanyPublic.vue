@@ -3,6 +3,13 @@
     <div class="spinner"></div>
   </div>
 
+  <!-- Suscripción vencida (402): la empresa existe pero está fuera de línea -->
+  <div v-else-if="unavailable" class="card-not-found">
+    <div class="nf-icon">⏸️</div>
+    <h2>Página no disponible</h2>
+    <p>Esta página no está publicada en este momento.</p>
+  </div>
+
   <div v-else-if="notFound" class="card-not-found">
     <div class="nf-icon">🏢</div>
     <h2>Empresa no encontrada</h2>
@@ -120,7 +127,7 @@ export default {
   name: 'CompanyPublic',
 
   data() {
-    return { loading: true, notFound: false, company: {} };
+    return { loading: true, notFound: false, unavailable: false, company: {} };
   },
 
   computed: {
@@ -149,8 +156,13 @@ export default {
     try {
       const { data } = await publicCardService.company(this.$route.params.companySlug);
       this.company = data;
-    } catch {
-      this.notFound = true;
+    } catch (err) {
+      // 402 = existe pero sin suscripción vigente; se distingue del 404.
+      if (err.response?.status === 402) {
+        this.unavailable = true;
+      } else {
+        this.notFound = true;
+      }
     } finally {
       this.loading = false;
     }

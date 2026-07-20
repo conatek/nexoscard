@@ -31,11 +31,58 @@ class AppSetting extends Model
 
     public static function getTrialDays(): int
     {
-        return (int) static::get('trial_days', 30);
+        return (int) static::get('trial_days', 7);
+    }
+
+    /**
+     * Días antes del vencimiento en los que se avisa al cliente. Se guarda como lista
+     * separada por comas ("3,1") para que el Master pueda ajustar la cadencia sin tocar
+     * código.
+     */
+    public static function getTrialReminderDays(): array
+    {
+        $raw = (string) static::get('trial_reminder_days', '3,1');
+
+        $days = array_filter(
+            array_map('intval', explode(',', $raw)),
+            fn (int $d) => $d > 0
+        );
+
+        // De mayor a menor: el aviso lejano primero.
+        rsort($days);
+
+        return array_values(array_unique($days));
     }
 
     public static function getGracePeriodDays(): int
     {
         return (int) static::get('grace_period_days', 10);
+    }
+
+    public static function getSupportEmail(): string
+    {
+        return (string) static::get('support_email', 'soporte@nexoscard.com');
+    }
+
+    /**
+     * Numero de WhatsApp normalizado (solo digitos), o null si no esta configurado.
+     * Se limpia aqui para que la UI no tenga que adivinar el formato que cargo el Master.
+     */
+    public static function getSupportWhatsapp(): ?string
+    {
+        $raw = preg_replace('/\D/', '', (string) static::get('support_whatsapp', ''));
+
+        return $raw !== '' ? $raw : null;
+    }
+
+    /**
+     * Datos de contacto que el frontend necesita para pintar los botones de soporte.
+     */
+    public static function publicContact(): array
+    {
+        return [
+            'support_email'    => static::getSupportEmail(),
+            'support_whatsapp' => static::getSupportWhatsapp(),
+        ];
     }
 }

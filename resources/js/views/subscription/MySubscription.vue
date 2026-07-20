@@ -36,7 +36,7 @@
                         <span>Plan actual</span>
                     </div>
                     <div class="info-body">
-                        <div class="plan-badge" :class="'badge-' + (plan?.name || 'free')">
+                        <div class="plan-badge">
                             {{ plan?.display_name || 'Sin plan' }}
                         </div>
                         <div class="plan-meta" v-if="subscription">
@@ -47,12 +47,16 @@
                                 </span>
                             </div>
                             <div class="meta-row" v-if="subscription.current_period_end">
-                                <span>Vence</span>
+                                <span>{{ isTrial ? 'Termina la prueba' : 'Renueva' }}</span>
                                 <span>{{ formatDate(subscription.current_period_end) }}</span>
+                            </div>
+                            <div class="meta-row" v-if="renewalPrice">
+                                <span>{{ isTrial ? 'Precio al activar' : 'Precio de renovacion' }}</span>
+                                <span class="fw-600">{{ renewalPrice }}</span>
                             </div>
                             <div class="meta-row" v-if="daysLeft !== null">
                                 <span>Dias restantes</span>
-                                <span :class="{ 'text-danger': daysLeft <= 5 }">{{ daysLeft }}</span>
+                                <span :class="{ 'text-danger': daysLeft <= 3 }">{{ daysLeft }}</span>
                             </div>
                         </div>
                     </div>
@@ -131,6 +135,7 @@ export default {
             plan: null,
             usage: {},
             payments: [],
+            daysRemaining: null,
             loading: true,
             resourceNames: {
                 cards: 'Tarjetas',
@@ -152,12 +157,25 @@ export default {
             return labels[this.subscription?.status] || this.subscription?.status;
         },
 
+        // Lo calcula el servidor (Subscription::daysRemaining), que en trial cuenta
+        // sobre trial_ends_at. Recalcularlo aqui sobre current_period_end daria un
+        // numero distinto al de los correos y el banner.
         daysLeft() {
-            if (!this.subscription?.current_period_end) return null;
-            const end = new Date(this.subscription.current_period_end);
-            const now = new Date();
-            const diff = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
-            return Math.max(0, diff);
+            return this.daysRemaining;
+        },
+
+        isTrial() {
+            return this.subscription?.status === 'trial';
+        },
+
+        renewalPrice() {
+            if (!this.plan) return null;
+
+            const price = Number(this.plan.effective_price);
+            if (!Number.isFinite(price) || price <= 0) return null;
+
+            const periodo = this.plan.billing_period === 'monthly' ? 'mes' : 'año';
+            return `$${price.toLocaleString('es-CO', { maximumFractionDigits: 0 })} / ${periodo}`;
         },
     },
 
@@ -176,6 +194,7 @@ export default {
                 this.subscription = subRes.data.subscription;
                 this.plan = subRes.data.plan;
                 this.usage = subRes.data.usage || {};
+                this.daysRemaining = subRes.data.days_remaining ?? null;
                 this.payments = payRes.data.data || payRes.data || [];
             } finally {
                 this.loading = false;
@@ -242,7 +261,7 @@ export default {
     padding: 1.25rem;
 }
 
-/* Plan badge */
+/* Plan badge: una sola clase, sin variantes por nombre de plan */
 .plan-badge {
     display: inline-block;
     padding: 0.5rem 1.25rem;
@@ -250,11 +269,11 @@ export default {
     font-weight: 700;
     font-size: 1.1rem;
     margin-bottom: 1rem;
+    background: linear-gradient(135deg, #f3e8ff, #fce7f3);
+    color: #8b5cf6;
 }
 
-.badge-free { background: #f1f5f9; color: #64748b; }
-.badge-basico { background: linear-gradient(135deg, #dbeafe, #e0f2fe); color: #2563eb; }
-.badge-pro { background: linear-gradient(135deg, #f3e8ff, #fce7f3); color: #8b5cf6; }
+.fw-600 { font-weight: 600; }
 
 /* Meta rows */
 .plan-meta {

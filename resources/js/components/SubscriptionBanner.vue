@@ -42,36 +42,38 @@ export default {
             return true;
         },
 
+        // Con un trial de 7 dias, el umbral de "<= 7" abarcaba todo el periodo y nunca
+        // escalaba: critico el ultimo dia, urgente los 3 ultimos.
         bannerClass() {
             if (this.status === 'expired' || this.status === 'past_due') return 'banner-error';
-            if (this.status === 'trial' && this.daysRemaining <= 3) return 'banner-urgent';
-            if (this.status === 'trial' && this.daysRemaining <= 7) return 'banner-warning';
+            if (this.status === 'trial' && this.daysRemaining <= 1) return 'banner-urgent';
+            if (this.status === 'trial' && this.daysRemaining <= 3) return 'banner-warning';
             return 'banner-info';
         },
 
         bannerIcon() {
             if (this.status === 'expired') return 'fa fa-times-circle';
             if (this.status === 'past_due') return 'fa fa-exclamation-circle';
-            if (this.status === 'trial' && this.daysRemaining <= 3) return 'fa fa-clock';
-            if (this.status === 'trial' && this.daysRemaining <= 7) return 'fa fa-exclamation-triangle';
+            if (this.status === 'trial' && this.daysRemaining <= 1) return 'fa fa-clock';
+            if (this.status === 'trial' && this.daysRemaining <= 3) return 'fa fa-exclamation-triangle';
             return 'fa fa-info-circle';
         },
 
         bannerMessage() {
             if (this.status === 'expired') {
-                return 'Tu periodo ha expirado. La funcionalidad de tu cuenta esta <strong>limitada</strong>.';
+                return 'Tu periodo ha expirado y tu tarjeta publica esta <strong>fuera de linea</strong>. Activa tu plan para volver a publicarla.';
             }
             if (this.status === 'past_due') {
-                return 'Tu pago esta <strong>pendiente</strong>. Renueva para mantener el acceso completo.';
+                return 'Tu pago esta <strong>pendiente</strong>. Renueva para que tu tarjeta siga publicada.';
             }
             if (this.status === 'trial' && this.daysRemaining <= 0) {
-                return 'Tu periodo de prueba ha <strong>finalizado</strong>.';
+                return 'Tu periodo de prueba ha <strong>finalizado</strong>. Tu tarjeta dejara de estar disponible.';
+            }
+            if (this.status === 'trial' && this.daysRemaining <= 1) {
+                return 'Tu prueba vence <strong>hoy</strong>. Activa tu plan para que tu tarjeta siga en linea.';
             }
             if (this.status === 'trial' && this.daysRemaining <= 3) {
-                return `Tu prueba vence en <strong>${this.daysRemaining} dia${this.daysRemaining !== 1 ? 's' : ''}</strong>. Activa tu plan ahora.`;
-            }
-            if (this.status === 'trial' && this.daysRemaining <= 7) {
-                return `Tu prueba vence en <strong>${this.daysRemaining} dias</strong>. Mejora tu plan para no perder acceso.`;
+                return `Tu prueba vence en <strong>${this.daysRemaining} dias</strong>. Activa tu plan para no perder tu tarjeta publicada.`;
             }
             if (this.status === 'trial') {
                 return `Periodo de prueba. Te quedan <strong>${this.daysRemaining} dias</strong>.`;

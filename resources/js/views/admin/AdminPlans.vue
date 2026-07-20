@@ -61,12 +61,17 @@
                     </div>
                     <div class="mobile-card-body">
                         <div class="mobile-card-row">
-                            <span class="mobile-card-label">Mensual</span>
-                            <span class="fw-600">${{ formatPrice(row.price_monthly) }}</span>
+                            <span class="mobile-card-label">Precio</span>
+                            <span class="fw-600">
+                                <span v-if="row.is_offer_active" class="price-struck">
+                                    ${{ formatPrice(row.price_regular) }}
+                                </span>
+                                ${{ formatPrice(row.effective_price) }}
+                            </span>
                         </div>
                         <div class="mobile-card-row">
-                            <span class="mobile-card-label">Anual</span>
-                            <span class="fw-600">${{ formatPrice(row.price_yearly) }}</span>
+                            <span class="mobile-card-label">Ciclo</span>
+                            <span class="fw-600">{{ row.billing_period === 'monthly' ? 'Mensual' : 'Anual' }}</span>
                         </div>
                         <div class="mobile-card-row">
                             <span class="mobile-card-label">Estado</span>
@@ -104,12 +109,18 @@
                             <div class="cell-slug">{{ props.row.name }}</div>
                         </span>
 
-                        <span v-else-if="props.column.field === 'price_monthly'">
-                            ${{ formatPrice(props.row.price_monthly) }}
+                        <span v-else-if="props.column.field === 'effective_price'">
+                            <span v-if="props.row.is_offer_active" class="price-struck">
+                                ${{ formatPrice(props.row.price_regular) }}
+                            </span>
+                            <span class="fw-600">${{ formatPrice(props.row.effective_price) }}</span>
+                            <span v-if="props.row.is_offer_active" class="offer-chip">
+                                -{{ props.row.discount_percent }}%
+                            </span>
                         </span>
 
-                        <span v-else-if="props.column.field === 'price_yearly'">
-                            ${{ formatPrice(props.row.price_yearly) }}
+                        <span v-else-if="props.column.field === 'billing_period'">
+                            {{ props.row.billing_period === 'monthly' ? 'Mensual' : 'Anual' }}
                         </span>
 
                         <span v-else-if="props.column.field === 'max_products'">
@@ -184,8 +195,8 @@ export default {
             columns: [
                 { label: '#', field: 'sort_order', sortable: false, tdClass: 'text-center', thClass: 'text-center', width: '60px' },
                 { label: 'Nombre', field: 'display_name', sortable: false },
-                { label: 'Precio Mensual', field: 'price_monthly', sortable: false },
-                { label: 'Precio Anual', field: 'price_yearly', sortable: false },
+                { label: 'Precio', field: 'effective_price', sortable: false },
+                { label: 'Ciclo', field: 'billing_period', sortable: false },
                 { label: 'Tarjetas', field: 'max_cards', sortable: false, type: 'number', tdClass: 'text-center', thClass: 'text-center' },
                 { label: 'Productos', field: 'max_products', sortable: false, tdClass: 'text-center', thClass: 'text-center' },
                 { label: 'Servicios', field: 'max_services', sortable: false, tdClass: 'text-center', thClass: 'text-center' },
@@ -495,6 +506,27 @@ export default {
     }
 
     .filter-select { flex: 1; min-width: 0; }
+}
+
+/* Precio anterior cuando hay oferta vigente */
+.price-struck {
+    color: #94a3b8;
+    font-size: 0.85em;
+    text-decoration: line-through;
+    text-decoration-color: #dc2626;
+    margin-right: 0.3rem;
+}
+
+.offer-chip {
+    display: inline-block;
+    margin-left: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #b91c1c;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    padding: 0.1rem 0.35rem;
+    border-radius: 5px;
 }
 </style>
 

@@ -14,6 +14,8 @@ class Subscription extends Model
     protected $fillable = [
         'company_id',
         'plan_id',
+        'billing_period',
+        'reminders_sent',
         'status',
         'payment_method',
         'payu_subscription_id',
@@ -28,7 +30,31 @@ class Subscription extends Model
         'current_period_start' => 'datetime',
         'current_period_end'   => 'datetime',
         'cancelled_at'         => 'datetime',
+        'reminders_sent'       => 'array',
     ];
+
+    /**
+     * Los recordatorios se marcan por día de antelación ("3", "1") junto con la fecha de
+     * vencimiento a la que corresponden: si la suscripción se renueva, los avisos del
+     * ciclo anterior no deben bloquear los del nuevo.
+     */
+    private function reminderKey(int $days): string
+    {
+        return $days . '@' . ($this->trial_ends_at?->toDateString() ?? 'sin-fecha');
+    }
+
+    public function wasReminderSent(int $days): bool
+    {
+        return in_array($this->reminderKey($days), $this->reminders_sent ?? [], true);
+    }
+
+    public function markReminderSent(int $days): void
+    {
+        $sent = $this->reminders_sent ?? [];
+        $sent[] = $this->reminderKey($days);
+
+        $this->update(['reminders_sent' => array_values(array_unique($sent))]);
+    }
 
     public function company()
     {
@@ -77,10 +103,19 @@ class Subscription extends Model
 
     public function daysRemaining(): int
     {
-        if (!$this->current_period_end) {
+        // En trial manda `trial_ends_at`: es la fecha con la que se disparan los
+        // recordatorios por correo, y si el banner contara por `current_period_end`
+        // ambos podrían contradecirse cuando el trial se extiende.
+        $end = $this->status === 'trial' && $this->trial_ends_at
+            ? $this->trial_ends_at
+            : $this->current_period_end;
+
+        if (!$end) {
             return 0;
         }
 
-        return max(0, (int) now()->diffInDays($this->current_period_end, false));
+        // ceil y no cast a int: truncar dejaba que un vencimiento a 2 dias exactos
+        // (1.9999 dias) se mostrara como 1, sub-reportando hasta un dia completo.
+        return max(0, (int) ceil(now()->diffInDays($end, false)));
     }
 }

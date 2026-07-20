@@ -110,7 +110,6 @@ class ProcessMercadoPagoNotification implements ShouldQueue
     {
         $metadata = $payment->metadata ?? [];
         $planId = $metadata['plan_id'] ?? null;
-        $period = $metadata['billing_period'] ?? 'monthly';
 
         if (! $planId) {
             Log::warning("MercadoPago: payment #{$payment->id} sin plan_id en metadata");
@@ -123,14 +122,8 @@ class ProcessMercadoPagoNotification implements ShouldQueue
         $company = $payment->company;
         if (! $company) return;
 
+        // El periodo lo resuelve el servicio a partir del ciclo del plan.
         $subscription = $subscriptionService->activateSubscription($company, $plan, 'mercadopago');
-
-        // Ajustar periodo si es anual
-        if ($period === 'yearly') {
-            $subscription->update([
-                'current_period_end' => now()->addYear(),
-            ]);
-        }
 
         // Vincular payment a la suscripcion
         $payment->update(['subscription_id' => $subscription->id]);

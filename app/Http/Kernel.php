@@ -72,5 +72,6 @@ class Kernel extends HttpKernel
         // Custom
         'company.access' => \App\Http\Middleware\EnsureCompanyAccess::class,
         'check.limits' => \App\Http\Middleware\CheckPlanLimits::class,
+        'public.active' => \App\Http\Middleware\EnsureActiveSubscriptionForPublic::class,
     ];
 }

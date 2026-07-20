@@ -26,25 +26,41 @@ class CheckSubscriptionExpiry extends Command
     }
 
     /**
-     * Enviar recordatorio a trials que vencen en 7 dias
+     * Recordatorios de vencimiento del trial, en los días configurados en
+     * AppSetting.trial_reminder_days (por defecto 3 y 1).
+     *
+     * Antes avisaba a 7 días fijos, lo que con un trial de 7 días disparaba el mismo día
+     * del alta y no servía de nada.
      */
     private function handleTrialReminders(): void
     {
-        $reminderDays = 7;
-        $targetDate = now()->addDays($reminderDays)->startOfDay();
+        foreach (AppSetting::getTrialReminderDays() as $reminderDays) {
+            $targetDate = now()->addDays($reminderDays)->startOfDay();
 
-        $expiringSoon = Subscription::where('status', 'trial')
-            ->whereDate('trial_ends_at', $targetDate)
-            ->with('company.owner')
-            ->get();
+            $expiringSoon = Subscription::where('status', 'trial')
+                ->whereDate('trial_ends_at', $targetDate)
+                ->with('company.owner')
+                ->get();
 
-        foreach ($expiringSoon as $subscription) {
-            $owner = $subscription->company?->owner;
-            if ($owner) {
+            foreach ($expiringSoon as $subscription) {
+                $owner = $subscription->company?->owner;
+
+                if (!$owner) {
+                    continue;
+                }
+
+                // Sin esto, una segunda corrida el mismo día reenvía el correo.
+                if ($subscription->wasReminderSent($reminderDays)) {
+                    continue;
+                }
+
                 Mail::to($owner->email)->queue(
                     new TrialExpiringMail($owner, $subscription->company, $reminderDays, $subscription->trial_ends_at)
                 );
-                $this->info("Recordatorio enviado: empresa #{$subscription->company_id}");
+
+                $subscription->markReminderSent($reminderDays);
+
+                $this->info("Recordatorio de {$reminderDays} dia(s) enviado: empresa #{$subscription->company_id}");
             }
         }
     }

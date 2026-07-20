@@ -6,18 +6,30 @@ use App\Models\AppSetting;
 use App\Models\Company;
 use App\Models\Plan;
 use App\Models\Subscription;
+use RuntimeException;
 
 class SubscriptionService
 {
+    /**
+     * El trial corre sobre el plan por defecto (hoy "Presencia Digital"), así el usuario
+     * prueba exactamente lo que va a pagar.
+     */
     public function createTrialSubscription(Company $company): Subscription
     {
-        $guestPlan = Plan::where('name', 'free')->firstOrFail();
+        $plan = Plan::default();
+
+        if (!$plan) {
+            throw new RuntimeException(
+                'No hay ningún plan activo: no se puede crear la suscripción de prueba.'
+            );
+        }
 
         $trialDays = AppSetting::getTrialDays();
 
         return Subscription::create([
             'company_id'           => $company->id,
-            'plan_id'              => $guestPlan->id,
+            'plan_id'              => $plan->id,
+            'billing_period'       => $plan->billing_period,
             'status'               => 'trial',
             'trial_ends_at'        => now()->addDays($trialDays),
             'current_period_start' => now(),
@@ -25,6 +37,10 @@ class SubscriptionService
         ]);
     }
 
+    /**
+     * El fin del periodo sale de `Plan::periodEnd()`. Antes se creaba siempre a un mes y
+     * cada uno de los tres sitios que llaman aquí lo parcheaba después con `addYear()`.
+     */
     public function activateSubscription(Company $company, Plan $plan, string $paymentMethod = 'payu'): Subscription
     {
         // Cancelar suscripción activa anterior si existe
@@ -36,13 +52,16 @@ class SubscriptionService
             ]);
         }
 
+        $start = now();
+
         return Subscription::create([
             'company_id'           => $company->id,
             'plan_id'              => $plan->id,
+            'billing_period'       => $plan->billing_period,
             'status'               => 'active',
             'payment_method'       => $paymentMethod,
-            'current_period_start' => now(),
-            'current_period_end'   => now()->addMonth(),
+            'current_period_start' => $start,
+            'current_period_end'   => $plan->periodEnd($start),
         ]);
     }
 

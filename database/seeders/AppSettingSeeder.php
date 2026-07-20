@@ -12,15 +12,27 @@ class AppSettingSeeder extends Seeder
         $settings = [
             [
                 'key'         => 'trial_days',
-                'value'       => '30',
+                'value'       => '7',
                 'type'        => 'integer',
                 'description' => 'Dias de periodo de prueba para nuevos registros',
+            ],
+            [
+                'key'         => 'trial_reminder_days',
+                'value'       => '3,1',
+                'type'        => 'string',
+                'description' => 'Dias antes del vencimiento en que se envia recordatorio (separados por coma)',
             ],
             [
                 'key'         => 'grace_period_days',
                 'value'       => '10',
                 'type'        => 'integer',
                 'description' => 'Dias de gracia despues de vencimiento antes de expirar completamente',
+            ],
+            [
+                'key'         => 'support_whatsapp',
+                'value'       => '573022218054',
+                'type'        => 'string',
+                'description' => 'Numero de WhatsApp de soporte y cotizaciones, con indicativo y sin signos (ej: 573001234567)',
             ],
             [
                 'key'         => 'support_email',

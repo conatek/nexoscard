@@ -7,104 +7,132 @@
                         <i class="fa fa-crown icon-gradient bg-mean-fruit"></i>
                     </div>
                     <div>
-                        Planes
+                        Mi Plan
                         <div class="page-title-subheading text-muted">
-                            Elige el plan ideal para tu empresa
+                            Activa tu presencia digital profesional
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Toggle mensual/anual -->
-        <div class="billing-toggle">
-            <span :class="{ 'active': billingPeriod === 'monthly' }">Mensual</span>
-            <button class="toggle-switch" :class="{ 'yearly': billingPeriod === 'yearly' }" @click="toggleBilling">
-                <span class="toggle-knob"></span>
-            </button>
-            <span :class="{ 'active': billingPeriod === 'yearly' }">
-                Anual
-                <span class="save-badge">Ahorra ~17%</span>
-            </span>
-        </div>
-
         <!-- Loading -->
         <div v-if="loading" class="loading-state">
             <div class="spinner-border text-primary"></div>
-            <p class="text-muted mt-3">Cargando planes...</p>
+            <p class="text-muted mt-3">Cargando...</p>
         </div>
 
-        <!-- Pricing cards -->
-        <div v-else class="plans-grid">
-            <div v-for="plan in plans" :key="plan.id"
-                 class="plan-card"
-                 :class="[planClass(plan), { 'current': isCurrentPlan(plan) }]">
+        <div v-else-if="plan" class="offer-wrap">
+            <!-- Cinta de oferta -->
+            <div v-if="plan.is_offer_active" class="offer-ribbon">
+                <i class="fa fa-bolt"></i>
+                Oferta especial &middot; {{ plan.discount_percent }}% de descuento
+            </div>
 
-                <!-- Badge plan actual -->
-                <div v-if="isCurrentPlan(plan)" class="current-badge">Plan actual</div>
+            <div class="plan-card" :class="{ 'current': isCurrentPlan }">
+                <div v-if="isCurrentPlan" class="current-badge">Plan actual</div>
 
-                <!-- Header -->
                 <div class="plan-header">
-                    <div class="plan-icon" :class="'icon-' + plan.name">
-                        <i :class="planIcon(plan)"></i>
-                    </div>
                     <h3 class="plan-name">{{ plan.display_name }}</h3>
-                    <div class="plan-price">
-                        <span class="price-amount">${{ formatPrice(plan) }}</span>
-                        <span class="price-period" v-if="planPrice(plan) > 0">/ {{ billingPeriod === 'monthly' ? 'mes' : 'año' }}</span>
-                        <span class="price-period" v-else>Gratis</span>
+                    <p class="plan-tagline">
+                        Ideal para emprendedores y negocios que desean tener
+                        presencia digital profesional.
+                    </p>
+
+                    <!-- Precio -->
+                    <div class="price-block">
+                        <div v-if="plan.is_offer_active" class="price-before">
+                            <span class="before-label">Antes</span>
+                            <span class="before-amount">{{ money(plan.price_regular) }}</span>
+                        </div>
+
+                        <div class="price-now">
+                            <span v-if="plan.is_offer_active" class="now-label">Ahora</span>
+                            <span class="now-amount">{{ money(plan.effective_price) }}</span>
+                            <span class="now-period">/ año</span>
+                        </div>
+
+                        <div v-if="plan.is_offer_active" class="price-save">
+                            Ahorras {{ money(plan.price_regular - plan.effective_price) }}
+                        </div>
+                    </div>
+
+                    <!-- Cuenta regresiva: solo si la oferta tiene fecha de fin -->
+                    <div v-if="countdown" class="countdown">
+                        <i class="fa fa-clock"></i>
+                        <span>Por tiempo limitado &middot; termina en</span>
+                        <strong>{{ countdown }}</strong>
                     </div>
                 </div>
 
-                <!-- Features -->
-                <ul class="plan-features">
-                    <li>
-                        <i class="fa fa-check"></i>
-                        <span>{{ plan.max_cards }} {{ plan.max_cards === 1 ? 'tarjeta' : 'tarjetas' }}</span>
-                    </li>
-                    <li>
-                        <i class="fa fa-check"></i>
-                        <span>{{ plan.max_products ? plan.max_products + ' productos' : 'Productos ilimitados' }}</span>
-                    </li>
-                    <li>
-                        <i class="fa fa-check"></i>
-                        <span>{{ plan.max_services ? plan.max_services + ' servicios' : 'Servicios ilimitados' }}</span>
-                    </li>
-                    <li>
-                        <i class="fa fa-check"></i>
-                        <span>{{ plan.available_templates ? plan.available_templates.length + ' plantillas' : 'Todas las plantillas' }}</span>
-                    </li>
-                    <li v-if="plan.show_watermark">
-                        <i class="fa fa-info-circle text-muted"></i>
-                        <span class="text-muted">Con marca NexosCard</span>
-                    </li>
-                    <li v-else>
-                        <i class="fa fa-check"></i>
-                        <span>Sin marca de agua</span>
-                    </li>
-                </ul>
+                <!-- Bullets del plan -->
+                <div class="plan-body">
+                    <p class="features-title">Incluye por todo 1 año:</p>
+                    <ul class="plan-features">
+                        <li v-for="(feature, i) in features" :key="i">
+                            <i class="fa fa-check"></i>
+                            <span>{{ feature }}</span>
+                        </li>
+                    </ul>
+                </div>
 
-                <!-- Action -->
+                <!-- Acción -->
                 <div class="plan-action">
-                    <button v-if="isCurrentPlan(plan)" class="btn-plan btn-current" disabled>
-                        Plan actual
+                    <button v-if="isCurrentPlan && isPaidActive" class="btn-plan btn-current" disabled>
+                        <i class="fa fa-check-circle me-1"></i> Tu plan está activo
                     </button>
-                    <button v-else-if="plan.name === 'free'" class="btn-plan btn-free" disabled>
-                        Incluido
-                    </button>
-                    <router-link v-else
-                        :to="{ name: 'subscription.checkout', params: { planId: plan.id }, query: { period: billingPeriod } }"
-                        class="btn-plan"
-                        :class="'btn-' + plan.name">
-                        {{ isUpgrade(plan) ? 'Mejorar plan' : 'Contratar' }}
+                    <router-link
+                        v-else
+                        :to="{ name: 'subscription.checkout', params: { planId: plan.id } }"
+                        class="btn-plan btn-primary-cta"
+                    >
+                        <i class="fa fa-lock me-1"></i>
+                        Activar por {{ money(plan.effective_price) }}
                     </router-link>
+                    <p class="action-note">
+                        Pago seguro con MercadoPago &middot; Suscripción por 1 año
+                    </p>
                 </div>
             </div>
+
+            <!-- Nota de equipos -->
+            <div class="team-note">
+                <div class="team-icon"><i class="fa fa-users"></i></div>
+                <div class="team-copy">
+                    <strong>¿Necesitas varias tarjetas?</strong>
+                    <p>
+                        Este plan incluye una tarjeta digital. Si tu equipo necesita
+                        varias, tenemos precio especial por volumen.
+                    </p>
+
+                    <!-- WhatsApp abre app o web segun el dispositivo; el mailto solo
+                         funcionaba con un cliente de correo configurado. -->
+                    <a v-if="whatsappLink" :href="whatsappLink" target="_blank" rel="noopener" class="team-btn">
+                        <i class="fab fa-whatsapp"></i>
+                        Cotizar por WhatsApp
+                    </a>
+
+                    <!-- Sin numero configurado, al menos el correo se puede copiar -->
+                    <div v-else class="team-fallback">
+                        <span>{{ supportEmail }}</span>
+                        <button class="btn-copy-mail" :class="{ copied: copiedEmail }" @click="copyEmail">
+                            <i class="fa" :class="copiedEmail ? 'fa-check' : 'fa-copy'"></i>
+                            {{ copiedEmail ? 'Copiado' : 'Copiar' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sin plan configurado -->
+        <div v-else class="loading-state">
+            <p class="text-muted">No hay planes disponibles en este momento.</p>
         </div>
     </div>
 </template>
 
 <script>
+import api from '@/services/api.js';
 import planService from '@/services/planService.js';
 import subscriptionService from '@/services/subscriptionService.js';
 
@@ -113,279 +141,366 @@ export default {
 
     data() {
         return {
-            plans: [],
+            plan: null,
             currentPlan: null,
+            subscriptionStatus: null,
             loading: true,
-            billingPeriod: 'monthly',
+            countdown: '',
+            timer: null,
+            // Se cargan de la configuracion: el Master puede cambiarlos desde el panel.
+            supportEmail: '',
+            supportWhatsapp: null,
+            copiedEmail: false,
+            copyTimer: null,
         };
+    },
+
+    computed: {
+        isCurrentPlan() {
+            return this.currentPlan && this.plan && this.currentPlan.id === this.plan.id;
+        },
+
+        // Estar en trial también "es" el plan actual, pero todavía debe poder pagar.
+        isPaidActive() {
+            return this.subscriptionStatus === 'active';
+        },
+
+        features() {
+            return Array.isArray(this.plan?.features) ? this.plan.features : [];
+        },
+
+        whatsappLink() {
+            if (!this.supportWhatsapp) return null;
+
+            const texto = 'Hola, quiero cotizar NexosCard para mi equipo. '
+                + '¿Me pueden dar precio por varias tarjetas?';
+
+            return `https://api.whatsapp.com/send?phone=${this.supportWhatsapp}`
+                + `&text=${encodeURIComponent(texto)}`;
+        },
     },
 
     async created() {
         await this.load();
     },
 
+    beforeUnmount() {
+        // Sin esto el intervalo sigue corriendo tras salir de la vista.
+        this.stopCountdown();
+        if (this.copyTimer) clearTimeout(this.copyTimer);
+    },
+
     methods: {
         async load() {
             this.loading = true;
             try {
-                const [plansRes, subRes] = await Promise.all([
+                const [plansRes, subRes, contactRes] = await Promise.all([
                     planService.all(),
                     subscriptionService.current(),
+                    api.get('/dashboard'),
                 ]);
-                this.plans = plansRes.data;
+
+                this.supportEmail = contactRes.data.contact?.support_email || '';
+                this.supportWhatsapp = contactRes.data.contact?.support_whatsapp || null;
+
+                // Producto único: se toma el plan por defecto, con el primero de fallback.
+                const plans = plansRes.data || [];
+                this.plan = plans.find(p => p.is_default) || plans[0] || null;
+
                 this.currentPlan = subRes.data.plan || null;
+                this.subscriptionStatus = subRes.data.subscription?.status || null;
+
+                this.startCountdown();
             } finally {
                 this.loading = false;
             }
         },
 
-        toggleBilling() {
-            this.billingPeriod = this.billingPeriod === 'monthly' ? 'yearly' : 'monthly';
+        money(value) {
+            const n = Number(value);
+            if (!Number.isFinite(n)) return '$0';
+            return '$' + n.toLocaleString('es-CO', { maximumFractionDigits: 0 });
         },
 
-        planPrice(plan) {
-            return this.billingPeriod === 'yearly' ? plan.price_yearly : plan.price_monthly;
-        },
+        startCountdown() {
+            this.stopCountdown();
 
-        formatPrice(plan) {
-            const price = this.planPrice(plan);
-            if (price === 0 || price === '0.00') return '0';
-            return Number(price).toLocaleString('es-CO', { maximumFractionDigits: 0 });
-        },
+            if (!this.plan?.is_offer_active || !this.plan?.offer_ends_at) {
+                this.countdown = '';
+                return;
+            }
 
-        isCurrentPlan(plan) {
-            return this.currentPlan && this.currentPlan.id === plan.id;
-        },
+            const tick = () => {
+                const diff = new Date(this.plan.offer_ends_at) - new Date();
 
-        isUpgrade(plan) {
-            if (!this.currentPlan) return true;
-            return plan.sort_order > this.currentPlan.sort_order;
-        },
+                if (diff <= 0) {
+                    this.countdown = '';
+                    this.stopCountdown();
+                    // La oferta venció mientras la página estaba abierta: se recarga el
+                    // plan para que el precio mostrado sea el que el servidor va a cobrar.
+                    this.load();
+                    return;
+                }
 
-        planClass(plan) {
-            return 'plan-' + plan.name;
-        },
+                const d = Math.floor(diff / 86400000);
+                const h = Math.floor((diff % 86400000) / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
 
-        planIcon(plan) {
-            const icons = {
-                free: 'fa fa-user',
-                basico: 'fa fa-star',
-                pro: 'fa fa-crown',
+                this.countdown = d > 0 ? `${d}d ${h}h ${m}m` : `${h}h ${m}m ${s}s`;
             };
-            return icons[plan.name] || 'fa fa-cube';
+
+            tick();
+            this.timer = setInterval(tick, 1000);
+        },
+
+        stopCountdown() {
+            if (this.timer) {
+                clearInterval(this.timer);
+                this.timer = null;
+            }
+        },
+
+        async copyEmail() {
+            try {
+                await navigator.clipboard.writeText(this.supportEmail);
+            } catch {
+                const el = document.createElement('textarea');
+                el.value = this.supportEmail;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+            }
+
+            this.copiedEmail = true;
+            if (this.copyTimer) clearTimeout(this.copyTimer);
+            this.copyTimer = setTimeout(() => { this.copiedEmail = false; }, 2000);
         },
     },
 };
 </script>
 
 <style scoped>
-/* Billing Toggle */
-.billing-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    margin-bottom: 2rem;
-    font-size: 0.95rem;
-    color: #64748b;
-}
-
-.billing-toggle span.active {
-    color: #1e293b;
-    font-weight: 600;
-}
-
-.toggle-switch {
-    width: 48px;
-    height: 26px;
-    background: #cbd5e1;
-    border-radius: 13px;
-    border: none;
-    cursor: pointer;
-    position: relative;
-    transition: background 0.3s;
-    padding: 0;
-}
-
-.toggle-switch.yearly {
-    background: linear-gradient(135deg, #8b5cf6, #ec4899);
-}
-
-.toggle-knob {
-    width: 20px;
-    height: 20px;
-    background: white;
-    border-radius: 50%;
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    transition: transform 0.3s;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-.toggle-switch.yearly .toggle-knob {
-    transform: translateX(22px);
-}
-
-.save-badge {
-    font-size: 0.7rem;
-    font-weight: 700;
-    background: linear-gradient(135deg, #10b981, #34d399);
-    color: white;
-    padding: 0.15rem 0.5rem;
-    border-radius: 10px;
-    margin-left: 0.25rem;
-}
-
-/* Plans Grid */
-.plans-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    max-width: 960px;
+.offer-wrap {
+    max-width: 560px;
     margin: 0 auto;
 }
 
-/* Plan Card */
-.plan-card {
-    background: white;
-    border-radius: 16px;
-    padding: 2rem;
-    border: 2px solid #e2e8f0;
-    position: relative;
-    transition: all 0.3s ease;
+/* ===== Cinta de oferta ===== */
+.offer-ribbon {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #dc2626, #ec4899);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+    padding: 0.7rem 1rem;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.25);
 }
 
-.plan-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+/* ===== Card ===== */
+.plan-card {
+    position: relative;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0 0 16px 16px;
+    padding: 2rem 1.75rem 1.75rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
 }
 
 .plan-card.current {
-    border-color: #8b5cf6;
-    box-shadow: 0 0 0 1px #8b5cf6;
+    border-color: #7c3aed;
 }
 
 .current-badge {
     position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: linear-gradient(135deg, #8b5cf6, #ec4899);
-    color: white;
-    padding: 0.25rem 1rem;
-    border-radius: 20px;
+    top: -0.75rem;
+    right: 1.25rem;
+    background: #7c3aed;
+    color: #ffffff;
     font-size: 0.75rem;
-    font-weight: 700;
-    white-space: nowrap;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
 }
 
-/* Plan Header */
 .plan-header {
     text-align: center;
-    margin-bottom: 1.5rem;
-}
-
-.plan-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-    font-size: 1.25rem;
-}
-
-.icon-free {
-    background: #f1f5f9;
-    color: #64748b;
-}
-
-.icon-basico {
-    background: linear-gradient(135deg, #dbeafe, #e0f2fe);
-    color: #2563eb;
-}
-
-.icon-pro {
-    background: linear-gradient(135deg, #f3e8ff, #fce7f3);
-    color: #8b5cf6;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .plan-name {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: #1e293b;
-    margin-bottom: 0.5rem;
+    margin: 0 0 0.5rem;
 }
 
-.plan-price {
+.plan-tagline {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin: 0 auto 1.5rem;
+    max-width: 380px;
+    line-height: 1.5;
+}
+
+/* ===== Precio ===== */
+.price-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.price-before {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #94a3b8;
+}
+
+.before-label {
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+/* Tachado en rojo: el precio anterior debe leerse como descartado, no como el vigente */
+.before-amount {
+    position: relative;
+    font-weight: 600;
+    text-decoration: line-through;
+    text-decoration-color: #dc2626;
+    text-decoration-thickness: 2px;
+}
+
+.price-now {
     display: flex;
     align-items: baseline;
-    justify-content: center;
-    gap: 0.25rem;
+    gap: 0.4rem;
 }
 
-.price-amount {
-    font-size: 2rem;
+.now-label {
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #059669;
+}
+
+.now-amount {
+    font-size: 3rem;
     font-weight: 800;
-    color: #1e293b;
+    line-height: 1;
+    color: #059669;
 }
 
-.price-period {
-    font-size: 0.9rem;
+.now-period {
+    font-size: 1rem;
+    font-weight: 500;
     color: #64748b;
 }
 
-/* Features */
+.price-save {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #059669;
+    background: #d1fae5;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+}
+
+/* ===== Contador ===== */
+.countdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1.1rem;
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    font-size: 0.85rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+}
+
+.countdown strong {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ===== Features ===== */
+.plan-body {
+    padding: 1.5rem 0;
+}
+
+.features-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+    margin: 0 0 0.9rem;
+}
+
 .plan-features {
     list-style: none;
     padding: 0;
-    margin: 0 0 1.5rem;
-    flex: 1;
+    margin: 0;
+    display: grid;
+    gap: 0.6rem;
 }
 
 .plan-features li {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem 0;
+    align-items: flex-start;
+    gap: 0.6rem;
     font-size: 0.9rem;
     color: #334155;
+    line-height: 1.4;
 }
 
-.plan-features li i.fa-check {
-    color: #10b981;
+.plan-features i {
+    color: #059669;
     font-size: 0.8rem;
-    width: 16px;
-    text-align: center;
+    margin-top: 0.25rem;
+    flex-shrink: 0;
 }
 
-.plan-features li i.fa-info-circle {
-    font-size: 0.8rem;
-    width: 16px;
-    text-align: center;
-}
-
-/* Action Buttons */
+/* ===== Acción ===== */
 .plan-action {
-    margin-top: auto;
+    text-align: center;
 }
 
 .btn-plan {
     display: block;
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.9rem 1rem;
     border-radius: 10px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    text-align: center;
-    text-decoration: none;
     border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+}
+
+.btn-primary-cta {
+    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+}
+
+.btn-primary-cta:hover {
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(139, 92, 246, 0.5);
 }
 
 .btn-current {
@@ -394,51 +509,116 @@ export default {
     cursor: default;
 }
 
-.btn-free {
-    background: #f1f5f9;
+.action-note {
+    font-size: 0.78rem;
     color: #94a3b8;
-    cursor: default;
+    margin: 0.7rem 0 0;
 }
 
-.btn-basico {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: white;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+/* ===== Nota de equipos ===== */
+.team-note {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-top: 1.25rem;
+    padding: 1.1rem 1.25rem;
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    border-radius: 12px;
 }
 
-.btn-basico:hover {
+.team-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background: #7c3aed;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.team-copy strong {
+    display: block;
+    font-size: 0.95rem;
+    color: #1e293b;
+    margin-bottom: 0.2rem;
+}
+
+.team-copy p {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0 0 0.4rem;
+    line-height: 1.5;
+}
+
+/* Boton de WhatsApp: accion real, no un enlace que puede no hacer nada */
+.team-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: #25d366;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.55rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+    transition: all 0.2s ease;
+}
+
+.team-btn:hover {
+    background: #1eb855;
+    color: #ffffff;
     transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
-    color: white;
 }
 
-.btn-pro {
-    background: linear-gradient(135deg, #8b5cf6, #ec4899);
-    color: white;
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+.team-btn i { font-size: 1rem; }
+
+/* Sin numero configurado: al menos el correo se puede copiar */
+.team-fallback {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #475569;
 }
 
-.btn-pro:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
-    color: white;
+.btn-copy-mail {
+    border: 1px solid #ddd6fe;
+    background: #ffffff;
+    color: #7c3aed;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    cursor: pointer;
 }
 
-/* Loading */
+.btn-copy-mail i { margin-right: 0.25rem; }
+.btn-copy-mail.copied { color: #059669; border-color: #a7f3d0; }
+
+/* ===== Loading ===== */
 .loading-state {
     text-align: center;
-    padding: 4rem 0;
+    padding: 4rem 1rem;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .plans-grid {
-        grid-template-columns: 1fr;
-        max-width: 400px;
+/* ===== Responsive ===== */
+@media (max-width: 576px) {
+    .now-amount {
+        font-size: 2.4rem;
     }
 
-    .price-amount {
-        font-size: 1.75rem;
+    .plan-card {
+        padding: 1.5rem 1.15rem 1.25rem;
+    }
+
+    .team-note {
+        flex-direction: column;
+        gap: 0.75rem;
     }
 }
 </style>

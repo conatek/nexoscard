@@ -81,12 +81,8 @@ class PaymentAdminController extends Controller
             $plan = $planId ? Plan::find($planId) : null;
 
             if ($plan) {
-                $billingPeriod = $payment->metadata['billing_period'] ?? 'monthly';
+                // El periodo lo resuelve el servicio a partir del ciclo del plan.
                 $subscription = $subscriptionService->activateSubscription($company, $plan, 'manual');
-
-                if ($billingPeriod === 'yearly') {
-                    $subscription->update(['current_period_end' => now()->addYear()]);
-                }
 
                 $payment->update(['subscription_id' => $subscription->id]);
             }

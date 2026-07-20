@@ -41,7 +41,18 @@
                     </div>
                     <div class="checkout-row">
                         <span class="label">Periodo</span>
-                        <span class="value">{{ billingPeriod === 'yearly' ? 'Anual' : 'Mensual' }}</span>
+                        <span class="value">Anual &middot; 12 meses</span>
+                    </div>
+                    <div v-if="plan.is_offer_active" class="checkout-row">
+                        <span class="label">Precio normal</span>
+                        <span class="value struck">${{ money(plan.price_regular) }}</span>
+                    </div>
+                    <div v-if="plan.is_offer_active" class="checkout-row">
+                        <span class="label">Descuento</span>
+                        <span class="value discount">
+                            &minus;${{ money(plan.price_regular - plan.effective_price) }}
+                            ({{ plan.discount_percent }}%)
+                        </span>
                     </div>
                     <div class="checkout-divider"></div>
                     <div class="checkout-row total">
@@ -109,7 +120,6 @@ export default {
             loadingBrick: true,
             processing: false,
             error: null,
-            billingPeriod: 'monthly',
             paymentResult: null,
             brickController: null,
         };
@@ -117,15 +127,13 @@ export default {
 
     computed: {
         formatPrice() {
-            if (!this.plan) return '0';
-            const price = this.billingPeriod === 'yearly' ? this.plan.price_yearly : this.plan.price_monthly;
-            return Number(price).toLocaleString('es-CO', { maximumFractionDigits: 0 });
+            return this.money(this.totalAmount);
         },
+        // El precio efectivo lo resuelve el servidor (oferta vigente o precio regular);
+        // aquí solo se muestra y se reenvía como `expected_amount` para que el backend
+        // aborte si cambió mientras se llenaba el formulario.
         totalAmount() {
-            if (!this.plan) return 0;
-            return this.billingPeriod === 'yearly'
-                ? Number(this.plan.price_yearly)
-                : Number(this.plan.price_monthly);
+            return this.plan ? Number(this.plan.effective_price) : 0;
         },
         resultTitle() {
             if (!this.paymentResult) return '';
@@ -144,7 +152,6 @@ export default {
     },
 
     async created() {
-        this.billingPeriod = this.$route.query.period || 'monthly';
         await this.loadPlan();
     },
 
@@ -155,20 +162,20 @@ export default {
     },
 
     methods: {
+        money(value) {
+            const n = Number(value);
+            if (!Number.isFinite(n)) return '0';
+            return n.toLocaleString('es-CO', { maximumFractionDigits: 0 });
+        },
+
         async loadPlan() {
             this.loadingPlan = true;
             try {
-                const { data } = await planService.all();
-                const planId = parseInt(this.$route.params.planId);
-                this.plan = data.find(p => p.id === planId) || null;
-
-                if (!this.plan) {
-                    this.error = 'Plan no encontrado.';
-                } else {
-                    this.$nextTick(() => this.initBrick());
-                }
+                const { data } = await planService.show(this.$route.params.planId);
+                this.plan = data;
+                this.$nextTick(() => this.initBrick());
             } catch {
-                this.error = 'Error al cargar el plan.';
+                this.error = 'Plan no encontrado.';
             } finally {
                 this.loadingPlan = false;
             }
@@ -225,7 +232,9 @@ export default {
             try {
                 const { data } = await paymentService.process({
                     plan_id:               this.plan.id,
-                    billing_period:        this.billingPeriod,
+                    // Precio que el usuario tenía en pantalla: el servidor rechaza el
+                    // cobro si la oferta venció mientras llenaba el formulario.
+                    expected_amount:       this.totalAmount,
                     token:                 cardFormData.token,
                     payment_method_id:     cardFormData.payment_method_id,
                     installments:          cardFormData.installments,
@@ -300,6 +309,18 @@ export default {
 .checkout-row .value {
     font-weight: 600;
     color: #1e293b;
+}
+
+/* Precio anterior: tachado en rojo para que se lea como descartado */
+.checkout-row .value.struck {
+    color: #94a3b8;
+    font-weight: 500;
+    text-decoration: line-through;
+    text-decoration-color: #dc2626;
+}
+
+.checkout-row .value.discount {
+    color: #059669;
 }
 
 .checkout-row.total .value {

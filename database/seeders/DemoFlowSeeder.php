@@ -14,9 +14,15 @@ class DemoFlowSeeder extends Seeder
 {
     public function run(): void
     {
-        $freePlan  = Plan::where('name', 'free')->first();
-        $basicoPlan = Plan::where('name', 'basico')->first();
-        $proPlan    = Plan::where('name', 'pro')->first();
+        // Solo hay un producto: los 6 escenarios de estado corren todos sobre él.
+        $plan = Plan::default();
+
+        if (!$plan) {
+            $this->command?->error('No hay plan por defecto. Corre PlanSeeder primero.');
+            return;
+        }
+
+        $freePlan = $basicoPlan = $proPlan = $plan;
 
         // ─────────────────────────────────────────────────────────────
         // 1. TRIAL FRESCO (25 dias restantes)
@@ -157,7 +163,7 @@ class DemoFlowSeeder extends Seeder
             'payment_method'         => 'credit_card',
             'mercadopago_payment_id' => 'DEMO-001',
             'paid_at'                => now()->subDays(10),
-            'metadata'               => ['plan_id' => $basicoPlan->id, 'billing_period' => 'monthly', 'plan_name' => 'Basico'],
+            'metadata'               => ['plan_id' => $basicoPlan->id, 'billing_period' => 'yearly', 'plan_name' => 'Presencia Digital'],
         ]);
 
         // ─────────────────────────────────────────────────────────────
@@ -195,7 +201,7 @@ class DemoFlowSeeder extends Seeder
             'payment_method'         => 'credit_card',
             'mercadopago_payment_id' => 'DEMO-002',
             'paid_at'                => now()->subDays(33),
-            'metadata'               => ['plan_id' => $proPlan->id, 'billing_period' => 'monthly', 'plan_name' => 'Pro'],
+            'metadata'               => ['plan_id' => $proPlan->id, 'billing_period' => 'yearly', 'plan_name' => 'Presencia Digital'],
         ]);
 
         // ─────────────────────────────────────────────────────────────
