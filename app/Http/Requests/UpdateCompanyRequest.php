@@ -28,6 +28,8 @@ class UpdateCompanyRequest extends FormRequest
             ],
             'logo' => ['nullable', 'image', 'max:5120'],
             'address' => ['nullable', 'string', 'max:500'],
+            'city' => ['nullable', 'string', 'max:120'],
+            'country' => ['nullable', 'string', 'max:120'],
             'web' => ['nullable', 'url', 'max:255'],
             'my_business' => ['nullable', 'url', 'max:255'],
             'facebook' => ['nullable', 'url', 'max:255'],

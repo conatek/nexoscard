@@ -12,10 +12,7 @@
                 <div class="page-title-wrapper">
                     <div class="page-title-heading">
                         <div class="page-title-icon">
-                            <img v-if="company.logo_path"
-                                 :src="company.logo_path"
-                                 class="company-logo-header" />
-                            <i v-else class="fa fa-building icon-gradient bg-mean-fruit"></i>
+                            <i class="fa fa-building icon-gradient bg-mean-fruit"></i>
                         </div>
                         <div>
                             {{ company.name }}
@@ -84,6 +81,10 @@
                         <div v-if="company.address" class="info-item">
                             <i class="fa fa-map-marker-alt"></i>
                             <span>{{ company.address }}</span>
+                        </div>
+                        <div v-if="company.city || company.country" class="info-item">
+                            <i class="fa fa-city"></i>
+                            <span>{{ [company.city, company.country].filter(Boolean).join(', ') }}</span>
                         </div>
                         <div v-if="company.web" class="info-item">
                             <i class="fa fa-globe"></i>
@@ -547,14 +548,6 @@ export default {
 }
 
 /* Header */
-.company-logo-header {
-    height: 42px;
-    width: auto;
-    max-width: 120px;
-    object-fit: contain;
-    border-radius: 6px;
-}
-
 .slug-link {
     color: #64748b;
     text-decoration: none;

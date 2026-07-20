@@ -16,6 +16,8 @@ class Company extends Model
         'logo_path',
         'logo_public_id',
         'address',
+        'city',
+        'country',
         'web',
         'my_business',
         'facebook',
@@ -81,6 +83,40 @@ class Company extends Model
     }
 
     /**
+     * La suscripción más reciente sin filtrar por estado.
+     *
+     * `activeSubscription()` usa el scope `active()`, que solo abarca trial y active: no
+     * sirve para decidir la visibilidad pública porque dejaría la tarjeta caída durante
+     * los días de gracia (past_due).
+     */
+    public function latestSubscription(): ?Subscription
+    {
+        // Se desempata por id: al reactivar, la suscripción nueva y la vieja pueden
+        // compartir `created_at` al segundo, y ordenar solo por fecha dejaría la tarjeta
+        // fuera de línea después de haber pagado.
+        return $this->subscriptions()
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->first();
+    }
+
+    /**
+     * Si la tarjeta pública sigue online. Durante el periodo de gracia (past_due) se
+     * mantiene: los días de gracia existen para que un cobro rechazado no tumbe de
+     * inmediato la presencia del cliente.
+     */
+    public function hasPublicAccess(): bool
+    {
+        $subscription = $this->latestSubscription();
+
+        if (!$subscription) {
+            return false;
+        }
+
+        return in_array($subscription->status, ['trial', 'active', 'past_due'], true);
+    }
+
+    /**
      * Obtener o crear settings con valores por defecto
      */
     public function getOrCreateSettings(): CompanySetting
@@ -88,7 +124,7 @@ class Company extends Model
         $settings = $this->settings()->first();
 
         if (!$settings) {
-            $templateName = 'action';
+            $templateName = 'impulso';
             $defaults = config("templates.schemas.{$templateName}", []);
 
             // Extraer solo los valores del schema

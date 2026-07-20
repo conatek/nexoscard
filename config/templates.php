@@ -46,11 +46,11 @@ return [
             'component' => 'TemplateVibrant',
             'thumbnail' => '/img/templates/vibrant.png',
         ],
-        'action' => [
-            'name' => 'Acción',
-            'description' => 'Diseño orientado a la conversión con botones de contacto rápido y video.',
-            'component' => 'TemplateAction',
-            'thumbnail' => '/img/templates/action.png',
+        'impulso' => [
+            'name' => 'Impulso',
+            'description' => 'Plantilla corporativa con cabecera adaptable (empresa / asesor) y grilla por rubro.',
+            'component' => 'TemplateImpulso',
+            'thumbnail' => '/img/templates/impulso.png',
         ],
     ],
 
@@ -1063,146 +1063,90 @@ return [
                 ],
             ],
         ],
-        // Plantilla Action (orientada a conversión)
-        'action' => [
+
+        /*
+        | Plantilla "Impulso": diseño mayormente fijo (Open Sans, colores/tamaños/radios
+        | codificados en el componente). El cliente solo edita: color de fondo, rubro,
+        | orientación del logo, video y los 2 enlaces de la grilla. El resto de datos
+        | (contacto, redes, dirección, ciudad/país) provienen de card/company.
+        */
+        'impulso' => [
             'general' => [
                 '_label' => 'Estilo General',
-                'fuentePrincipal' => [
-                    'type' => 'select',
-                    'label' => 'Tipografía',
-                    'value' => 'Montserrat',
-                    'options' => ['Montserrat', 'Roboto', 'Open Sans', 'Lato'],
-                ],
                 'colorFondo' => [
                     'type' => 'color',
                     'label' => 'Color de Fondo',
-                    'value' => '#ffffff',
+                    'value' => '#0a1f44',
                 ],
             ],
-            'hero' => [
-                '_label' => 'Cabecera',
-                'imagenFondo' => [
-                    'type' => 'image',
-                    'label' => 'Imagen de Fondo',
-                    'value' => '',
-                    'aspectRatio' => 16 / 9,
-                ],
-                'mostrarLogo' => [
-                    'type' => 'toggle',
-                    'label' => 'Mostrar Logo / Nombre',
-                    'value' => true,
-                ],
-                'mostrarEslogan' => [
-                    'type' => 'toggle',
-                    'label' => 'Mostrar Lema',
-                    'value' => true,
-                ],
-                'opacidadOverlay' => [
-                    'type' => 'range',
-                    'label' => 'Oscurecer Fondo',
-                    'value' => 0.6,
-                    'min' => 0,
-                    'max' => 0.9,
-                    'step' => 0.1,
-                ],
-                'eslogan' => [
-                    'type' => 'text',
-                    'label' => 'Texto del Lema',
-                    'value' => 'Tu lema aquí',
-                ],
-            ],
-            'cta' => [
-                '_label' => 'Botón Principal',
-                'texto' => [
-                    'type' => 'text',
-                    'label' => 'Texto del Botón',
-                    'value' => 'Solicita información',
-                ],
-                'colorFondo' => [
-                    'type' => 'color',
-                    'label' => 'Color del Botón',
-                    'value' => '#5cb85c',
-                ],
-                'colorTexto' => [
-                    'type' => 'color',
-                    'label' => 'Color del Texto',
-                    'value' => '#ffffff',
-                ],
-                'tamanoTexto' => [
-                    'type' => 'range',
-                    'label' => 'Tamaño del Texto',
-                    'value' => 1.2,
-                    'min' => 0.8,
-                    'max' => 2,
-                    'step' => 0.1,
-                    'unit' => 'rem',
-                ],
-                'radio' => [
-                    'type' => 'range',
-                    'label' => 'Redondeo de Esquinas',
-                    'value' => 50,
-                    'min' => 0,
-                    'max' => 50,
-                    'unit' => 'px',
-                ],
-                'tipoBorde' => [
+            'rubro' => [
+                '_label' => 'Rubro / Categoría',
+                'tipo' => [
                     'type' => 'select',
-                    'label' => 'Borde',
-                    'value' => 'none',
-                    'options' => ['none', 'solid', 'dashed', 'dotted'],
-                ],
-                'colorBorde' => [
-                    'type' => 'color',
-                    'label' => 'Color del Borde',
-                    'value' => '#ffffff',
-                ],
-                'grosorBorde' => [
-                    'type' => 'range',
-                    'label' => 'Grosor del Borde',
-                    'value' => 2,
-                    'min' => 1,
-                    'max' => 6,
-                    'unit' => 'px',
-                ],
-                'sombra' => [
-                    'type' => 'toggle',
-                    'label' => 'Mostrar Sombra',
-                    'value' => true,
+                    'label' => 'Rubro del negocio',
+                    'value' => 'empresas',
+                    'options' => ['empresas', 'inmobiliarias', 'profesionales', 'comerciantes', 'alimentos', 'hospedajes', 'servicios'],
                 ],
             ],
-            'contactoRapido' => [
-                '_label' => 'Botones de Contacto',
-                'radio' => [
+            'glass' => [
+                '_label' => 'Efecto Cristal',
+                'activar' => [
+                    'type' => 'toggle',
+                    'label' => 'Activar efecto cristal',
+                    'value' => true,
+                ],
+                'opacidad' => [
                     'type' => 'range',
-                    'label' => 'Redondeo de Esquinas',
-                    'value' => 6,
+                    'label' => 'Opacidad del fondo',
+                    'value' => 0.15,
+                    'min' => 0,
+                    'max' => 1,
+                    'step' => 0.05,
+                ],
+                'desenfoque' => [
+                    'type' => 'range',
+                    'label' => 'Nivel de desenfoque',
+                    'value' => 12,
                     'min' => 0,
                     'max' => 30,
+                    'step' => 1,
                     'unit' => 'px',
                 ],
-                'tamanoTexto' => [
-                    'type' => 'range',
-                    'label' => 'Tamaño Texto e Iconos',
-                    'value' => 0.9,
-                    'min' => 0.7,
-                    'max' => 1.4,
-                    'step' => 0.1,
-                    'unit' => 'rem',
+                'borde' => [
+                    'type' => 'toggle',
+                    'label' => 'Borde luminoso',
+                    'value' => true,
                 ],
-                'colorLlamar' => [
-                    'type' => 'color',
-                    'label' => 'Color Llamar',
-                    'value' => '#5b7cfa',
+                'luces' => [
+                    'type' => 'toggle',
+                    'label' => 'Luces de ambiente',
+                    'value' => true,
                 ],
-                'colorWhatsapp' => [
+                'colorLuz1' => [
                     'type' => 'color',
-                    'label' => 'Color WhatsApp',
-                    'value' => '#10c469',
+                    'label' => 'Color de luz 1',
+                    'value' => '#7c3aed',
                 ],
-                'colorEmail' => [
+                'colorLuz2' => [
                     'type' => 'color',
-                    'label' => 'Color Email',
-                    'value' => '#f05050',
+                    'label' => 'Color de luz 2',
+                    'value' => '#2f6fed',
+                ],
+            ],
+            'cabecera' => [
+                '_label' => 'Cabecera',
+                'logoHorizontal' => [
+                    'type' => 'toggle',
+                    'label' => 'Logo horizontal (banner)',
+                    'value' => false,
+                ],
+            ],
+            'whatsapp' => [
+                '_label' => 'Botón de WhatsApp',
+                'texto' => [
+                    'type' => 'text',
+                    'label' => 'Texto del botón (opcional)',
+                    'value' => '',
                 ],
             ],
             'video' => [
@@ -1215,234 +1159,20 @@ return [
                 'urlId' => [
                     'type' => 'text',
                     'label' => 'ID del video de YouTube',
-                    'value' => 'dQw4w9WgXcQ',
-                ],
-                'radio' => [
-                    'type' => 'range',
-                    'label' => 'Redondeo de Esquinas',
-                    'value' => 8,
-                    'min' => 0,
-                    'max' => 20,
-                    'unit' => 'px',
+                    'value' => '',
                 ],
             ],
-            'actionButtons' => [
-                '_label' => 'Botones de Acción',
-                'colorFondo' => [
-                    'type' => 'color',
-                    'label' => 'Color de Fondo',
-                    'value' => '#ffffff',
-                ],
-                'colorTexto' => [
-                    'type' => 'color',
-                    'label' => 'Color del Texto',
-                    'value' => '#000000',
-                ],
-                'colorBorde' => [
-                    'type' => 'color',
-                    'label' => 'Color del Borde',
-                    'value' => '#000000',
-                ],
-                'radio' => [
-                    'type' => 'range',
-                    'label' => 'Redondeo de Esquinas',
-                    'value' => 8,
-                    'min' => 0,
-                    'max' => 20,
-                    'unit' => 'px',
-                ],
-                'textoBoton1' => [
+            'enlaces' => [
+                '_label' => 'Enlaces de la grilla',
+                'enlace1' => [
                     'type' => 'text',
-                    'label' => 'Texto Botón 1',
-                    'value' => 'Sobre nosotros',
+                    'label' => 'Enlace catálogo / portafolio / propiedades',
+                    'value' => '',
                 ],
-                'iconoBoton1' => [
-                    'type' => 'select',
-                    'label' => 'Ícono Botón 1',
-                    'value' => 'bi-people-fill',
-                    'options' => ['bi-people-fill', 'bi-building', 'bi-info-circle-fill', 'bi-person-lines-fill', 'bi-briefcase-fill', 'bi-house-fill', 'bi-award-fill', 'bi-star-fill', 'bi-heart-fill', 'bi-shield-check'],
-                ],
-                'colorIconoBoton1' => [
-                    'type' => 'color',
-                    'label' => 'Color Ícono Botón 1',
-                    'value' => '#1a237e',
-                ],
-                'textoBoton2' => [
+                'enlace2' => [
                     'type' => 'text',
-                    'label' => 'Texto Botón 2',
-                    'value' => 'Nuestros servicios',
-                ],
-                'iconoBoton2' => [
-                    'type' => 'select',
-                    'label' => 'Ícono Botón 2',
-                    'value' => 'bi-journal-text',
-                    'options' => ['bi-journal-text', 'bi-gear-fill', 'bi-tools', 'bi-wrench-adjustable', 'bi-clipboard-check', 'bi-list-check', 'bi-grid-fill', 'bi-box-seam', 'bi-cart-fill', 'bi-tag-fill'],
-                ],
-                'colorIconoBoton2' => [
-                    'type' => 'color',
-                    'label' => 'Color Ícono Botón 2',
-                    'value' => '#455a64',
-                ],
-                'textoBoton3' => [
-                    'type' => 'text',
-                    'label' => 'Texto Botón 3',
-                    'value' => 'Abrir QR',
-                ],
-                'iconoBoton3' => [
-                    'type' => 'select',
-                    'label' => 'Ícono Botón 3',
-                    'value' => 'bi-qr-code',
-                    'options' => ['bi-qr-code', 'bi-share-fill', 'bi-link-45deg', 'bi-send-fill', 'bi-download', 'bi-upload', 'bi-camera-fill', 'bi-phone-fill', 'bi-envelope-fill', 'bi-globe'],
-                ],
-                'colorIconoBoton3' => [
-                    'type' => 'color',
-                    'label' => 'Color Ícono Botón 3',
-                    'value' => '#000000',
-                ],
-            ],
-            'social' => [
-                '_label' => 'Botones Sociales',
-                'colorIcono' => [
-                    'type' => 'color',
-                    'label' => 'Color de Íconos',
-                    'value' => '#ffffff',
-                ],
-                'tamano' => [
-                    'type' => 'range',
-                    'label' => 'Tamaño de Botones',
-                    'value' => 40,
-                    'min' => 30,
-                    'max' => 56,
-                    'unit' => 'px',
-                ],
-                'tamanoIcono' => [
-                    'type' => 'range',
-                    'label' => 'Tamaño de Íconos',
-                    'value' => 1.2,
-                    'min' => 0.8,
-                    'max' => 2,
-                    'step' => 0.1,
-                    'unit' => 'rem',
-                ],
-                'radio' => [
-                    'type' => 'range',
-                    'label' => 'Redondeo de Esquinas',
-                    'value' => 50,
-                    'min' => 0,
-                    'max' => 50,
-                    'unit' => '%',
-                ],
-                'sombra' => [
-                    'type' => 'toggle',
-                    'label' => 'Sombra en Botones',
-                    'value' => true,
-                ],
-                'mostrarFacebook' => [
-                    'type' => 'toggle',
-                    'label' => 'Mostrar Facebook',
-                    'value' => true,
-                ],
-                'fondoFacebook' => [
-                    'type' => 'color',
-                    'label' => 'Fondo Facebook',
-                    'value' => '#3b5998',
-                ],
-                'mostrarInstagram' => [
-                    'type' => 'toggle',
-                    'label' => 'Mostrar Instagram',
-                    'value' => true,
-                ],
-                'fondoInstagram' => [
-                    'type' => 'color',
-                    'label' => 'Fondo Instagram',
-                    'value' => '#e1306c',
-                ],
-                'mostrarYoutube' => [
-                    'type' => 'toggle',
-                    'label' => 'Mostrar YouTube',
-                    'value' => true,
-                ],
-                'fondoYoutube' => [
-                    'type' => 'color',
-                    'label' => 'Fondo YouTube',
-                    'value' => '#ff0000',
-                ],
-                'mostrarTiktok' => [
-                    'type' => 'toggle',
-                    'label' => 'Mostrar TikTok',
-                    'value' => true,
-                ],
-                'fondoTiktok' => [
-                    'type' => 'color',
-                    'label' => 'Fondo TikTok',
-                    'value' => '#000000',
-                ],
-                'mostrarLinkedin' => [
-                    'type' => 'toggle',
-                    'label' => 'Mostrar LinkedIn',
-                    'value' => true,
-                ],
-                'fondoLinkedin' => [
-                    'type' => 'color',
-                    'label' => 'Fondo LinkedIn',
-                    'value' => '#0077b5',
-                ],
-                'mostrarUbicacion' => [
-                    'type' => 'toggle',
-                    'label' => 'Mostrar Ubicación',
-                    'value' => true,
-                ],
-                'fondoUbicacion' => [
-                    'type' => 'color',
-                    'label' => 'Fondo Ubicación',
-                    'value' => '#0000ed',
-                ],
-                'mostrarWeb' => [
-                    'type' => 'toggle',
-                    'label' => 'Mostrar Web',
-                    'value' => true,
-                ],
-                'fondoWeb' => [
-                    'type' => 'color',
-                    'label' => 'Fondo Web',
-                    'value' => '#0000ed',
-                ],
-                'mostrarVcard' => [
-                    'type' => 'toggle',
-                    'label' => 'Mostrar vCard',
-                    'value' => true,
-                ],
-                'fondoVcard' => [
-                    'type' => 'color',
-                    'label' => 'Fondo vCard',
-                    'value' => '#87ceeb',
-                ],
-            ],
-            'footer' => [
-                '_label' => 'Pie de Página',
-                'texto' => [
-                    'type' => 'text',
-                    'label' => 'Texto',
-                    'value' => 'by NexosCard.com',
-                ],
-                'colorFondo' => [
-                    'type' => 'color',
-                    'label' => 'Color de Fondo',
-                    'value' => '#ffffff',
-                ],
-                'colorTexto' => [
-                    'type' => 'color',
-                    'label' => 'Color del Texto',
-                    'value' => '#666666',
-                ],
-                'tamanoTexto' => [
-                    'type' => 'range',
-                    'label' => 'Tamaño de Texto',
-                    'value' => 0.9,
-                    'min' => 0.7,
-                    'max' => 1.3,
-                    'step' => 0.1,
-                    'unit' => 'rem',
+                    'label' => 'Enlace agenda / asesoría / domicilio',
+                    'value' => '',
                 ],
             ],
         ],

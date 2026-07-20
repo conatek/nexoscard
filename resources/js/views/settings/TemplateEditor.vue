@@ -93,26 +93,27 @@
                     </router-link>
                 </div>
 
-                <!-- Acordeón de Secciones -->
+                <!-- Acordeón de Secciones (la sección destacada va primero y siempre abierta) -->
                 <div v-if="hasCards" class="accordion" id="settingsAccordion">
                     <div
-                        class="accordion-item"
-                        v-for="(section, sectionKey) in schema"
+                        :class="isFeatured(sectionKey) ? 'featured-item' : 'accordion-item'"
+                        v-for="(section, sectionKey) in orderedSchema"
                         :key="sectionKey"
                     >
                         <h2 class="accordion-header">
                             <button
                                 class="accordion-button"
-                                :class="{ collapsed: activeSection !== sectionKey }"
+                                :class="{ collapsed: !isSectionOpen(sectionKey) }"
                                 type="button"
                                 @click="toggleSection(sectionKey)"
                             >
+                                <i v-if="isFeatured(sectionKey)" class="fa fa-star me-2 featured-icon"></i>
                                 {{ section._label || sectionKey }}
                             </button>
                         </h2>
                         <div
                             class="accordion-collapse collapse"
-                            :class="{ show: activeSection === sectionKey }"
+                            :class="{ show: isSectionOpen(sectionKey) }"
                         >
                             <div class="accordion-body">
                                 <div
@@ -418,6 +419,9 @@ import serviceService from '../../services/serviceService'
 import productService from '../../services/productService'
 import LivePreview from '../../components/templates/LivePreview.vue'
 
+// Sección que se muestra separada y destacada al principio del panel de ajustes.
+const FEATURED_SECTION = 'rubro'
+
 export default {
     name: 'TemplateEditor',
 
@@ -470,6 +474,17 @@ export default {
 
         hasChanges() {
             return JSON.stringify(this.customization) !== JSON.stringify(this.originalCustomization)
+        },
+
+        /**
+         * Secciones ordenadas con la destacada (Rubro / Categoría) al principio,
+         * para que se vea separada del resto de opciones.
+         */
+        orderedSchema() {
+            const entries = Object.entries(this.schema)
+            const featured = entries.filter(([key]) => this.isFeatured(key))
+            const rest = entries.filter(([key]) => !this.isFeatured(key))
+            return Object.fromEntries([...featured, ...rest])
         },
 
         /**
@@ -597,7 +612,17 @@ export default {
         },
 
         toggleSection(sectionKey) {
+            // La sección destacada no se colapsa: siempre queda a la vista.
+            if (this.isFeatured(sectionKey)) return
             this.activeSection = this.activeSection === sectionKey ? null : sectionKey
+        },
+
+        isFeatured(sectionKey) {
+            return sectionKey === FEATURED_SECTION
+        },
+
+        isSectionOpen(sectionKey) {
+            return this.isFeatured(sectionKey) || this.activeSection === sectionKey
         },
 
         async onTemplateChange() {
@@ -1021,6 +1046,50 @@ export default {
     color: #1e293b;
     box-shadow: none;
     border-left: 3px solid #7c3aed;
+}
+
+/* ===== Sección destacada (Rubro / Categoría) ===== */
+/* Va separada del acordeón: card propia, siempre abierta y sin flecha de colapso. */
+.featured-item {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem;
+    border: 2px solid #7c3aed;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #faf8ff;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.12);
+}
+
+.featured-item .accordion-header {
+    margin: 0;
+}
+
+.featured-item .accordion-button {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    color: #ffffff;
+    font-weight: 600;
+    border-left: none;
+    border-radius: 0;
+    cursor: default;
+}
+
+/* Sin flecha: la sección no se colapsa */
+.featured-item .accordion-button::after {
+    display: none;
+}
+
+.featured-item .accordion-button:not(.collapsed) {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    color: #ffffff;
+    border-left: none;
+}
+
+.featured-icon {
+    color: #fbbf24;
+}
+
+.featured-item .accordion-body {
+    padding-bottom: 0;
 }
 
 .form-control-color {

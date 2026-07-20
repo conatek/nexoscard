@@ -70,8 +70,23 @@
                             <div class="form-group">
                                 <label class="form-label">Direccion</label>
                                 <input v-model="form.address" type="text" class="form-input" :class="{ 'has-error': errors.address }"
-                                    placeholder="Ej: Av. Principal #123, Ciudad" />
+                                    placeholder="Ej: Av. Principal #123, Barrio" />
                                 <span v-if="errors.address" class="error-text">{{ errors.address[0] }}</span>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Ciudad</label>
+                                    <input v-model="form.city" type="text" class="form-input" :class="{ 'has-error': errors.city }"
+                                        placeholder="Ej: Medellin" />
+                                    <span v-if="errors.city" class="error-text">{{ errors.city[0] }}</span>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Pais</label>
+                                    <input v-model="form.country" type="text" class="form-input" :class="{ 'has-error': errors.country }"
+                                        placeholder="Ej: Colombia" />
+                                    <span v-if="errors.country" class="error-text">{{ errors.country[0] }}</span>
+                                </div>
                             </div>
 
                             <div class="form-row">
@@ -233,6 +248,8 @@ export default {
                 name: '',
                 slug: '',
                 address: '',
+                city: '',
+                country: '',
                 web: '',
                 my_business: '',
                 facebook: '',
@@ -308,6 +325,8 @@ export default {
             if (this.logoFile) payload.append('logo', this.logoFile, 'logo.png');
 
             if (this.form.address) payload.append('address', this.form.address);
+            if (this.form.city) payload.append('city', this.form.city);
+            if (this.form.country) payload.append('country', this.form.country);
             if (this.form.web) payload.append('web', this.form.web);
             if (this.form.my_business) payload.append('my_business', this.form.my_business);
             if (this.form.facebook) payload.append('facebook', this.form.facebook);

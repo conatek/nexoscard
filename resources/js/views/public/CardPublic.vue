@@ -4,6 +4,13 @@
         <div class="spinner"></div>
     </div>
 
+    <!-- Suscripción vencida (402): la tarjeta existe pero está fuera de línea -->
+    <div v-else-if="unavailable" class="card-not-found">
+        <div class="nf-icon">⏸️</div>
+        <h2>Tarjeta no disponible</h2>
+        <p>Esta tarjeta digital no está publicada en este momento.</p>
+    </div>
+
     <!-- Error 404 -->
     <div v-else-if="notFound" class="card-not-found">
         <div class="nf-icon">🪪</div>
@@ -32,7 +39,7 @@ import TemplateMinimal from '@/components/templates/TemplateMinimal.vue';
 import TemplateCreative from '@/components/templates/TemplateCreative.vue';
 import TemplateCyber from '@/components/templates/TemplateCyber.vue';
 import TemplateVibrant from '@/components/templates/TemplateVibrant.vue';
-import TemplateAction from '@/components/templates/TemplateAction.vue';
+import TemplateImpulso from '@/components/templates/TemplateImpulso.vue';
 
 export default {
     name: 'CardPublic',
@@ -44,13 +51,14 @@ export default {
         TemplateCreative,
         TemplateCyber,
         TemplateVibrant,
-        TemplateAction,
+        TemplateImpulso,
     },
 
     data() {
         return {
             loading: true,
             notFound: false,
+            unavailable: false,
             card: {},
             company: {},
             templateName: 'modern',
@@ -67,7 +75,7 @@ export default {
                 creative: 'TemplateCreative',
                 cyber: 'TemplateCyber',
                 vibrant: 'TemplateVibrant',
-                action: 'TemplateAction',
+                impulso: 'TemplateImpulso',
             };
             return templates[this.templateName] || 'TemplateModern';
         },
@@ -82,7 +90,13 @@ export default {
             this.templateName = data.template?.name || 'modern';
             this.customization = data.template?.customization || {};
         } catch (err) {
-            this.notFound = true;
+            // 402 = la empresa existe pero no tiene suscripción vigente. Se distingue
+            // del 404 para no decirle al visitante que la tarjeta no existe.
+            if (err.response?.status === 402) {
+                this.unavailable = true;
+            } else {
+                this.notFound = true;
+            }
         } finally {
             this.loading = false;
         }

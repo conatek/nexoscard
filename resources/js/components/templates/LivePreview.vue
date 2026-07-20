@@ -18,7 +18,7 @@ import TemplateMinimal from './TemplateMinimal.vue'
 import TemplateCreative from './TemplateCreative.vue'
 import TemplateCyber from './TemplateCyber.vue'
 import TemplateVibrant from './TemplateVibrant.vue'
-import TemplateAction from './TemplateAction.vue'
+import TemplateImpulso from './TemplateImpulso.vue'
 
 export default {
     name: 'LivePreview',
@@ -30,7 +30,7 @@ export default {
         TemplateCreative,
         TemplateCyber,
         TemplateVibrant,
-        TemplateAction,
+        TemplateImpulso,
     },
 
     props: {
@@ -80,7 +80,7 @@ export default {
                 creative: 'TemplateCreative',
                 cyber: 'TemplateCyber',
                 vibrant: 'TemplateVibrant',
-                action: 'TemplateAction',
+                impulso: 'TemplateImpulso',
             }
             return templates[this.templateName] || 'TemplateModern'
         },
