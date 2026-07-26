@@ -130,6 +130,20 @@
                 <a v-if="card?.linkedin" :href="card.linkedin" target="_blank" rel="noopener" :style="glassSocialSurface" class="imp-social-circle">
                     <i class="bi bi-linkedin"></i>
                 </a>
+
+                <!-- Compartir la tarjeta: mismo tratamiento visual que las redes -->
+                <a
+                    v-if="shareUrl"
+                    :href="shareWhatsappLink"
+                    target="_blank"
+                    rel="noopener"
+                    :style="glassSocialSurface"
+                    class="imp-social-circle"
+                    :title="shareLabel"
+                    :aria-label="shareLabel"
+                >
+                    <i class="bi bi-share-fill"></i>
+                </a>
             </div>
         </main>
 
@@ -481,6 +495,32 @@ export default {
                     ? '1px solid rgba(255, 255, 255, 0.12)'
                     : '1px solid transparent',
             }
+        },
+
+        /* ===== Compartir la tarjeta ===== */
+
+        // Se arma con los slugs y no con la ruta actual: la plantilla tambien se renderiza
+        // dentro del editor, donde window.location apunta al panel y no a la tarjeta.
+        shareUrl() {
+            const companySlug = this.company?.slug
+            const cardSlug = this.card?.slug
+
+            if (!companySlug || !cardSlug) return ''
+
+            return `${window.location.origin}/${companySlug}/${cardSlug}`
+        },
+
+        shareLabel() {
+            return 'Compartir esta tarjeta por WhatsApp'
+        },
+
+        // Sin el parametro phone, WhatsApp abre el selector de contactos: quien ve la
+        // tarjeta elige a quien enviarsela. Se manda el enlace solo, sin texto que lo
+        // preceda, para que WhatsApp lo muestre como vista previa del enlace.
+        shareWhatsappLink() {
+            if (!this.shareUrl) return '#'
+
+            return `https://api.whatsapp.com/send?text=${encodeURIComponent(this.shareUrl)}`
         },
 
         // Los círculos de redes conservan fondo claro para no perder el icono negro.
