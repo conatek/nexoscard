@@ -115,4 +115,17 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Logo de los correos
+    |--------------------------------------------------------------------------
+    |
+    | URL absoluta y publica del logo que se muestra en la cabecera de los
+    | correos. No se usa asset() porque en local APP_URL apunta a un host que
+    | los clientes de correo no pueden resolver y la imagen se ve rota.
+    |
+    */
+
+    'logo_url' => env('MAIL_LOGO_URL', 'https://nexoscard.com/images/nexos-logo-email.png'),
+
 ];
