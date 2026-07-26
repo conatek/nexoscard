@@ -124,6 +124,15 @@
             </div>
         </div>
 
+        <!-- Fallo de carga: se distingue de "no hay plan" para no perder la venta -->
+        <div v-else-if="loadError" class="loading-state">
+            <i class="fa fa-exclamation-triangle load-error-icon"></i>
+            <p class="text-muted">No pudimos cargar la informacion del plan.</p>
+            <button class="btn-retry" @click="load">
+                <i class="fa fa-redo me-1"></i> Reintentar
+            </button>
+        </div>
+
         <!-- Sin plan configurado -->
         <div v-else class="loading-state">
             <p class="text-muted">No hay planes disponibles en este momento.</p>
@@ -145,6 +154,7 @@ export default {
             currentPlan: null,
             subscriptionStatus: null,
             loading: true,
+            loadError: false,
             countdown: '',
             timer: null,
             // Se cargan de la configuracion: el Master puede cambiarlos desde el panel.
@@ -193,27 +203,40 @@ export default {
     methods: {
         async load() {
             this.loading = true;
-            try {
-                const [plansRes, subRes, contactRes] = await Promise.all([
-                    planService.all(),
-                    subscriptionService.current(),
-                    api.get('/dashboard'),
-                ]);
+            this.loadError = false;
 
-                this.supportEmail = contactRes.data.contact?.support_email || '';
-                this.supportWhatsapp = contactRes.data.contact?.support_whatsapp || null;
+            // allSettled y no all: el contacto de soporte y la suscripcion son datos
+            // accesorios, y con Promise.all un fallo en cualquiera de ellos dejaba la
+            // pagina vacia como si no existieran planes.
+            const [plansRes, subRes, contactRes] = await Promise.allSettled([
+                planService.all(),
+                subscriptionService.current(),
+                api.get('/dashboard'),
+            ]);
 
-                // Producto único: se toma el plan por defecto, con el primero de fallback.
-                const plans = plansRes.data || [];
-                this.plan = plans.find(p => p.is_default) || plans[0] || null;
-
-                this.currentPlan = subRes.data.plan || null;
-                this.subscriptionStatus = subRes.data.subscription?.status || null;
-
-                this.startCountdown();
-            } finally {
-                this.loading = false;
+            if (contactRes.status === 'fulfilled') {
+                this.supportEmail = contactRes.value.data.contact?.support_email || '';
+                this.supportWhatsapp = contactRes.value.data.contact?.support_whatsapp || null;
             }
+
+            if (subRes.status === 'fulfilled') {
+                this.currentPlan = subRes.value.data.plan || null;
+                this.subscriptionStatus = subRes.value.data.subscription?.status || null;
+            }
+
+            // Solo el plan es indispensable: si esta llamada falla hay que decirlo, no
+            // fingir que no hay nada que vender.
+            if (plansRes.status === 'fulfilled') {
+                // Producto único: se toma el plan por defecto, con el primero de fallback.
+                const plans = plansRes.value.data || [];
+                this.plan = plans.find(p => p.is_default) || plans[0] || null;
+            } else {
+                this.plan = null;
+                this.loadError = true;
+            }
+
+            this.startCountdown();
+            this.loading = false;
         },
 
         money(value) {
@@ -604,6 +627,27 @@ export default {
 .loading-state {
     text-align: center;
     padding: 4rem 1rem;
+}
+
+.load-error-icon {
+    font-size: 2rem;
+    color: #f59e0b;
+    margin-bottom: 0.75rem;
+}
+
+.btn-retry {
+    border: 1px solid #ddd6fe;
+    background: #ffffff;
+    color: #7c3aed;
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.5rem 1.1rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-retry:hover {
+    background: #f5f3ff;
 }
 
 /* ===== Responsive ===== */
