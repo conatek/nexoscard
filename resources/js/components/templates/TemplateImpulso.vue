@@ -108,7 +108,7 @@
                     :style="glassSurface"
                     @click="handleTile(tile)"
                 >
-                    <i class="imp-tile-icon bi" :class="tile.icon"></i>
+                    <i class="imp-tile-icon" :class="tileIconClass(tile)"></i>
                     <span class="imp-tile-label">{{ tile.label }}</span>
                 </button>
             </div>
@@ -263,7 +263,7 @@ const RUBROS = {
         cta: 'Solicita tu asesoría',
         tiles: [
             { key: 'about',    label: 'Sobre nosotros',         icon: 'bi-people-fill',   primary: true },
-            { key: 'link1',    label: 'Propiedades disponibles', icon: 'bi-house-fill' },
+            { key: 'link1',    label: 'Inmuebles',              icon: 'bi-house-fill' },
             { key: 'qr',       label: 'Código QR',              icon: 'bi-qr-code' },
             { key: 'services', label: 'Nuestros servicios',     icon: 'bi-journal-text',  primary: true },
             { key: 'link2',    label: 'Agenda tu visita',       icon: 'bi-calendar-check' },
@@ -299,7 +299,7 @@ const RUBROS = {
             { key: 'link1',    label: 'Catálogo virtual',   icon: 'bi-grid-fill' },
             { key: 'qr',       label: 'Código QR',          icon: 'bi-qr-code' },
             { key: 'services', label: 'Nuestros servicios', icon: 'bi-journal-text',  primary: true },
-            { key: 'link2',    label: 'Solicita tu domicilio', icon: 'bi-truck' },
+            { key: 'link2',    label: 'Solicita tu domicilio', icon: 'fas fa-motorcycle' },
             { key: 'maps',     label: 'Ubicación',          icon: 'bi-geo-alt-fill' },
         ],
     },
@@ -443,20 +443,23 @@ export default {
             return this.customization?.glass?.activar ?? true
         },
 
+        // Opacidad, desenfoque, borde y luces son fijos: definen la identidad visual de
+        // Impulso y no se exponen en el editor. El cliente solo activa/desactiva el efecto
+        // y elige los colores de luz. Se ignora cualquier valor viejo en customization.
         glassOpacity() {
-            return this.customization?.glass?.opacidad ?? 0.15
+            return 0.15
         },
 
         glassBlur() {
-            return this.customization?.glass?.desenfoque ?? 12
+            return 12
         },
 
         glassBorder() {
-            return this.customization?.glass?.borde ?? true
+            return true
         },
 
         glassLights() {
-            return this.customization?.glass?.luces ?? true
+            return true
         },
 
         // Lámina de cristal que cubre toda la tarjeta.
@@ -536,6 +539,12 @@ export default {
     },
 
     methods: {
+        // Los presets usan Bootstrap Icons, pero algunos tiles declaran su propia familia
+        // (p. ej. 'fas fa-motorcycle': Bootstrap Icons no tiene ninguna moto).
+        tileIconClass(tile) {
+            return tile.icon.startsWith('bi-') ? ['bi', tile.icon] : tile.icon
+        },
+
         handleTile(tile) {
             switch (tile.key) {
                 case 'about':

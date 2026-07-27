@@ -1090,36 +1090,11 @@ return [
             ],
             'glass' => [
                 '_label' => 'Efecto Cristal',
+                // Opacidad, desenfoque, borde y luces quedan fijos en TemplateImpulso.vue:
+                // definen la identidad visual de la plantilla y no se exponen al cliente.
                 'activar' => [
                     'type' => 'toggle',
                     'label' => 'Activar efecto cristal',
-                    'value' => true,
-                ],
-                'opacidad' => [
-                    'type' => 'range',
-                    'label' => 'Opacidad del fondo',
-                    'value' => 0.15,
-                    'min' => 0,
-                    'max' => 1,
-                    'step' => 0.05,
-                ],
-                'desenfoque' => [
-                    'type' => 'range',
-                    'label' => 'Nivel de desenfoque',
-                    'value' => 12,
-                    'min' => 0,
-                    'max' => 30,
-                    'step' => 1,
-                    'unit' => 'px',
-                ],
-                'borde' => [
-                    'type' => 'toggle',
-                    'label' => 'Borde luminoso',
-                    'value' => true,
-                ],
-                'luces' => [
-                    'type' => 'toggle',
-                    'label' => 'Luces de ambiente',
                     'value' => true,
                 ],
                 'colorLuz1' => [
