@@ -210,6 +210,7 @@
                             ref="cropper"
                             :src="cropperSrc"
                             :stencil-props="{ aspectRatio: selectedRatio }"
+                            :canvas="{ maxWidth: 1024, maxHeight: 1024 }"
                             class="cropper"
                         />
                     </div>
@@ -243,6 +244,7 @@ export default {
             generalError: null,
             logoPreview: null,
             logoFile: null,
+            logoSourceType: null,
             slugManuallyEdited: false,
             form: {
                 name: '',
@@ -284,6 +286,7 @@ export default {
         onFileSelected(e) {
             const file = e.target.files[0];
             if (!file) return;
+            this.logoSourceType = file.type;
             this.cropperSrc = URL.createObjectURL(file);
             this.cropperOpen = true;
         },
@@ -294,12 +297,17 @@ export default {
 
         confirmCrop() {
             const { canvas } = this.$refs.cropper.getResult();
+            // Los logos suelen venir con fondo transparente: JPEG no tiene canal alfa
+            // y rellenaria de negro, asi que se conserva PNG/WebP.
+            const keepAlpha = ['image/png', 'image/webp'].includes(this.logoSourceType);
+            const mime = keepAlpha ? 'image/png' : 'image/jpeg';
+            const filename = keepAlpha ? 'logo.png' : 'logo.jpg';
             canvas.toBlob((blob) => {
-                this.logoFile = new File([blob], 'logo.jpg', { type: 'image/jpeg' });
+                this.logoFile = new File([blob], filename, { type: mime });
                 if (this.logoPreview) URL.revokeObjectURL(this.logoPreview);
                 this.logoPreview = URL.createObjectURL(blob);
                 this.cropperOpen = false;
-            }, 'image/jpeg', 0.85);
+            }, mime, 0.85);
         },
 
         cancelCrop() {
@@ -322,7 +330,7 @@ export default {
             const payload = new FormData();
             payload.append('name', this.form.name);
             payload.append('slug', this.form.slug);
-            if (this.logoFile) payload.append('logo', this.logoFile, 'logo.png');
+            if (this.logoFile) payload.append('logo', this.logoFile, this.logoFile.name);
 
             if (this.form.address) payload.append('address', this.form.address);
             if (this.form.city) payload.append('city', this.form.city);
@@ -568,6 +576,13 @@ export default {
     max-width: 180px;
     object-fit: contain;
     border-radius: 6px;
+    /* Cuadricula para que se note el fondo transparente de los PNG */
+    background-image:
+        linear-gradient(45deg, #e2e8f0 25%, transparent 25%, transparent 75%, #e2e8f0 75%),
+        linear-gradient(45deg, #e2e8f0 25%, transparent 25%, transparent 75%, #e2e8f0 75%);
+    background-size: 12px 12px;
+    background-position: 0 0, 6px 6px;
+    background-color: #ffffff;
 }
 
 .btn-crop {
