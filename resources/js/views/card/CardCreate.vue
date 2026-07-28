@@ -83,11 +83,6 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Perfil profesional</label>
-                                <RichEditor v-model="form.description" placeholder="Breve descripcion profesional..." />
-                            </div>
-
-                            <div class="form-group">
                                 <label class="form-label">Miniatura para redes sociales</label>
                                 <div class="file-upload file-upload-sm">
                                     <input ref="thumbnailInput" type="file" class="file-input" accept="image/*" @change="onThumbnailSelected" />
@@ -103,6 +98,11 @@
                                         <i class="fa fa-crop"></i> Recortar
                                     </button>
                                 </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Perfil profesional</label>
+                                <RichEditor v-model="form.description" placeholder="Breve descripcion profesional..." />
                             </div>
                         </div>
                     </div>
@@ -641,14 +641,20 @@ textarea.form-input {
 }
 
 .thumbnail-preview {
-    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 8px;
 }
 
 .thumbnail-preview img {
-    width: 120px;
-    height: 63px;
+    width: 80px;
+    height: 80px;
     object-fit: cover;
-    border-radius: 6px;
+    border-radius: 8px;
     border: 1px solid #e2e8f0;
 }
 
