@@ -28,6 +28,9 @@
             :services="company.services || []"
             :products="company.products || []"
         />
+
+        <!-- Indicador de "hay más contenido": común a todas las plantillas -->
+        <ScrollHint />
     </div>
 </template>
 
@@ -40,11 +43,13 @@ import TemplateCreative from '@/components/templates/TemplateCreative.vue';
 import TemplateCyber from '@/components/templates/TemplateCyber.vue';
 import TemplateVibrant from '@/components/templates/TemplateVibrant.vue';
 import TemplateImpulso from '@/components/templates/TemplateImpulso.vue';
+import ScrollHint from '@/components/shared/ScrollHint.vue';
 
 export default {
     name: 'CardPublic',
 
     components: {
+        ScrollHint,
         TemplateModern,
         TemplateClassic,
         TemplateMinimal,
