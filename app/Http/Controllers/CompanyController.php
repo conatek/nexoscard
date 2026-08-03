@@ -44,6 +44,13 @@ class CompanyController extends Controller
             $data['logo_public_id'] = $uploaded['public_id'];
         }
 
+        if ($request->hasFile('icon')) {
+            $folder = CloudinaryService::companyFolder($data['slug'], 'icon');
+            $uploaded = $this->cloudinary->upload($request->file('icon'), $folder);
+            $data['icon_path']      = $uploaded['url'];
+            $data['icon_public_id'] = $uploaded['public_id'];
+        }
+
         $company = Company::create($data);
 
         return response()->json($company, 201);
@@ -92,6 +99,17 @@ class CompanyController extends Controller
             $data['logo_public_id'] = $uploaded['public_id'];
         }
 
+        if ($request->hasFile('icon')) {
+            if ($company->icon_public_id) {
+                $this->cloudinary->destroy($company->icon_public_id);
+            }
+            $slug   = $data['slug'] ?? $company->slug;
+            $folder = CloudinaryService::companyFolder($slug, 'icon');
+            $uploaded = $this->cloudinary->upload($request->file('icon'), $folder);
+            $data['icon_path']      = $uploaded['url'];
+            $data['icon_public_id'] = $uploaded['public_id'];
+        }
+
         $company->update($data);
 
         return response()->json($company->fresh());
@@ -105,6 +123,10 @@ class CompanyController extends Controller
 
         if ($company->logo_public_id) {
             $this->cloudinary->destroy($company->logo_public_id);
+        }
+
+        if ($company->icon_public_id) {
+            $this->cloudinary->destroy($company->icon_public_id);
         }
 
         $company->delete();

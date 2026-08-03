@@ -66,7 +66,28 @@
                                     </div>
                                     <div v-if="logoPreview || form.logo_path" class="logo-preview">
                                         <img :src="logoPreview || form.logo_path" />
-                                        <button type="button" class="btn-crop" @click="openCropper">
+                                        <button type="button" class="btn-crop" @click="openCropper('logo')">
+                                            <i class="fa fa-crop"></i> Recortar
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Icono de acceso directo</label>
+                                    <small class="form-hint">
+                                        Se usa cuando alguien guarda una tarjeta en la pantalla de inicio de su
+                                        telefono. Se recorta 1:1. Si no lo cargas, se usa el logotipo.
+                                    </small>
+                                    <div class="file-upload">
+                                        <input ref="iconInput" type="file" class="file-input" accept="image/*" @change="onIconSelected" />
+                                        <div class="file-upload-content">
+                                            <i class="fa fa-cloud-upload-alt"></i>
+                                            <span>Cambiar icono</span>
+                                        </div>
+                                    </div>
+                                    <div v-if="iconPreview || form.icon_path" class="logo-preview">
+                                        <img :src="iconPreview || form.icon_path" class="icon-thumb" />
+                                        <button type="button" class="btn-crop" @click="openCropper('icon')">
                                             <i class="fa fa-crop"></i> Recortar
                                         </button>
                                     </div>
@@ -192,13 +213,15 @@
                 <div v-if="cropperOpen" class="cropper-modal-overlay" @click.self="cancelCrop">
                     <div class="cropper-modal-container">
                         <div class="cropper-modal-header">
-                            <h4>Recortar logotipo</h4>
+                            <h4>{{ cropperTarget === 'icon' ? 'Recortar icono' : 'Recortar logotipo' }}</h4>
                             <button type="button" class="cropper-modal-close" @click="cancelCrop">
                                 <i class="fa fa-times"></i>
                             </button>
                         </div>
 
-                        <div class="cropper-modal-ratios">
+                        <!-- El icono va siempre cuadrado: cualquier otra proporcion
+                             la deforma el sistema operativo al generar el acceso directo. -->
+                        <div v-if="cropperTarget === 'logo'" class="cropper-modal-ratios">
                             <button
                                 v-for="r in ratios"
                                 :key="r.label"
@@ -214,7 +237,7 @@
                             <Cropper
                                 ref="cropper"
                                 :src="cropperSrc"
-                                :stencil-props="{ aspectRatio: selectedRatio }"
+                                :stencil-props="{ aspectRatio: cropperTarget === 'icon' ? 1 : selectedRatio }"
                                 :canvas="{ maxWidth: 1024, maxHeight: 1024 }"
                                 class="cropper"
                             />
@@ -252,10 +275,14 @@ export default {
             logoPreview: null,
             logoFile: null,
             logoSourceType: null,
+            iconPreview: null,
+            iconFile: null,
+            iconSourceType: null,
             form: {
                 name: '',
                 slug: '',
                 logo_path: null,
+                icon_path: null,
                 address: '',
                 city: '',
                 country: '',
@@ -268,6 +295,7 @@ export default {
             },
             cropperOpen: false,
             cropperSrc: null,
+            cropperTarget: 'logo',
             selectedRatio: 1,
             ratios: [
                 { label: '1:1', value: 1 },
@@ -285,6 +313,7 @@ export default {
             name: c.name,
             slug: c.slug,
             logo_path: c.logo_path,
+            icon_path: c.icon_path,
             address: c.address || '',
             city: c.city || '',
             country: c.country || '',
@@ -307,39 +336,85 @@ export default {
         onFileSelected(e) {
             const file = e.target.files[0];
             if (!file) return;
+            this.cropperTarget = 'logo';
             this.logoSourceType = file.type;
             this.cropperSrc = URL.createObjectURL(file);
             this.cropperOpen = true;
         },
 
-        openCropper() {
-            // Al recortar el logo ya guardado, el tipo se deduce de la extension de la URL.
-            if (!this.logoFile && this.form.logo_path) {
-                const ext = this.form.logo_path.split('?')[0].split('.').pop().toLowerCase();
-                this.logoSourceType = ext === 'png' ? 'image/png' : (ext === 'webp' ? 'image/webp' : 'image/jpeg');
-            }
-            this.cropperSrc = this.logoPreview || this.form.logo_path;
+        onIconSelected(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            this.cropperTarget = 'icon';
+            this.iconSourceType = file.type;
+            this.cropperSrc = URL.createObjectURL(file);
             this.cropperOpen = true;
+        },
+
+        openCropper(target) {
+            this.cropperTarget = target;
+
+            // Al recortar una imagen ya guardada, el tipo se deduce de la extension de la URL.
+            if (target === 'logo') {
+                if (!this.logoFile && this.form.logo_path) {
+                    this.logoSourceType = this.mimeFromUrl(this.form.logo_path);
+                }
+                this.cropperSrc = this.logoPreview || this.form.logo_path;
+            } else {
+                if (!this.iconFile && this.form.icon_path) {
+                    this.iconSourceType = this.mimeFromUrl(this.form.icon_path);
+                }
+                this.cropperSrc = this.iconPreview || this.form.icon_path;
+            }
+
+            this.cropperOpen = true;
+        },
+
+        mimeFromUrl(url) {
+            const ext = url.split('?')[0].split('.').pop().toLowerCase();
+            return ext === 'png' ? 'image/png' : (ext === 'webp' ? 'image/webp' : 'image/jpeg');
         },
 
         confirmCrop() {
             const { canvas } = this.$refs.cropper.getResult();
-            // Los logos suelen venir con fondo transparente: JPEG no tiene canal alfa
+            const isIcon = this.cropperTarget === 'icon';
+
+            // Logos e iconos suelen venir con fondo transparente: JPEG no tiene canal alfa
             // y rellenaria de negro, asi que se conserva PNG/WebP.
-            const keepAlpha = ['image/png', 'image/webp'].includes(this.logoSourceType);
+            const sourceType = isIcon ? this.iconSourceType : this.logoSourceType;
+            const keepAlpha = ['image/png', 'image/webp'].includes(sourceType);
             const mime = keepAlpha ? 'image/png' : 'image/jpeg';
-            const filename = keepAlpha ? 'logo.png' : 'logo.jpg';
+            const name = isIcon ? 'icon' : 'logo';
+            const filename = keepAlpha ? `${name}.png` : `${name}.jpg`;
+
             canvas.toBlob((blob) => {
-                this.logoFile = new File([blob], filename, { type: mime });
-                if (this.logoPreview) URL.revokeObjectURL(this.logoPreview);
-                this.logoPreview = URL.createObjectURL(blob);
+                const file = new File([blob], filename, { type: mime });
+
+                if (isIcon) {
+                    this.iconFile = file;
+                    if (this.iconPreview) URL.revokeObjectURL(this.iconPreview);
+                    this.iconPreview = URL.createObjectURL(blob);
+                } else {
+                    this.logoFile = file;
+                    if (this.logoPreview) URL.revokeObjectURL(this.logoPreview);
+                    this.logoPreview = URL.createObjectURL(blob);
+                }
+
                 this.cropperOpen = false;
             }, mime, 0.85);
         },
 
         cancelCrop() {
             this.cropperOpen = false;
-            if (!this.logoFile && !this.form.logo_path) {
+
+            // Si se cancela sin que haya imagen previa, se limpia el input para que
+            // volver a elegir el mismo archivo dispare el evento change otra vez.
+            if (this.cropperTarget === 'icon') {
+                if (!this.iconFile && !this.form.icon_path) {
+                    this.cropperSrc = null;
+                    this.$refs.iconInput.value = '';
+                }
+            } else if (!this.logoFile && !this.form.logo_path) {
                 this.cropperSrc = null;
                 this.$refs.fileInput.value = '';
             }
@@ -358,6 +433,7 @@ export default {
             payload.append('name', this.form.name);
             payload.append('slug', this.form.slug);
             if (this.logoFile) payload.append('logo', this.logoFile, this.logoFile.name);
+            if (this.iconFile) payload.append('icon', this.iconFile, this.iconFile.name);
 
             payload.append('address', this.form.address || '');
             payload.append('city', this.form.city || '');
@@ -614,6 +690,15 @@ export default {
     background-size: 12px 12px;
     background-position: 0 0, 6px 6px;
     background-color: #ffffff;
+}
+
+/* El icono se previsualiza cuadrado y con las esquinas redondeadas del sistema,
+   que es como acabara viendose en la pantalla de inicio. */
+.logo-preview img.icon-thumb {
+    width: 64px;
+    height: 64px;
+    max-width: 64px;
+    border-radius: 14px;
 }
 
 .btn-crop {

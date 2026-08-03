@@ -15,6 +15,8 @@ class Company extends Model
         'slug',
         'logo_path',
         'logo_public_id',
+        'icon_path',
+        'icon_public_id',
         'address',
         'city',
         'country',
@@ -114,6 +116,39 @@ class Company extends Model
         }
 
         return in_array($subscription->status, ['trial', 'active', 'past_due'], true);
+    }
+
+    /**
+     * Icono cuadrado para el acceso directo que el visitante guarda en su dispositivo.
+     *
+     * Prioridad: icono propio > logotipo > icono de NexosCard. El logo sirve de respaldo
+     * porque ya lo tienen cargado casi todas las empresas, aunque al ser normalmente
+     * apaisado se vea peor que un icono hecho a propósito.
+     *
+     * Se fuerza fondo sólido y formato PNG: iOS no soporta canal alfa en el icono de la
+     * pantalla de inicio y pinta de negro lo que sea transparente.
+     */
+    public function shortcutIconUrl(int $size): ?string
+    {
+        $source = $this->icon_path ?: $this->logo_path;
+
+        if (!$source) {
+            return null;
+        }
+
+        // Las imágenes viven en Cloudinary, que redimensiona y convierte por URL. Si
+        // alguna no lo estuviera, se devuelve tal cual antes que romper el head.
+        if (!str_contains($source, '/image/upload/')) {
+            return $source;
+        }
+
+        $url = str_replace(
+            '/image/upload/',
+            "/image/upload/w_{$size},h_{$size},c_pad,b_white/",
+            $source
+        );
+
+        return preg_replace('/\.[a-zA-Z0-9]+(\?.*)?$/', '.png$1', $url);
     }
 
     /**

@@ -10,11 +10,13 @@
 
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#7c3aed">
-    <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    {{-- En una tarjeta pública el acceso directo lleva el icono y el nombre del cliente,
+         no los de NexosCard. Ver la ruta /{companySlug}/{cardSlug} en routes/web.php --}}
+    <link rel="manifest" href="{{ $manifestUrl ?? '/manifest.webmanifest' }}">
+    <link rel="apple-touch-icon" href="{{ $appleTouchIcon ?? '/apple-touch-icon.png' }}">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="NexosCard">
+    <meta name="apple-mobile-web-app-title" content="{{ $shortcutTitle ?? 'NexosCard' }}">
 
     <!-- Disable tap highlight on IE -->
     <meta name="msapplication-tap-highlight" content="no">
