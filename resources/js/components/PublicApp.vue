@@ -28,6 +28,7 @@
                 <account-drawer
                     v-if="isOpenRightSettings"
                     :key="settingsOpenCount"
+                    :initial-tab="settingsTab"
                     @close="isOpenRightSettings = false"
                 />
             </div>
@@ -50,7 +51,7 @@
                     <router-view />
                 </div>
 
-                <main-footer />
+                <main-footer @open-account="openAccountPanel" />
             </div>
         </div>
 
@@ -88,6 +89,7 @@ export default {
             isOpenRightDrawer: false,
             isOpenRightSettings: false,
             settingsOpenCount: 0,
+            settingsTab: 'share',
             isOpenSidebarMobile: false,
         };
     },
@@ -117,8 +119,16 @@ export default {
             this.isOpenRightSettings = !this.isOpenRightSettings;
 
             if (this.isOpenRightSettings) {
+                this.settingsTab = 'share';
                 this.settingsOpenCount++;
             }
+        },
+        // Desde la barra inferior el item se llama "Cuenta", asi que abre en esa
+        // pestaña: es donde vive "¿Necesitas ayuda?".
+        openAccountPanel() {
+            this.settingsTab = 'account';
+            this.settingsOpenCount++;
+            this.isOpenRightSettings = true;
         },
         openSidebarMobile() {
             this.isOpenSidebarMobile = !this.isOpenSidebarMobile;
@@ -292,6 +302,37 @@ html, body {
 /* El panel trae padding 0 desde base.css: el contenido gestiona su propio scroll */
 .ui-theme-settings .theme-settings__inner {
     overflow: hidden;
+}
+
+/* base.css oculta .ui-theme-settings por completo bajo 768px y la dimensiona para
+   escritorio (500px de ancho, asomando 30px por la derecha). Aqui se recupera el
+   panel en mobile a pantalla completa. El prefijo `body` sube la especificidad para
+   ganarle a base.css sin depender del orden de carga de las hojas. */
+@media (max-width: 767.98px) {
+    body .ui-theme-settings {
+        display: block;
+        right: 0;
+        transform: translateX(100%);
+        box-shadow: none;
+    }
+
+    body .ui-theme-settings.settings-open {
+        transform: translateX(0);
+    }
+
+    /* La rueda dentada flotante quedaria encima de la barra inferior: en mobile
+       el panel se abre desde el item "Cuenta" de esa barra. */
+    body .ui-theme-settings .btn-open-options {
+        display: none;
+    }
+
+    body .ui-theme-settings .theme-settings__inner {
+        width: 100vw;
+        /* dvh descuenta la barra de direcciones del navegador movil; vh queda de
+           respaldo para los que no lo soportan. */
+        height: 100vh;
+        height: 100dvh;
+    }
 }
 
 /* Footer - dentro del flujo de app-main__outer */

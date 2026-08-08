@@ -153,7 +153,9 @@
                     class="support-link"
                     :class="{ 'is-wa': supportWhatsapp }"
                 >
-                    <i class="fa" :class="supportWhatsapp ? 'fab fa-whatsapp' : 'fa-life-ring'"></i>
+                    <!-- El glifo de WhatsApp solo existe en la fuente Brands: sumarle
+                         la clase `fa` fuerza "Font Awesome 5 Free" y sale en blanco. -->
+                    <i :class="supportWhatsapp ? 'fab fa-whatsapp' : 'fa fa-life-ring'"></i>
                     <div>
                         <strong>¿Necesitas ayuda?</strong>
                         <span>{{ supportWhatsapp ? 'Escribenos por WhatsApp' : supportEmail }}</span>
@@ -173,9 +175,18 @@ export default {
 
     emits: ['close'],
 
+    props: {
+        // El desktop abre en "Compartir"; la barra inferior de mobile abre en
+        // "Cuenta", que es el item con el que se la etiqueta.
+        initialTab: {
+            type: String,
+            default: 'share',
+        },
+    },
+
     data() {
         return {
-            tab: 'share',
+            tab: this.initialTab,
             loading: true,
             company: null,
             subscription: null,
@@ -365,7 +376,9 @@ export default {
 .drawer {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    /* El contenedor (.theme-settings__inner) ya fija la altura: 100vh en desktop y
+       100dvh en mobile. Heredarla evita repetir el calculo y desbordar. */
+    height: 100%;
     background: #ffffff;
 }
 
@@ -771,5 +784,19 @@ export default {
 .support-link > i:last-child {
     color: #cbd5e1;
     font-size: 0.75rem;
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 767.98px) {
+    /* El indicador de inicio del iPhone se come el ultimo elemento del scroll */
+    .drawer-body {
+        padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* A pantalla completa el QR puede crecer, pero sin pasarse del ancho util */
+    .qr-img {
+        width: min(220px, 60vw);
+        height: min(220px, 60vw);
+    }
 }
 </style>

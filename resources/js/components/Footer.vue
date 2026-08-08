@@ -72,6 +72,13 @@
                     <i class="fa fa-star"></i>
                     <span>Mi Plan</span>
                 </router-link>
+
+                <!-- Equivalente a la rueda dentada del desktop: en mobile la barra es
+                     el gesto esperado, un boton flotante chocaria con ella. -->
+                <button type="button" class="tab-item" @click="$emit('openAccount')">
+                    <i class="fa fa-user-circle"></i>
+                    <span>Cuenta</span>
+                </button>
             </template>
         </nav>
     </footer>
@@ -83,6 +90,8 @@ import api from '@/services/api.js';
 
 export default {
     name: 'AppFooter',
+
+    emits: ['openAccount'],
 
     data() {
         return { hasCards: false };
@@ -296,6 +305,11 @@ export default {
         font-weight: 500;
         transition: color 0.2s;
         min-width: 0;
+        /* El item de Cuenta es un <button>: sin esto hereda el chrome del navegador */
+        border: none;
+        background: transparent;
+        font-family: inherit;
+        cursor: pointer;
     }
 
     .tab-item i {
