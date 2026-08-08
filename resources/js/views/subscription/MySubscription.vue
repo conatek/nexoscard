@@ -47,7 +47,7 @@
                                 </span>
                             </div>
                             <div class="meta-row" v-if="subscription.current_period_end">
-                                <span>{{ isTrial ? 'Termina la prueba' : 'Renueva' }}</span>
+                                <span>{{ periodLabel }}</span>
                                 <span>{{ formatDate(subscription.current_period_end) }}</span>
                             </div>
                             <div class="meta-row" v-if="renewalPrice">
@@ -107,7 +107,7 @@
                             <tr v-for="payment in payments" :key="payment.id">
                                 <td>{{ formatDate(payment.paid_at || payment.created_at) }}</td>
                                 <td>${{ Number(payment.amount).toLocaleString('es-CO') }}</td>
-                                <td>{{ payment.payment_method || '-' }}</td>
+                                <td>{{ paymentMethodLabel(payment.payment_method) }}</td>
                                 <td>
                                     <span class="status-tag" :class="'status-' + payment.status">
                                         {{ paymentStatusLabel(payment.status) }}
@@ -168,6 +168,16 @@ export default {
             return this.subscription?.status === 'trial';
         },
 
+        // Desde que la vista tambien recibe estados vencidos, "Renueva" mentia: la fecha
+        // que se muestra ya paso.
+        periodLabel() {
+            if (this.isTrial) return 'Termina la prueba';
+
+            return ['past_due', 'expired', 'cancelled'].includes(this.subscription?.status)
+                ? 'Vencio'
+                : 'Renueva';
+        },
+
         renewalPrice() {
             if (!this.plan) return null;
 
@@ -211,6 +221,20 @@ export default {
             return new Date(dateStr).toLocaleDateString('es-CO', {
                 year: 'numeric', month: 'short', day: 'numeric',
             });
+        },
+
+        // Los valores que guarda MercadoPagoService::mapPaymentMethod son internos:
+        // en el historial se veia "credit_card" tal cual.
+        paymentMethodLabel(method) {
+            const labels = {
+                credit_card: 'Tarjeta de credito',
+                debit_card:  'Tarjeta debito',
+                pse:         'PSE',
+                cash:        'Efectivo',
+                wallet:      'Billetera digital',
+                mercadopago: 'MercadoPago',
+            };
+            return labels[method] || method || '-';
         },
 
         paymentStatusLabel(status) {

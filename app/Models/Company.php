@@ -87,9 +87,12 @@ class Company extends Model
     /**
      * La suscripción más reciente sin filtrar por estado.
      *
-     * `activeSubscription()` usa el scope `active()`, que solo abarca trial y active: no
-     * sirve para decidir la visibilidad pública porque dejaría la tarjeta caída durante
-     * los días de gracia (past_due).
+     * `activeSubscription()` usa el scope `active()`, que solo abarca trial y active. Eso
+     * está bien para *conceder* permisos, pero no para **reportar** el estado: sirve la
+     * visibilidad pública durante los días de gracia (past_due), y es lo que consultan las
+     * dos lecturas que alimentan la UI (`/api/subscription` y `/api/dashboard`). Si ahí se
+     * usara `activeSubscription()`, un cliente vencido sería indistinguible de uno que
+     * nunca tuvo suscripción y el banner de "Renovar" saldría vacío.
      */
     public function latestSubscription(): ?Subscription
     {

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Mail\SubscriptionExpiredMail;
+use App\Mail\SubscriptionExpiringMail;
 use App\Mail\TrialExpiredMail;
 use App\Mail\TrialExpiringMail;
 use App\Models\AppSetting;
@@ -18,6 +19,7 @@ class CheckSubscriptionExpiry extends Command
     public function handle(): int
     {
         $this->handleTrialReminders();
+        $this->handleRenewalReminders();
         $this->handleExpiredTrials();
         $this->handlePastDueSubscriptions();
         $this->handleFullyExpired();
@@ -61,6 +63,52 @@ class CheckSubscriptionExpiry extends Command
                 $subscription->markReminderSent($reminderDays);
 
                 $this->info("Recordatorio de {$reminderDays} dia(s) enviado: empresa #{$subscription->company_id}");
+            }
+        }
+    }
+
+    /**
+     * Avisos de renovación para suscripciones ya pagadas.
+     *
+     * El plan es anual y no se renueva solo, así que sin esto el cliente que pagó descubre
+     * el vencimiento cuando su tarjeta ya está fuera de línea. Se avisa en los días
+     * configurados en AppSetting.renewal_reminder_days (por defecto 15 y 3).
+     */
+    private function handleRenewalReminders(): void
+    {
+        $graceDays = AppSetting::getGracePeriodDays();
+
+        foreach (AppSetting::getRenewalReminderDays() as $reminderDays) {
+            $targetDate = now()->addDays($reminderDays)->startOfDay();
+
+            $expiringSoon = Subscription::where('status', 'active')
+                ->whereDate('current_period_end', $targetDate)
+                ->with('company.owner', 'plan')
+                ->get();
+
+            foreach ($expiringSoon as $subscription) {
+                $owner = $subscription->company?->owner;
+
+                if (!$owner) {
+                    continue;
+                }
+
+                if ($subscription->wasReminderSent($reminderDays, Subscription::REMINDER_RENEWAL)) {
+                    continue;
+                }
+
+                Mail::to($owner->email)->queue(new SubscriptionExpiringMail(
+                    $owner,
+                    $subscription->company,
+                    $subscription->plan,
+                    $reminderDays,
+                    $subscription->current_period_end,
+                    $graceDays,
+                ));
+
+                $subscription->markReminderSent($reminderDays, Subscription::REMINDER_RENEWAL);
+
+                $this->info("Aviso de renovacion de {$reminderDays} dia(s) enviado: empresa #{$subscription->company_id}");
             }
         }
     }

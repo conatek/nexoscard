@@ -43,7 +43,6 @@ import AdminSettings           from '../js/views/admin/AdminSettings.vue';
 // Suscripcion y pagos
 import Plans            from '../js/views/subscription/Plans.vue';
 import Checkout         from '../js/views/subscription/Checkout.vue';
-import PaymentResult    from '../js/views/subscription/PaymentResult.vue';
 import MySubscription   from '../js/views/subscription/MySubscription.vue';
 
 // Vistas publicas
@@ -252,12 +251,11 @@ const routes = [
         component: Checkout,
         meta: { requiresAuth: true },
     },
-    {
-        path: '/pago/resultado',
-        name: 'subscription.result',
-        component: PaymentResult,
-        meta: { layout: 'public' },
-    },
+    // `/pago/resultado` se elimino: era la pagina de retorno de Checkout Pro, que quedo
+    // sin usar al pasar a Bricks embebidos. Nadie enlazaba a ella y su unica llamada
+    // (`paymentService.result`) no existe, asi que reventaba al abrirse. Si algun dia se
+    // vuelve a un metodo con redireccion (PSE, efectivo), hay que reponerla junto con el
+    // endpoint que consulta el estado del pago.
     {
         path: '/mi-suscripcion',
         name: 'subscription.my',

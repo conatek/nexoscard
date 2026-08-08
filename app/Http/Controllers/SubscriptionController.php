@@ -20,7 +20,10 @@ class SubscriptionController extends Controller
             return response()->json(['subscription' => null]);
         }
 
-        $subscription = $company->activeSubscription();
+        // La más reciente, no solo trial/active: el banner y "Mi Plan" tienen que poder
+        // decir "vencido" y ofrecer renovar. Filtrar aquí dejaba a un cliente vencido
+        // igual que a uno sin suscripción, sin mensaje ni botón de pago.
+        $subscription = $company->latestSubscription();
 
         if (!$subscription) {
             return response()->json(['subscription' => null]);

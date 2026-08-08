@@ -84,7 +84,7 @@ class MercadoPagoService
         $client = new PaymentClient();
 
         try {
-            $payment = $client->create([
+            $payload = [
                 'transaction_amount' => (float) $data['transaction_amount'],
                 'token'              => $data['token'],
                 'installments'       => (int) ($data['installments'] ?? 1),
@@ -97,7 +97,22 @@ class MercadoPagoService
                         'number' => $data['identification_number'] ?? '',
                     ],
                 ],
-            ]);
+            ];
+
+            // Referencia al pago local. Sin esto el webhook solo puede casar por el id de
+            // MercadoPago, que se guarda *después* de que esta llamada responde: una
+            // notificación que llegue antes (o un fallo al escribir) deja el pago huérfano
+            // y la suscripción sin activar. Con PSE o efectivo, donde el webhook es la
+            // única confirmación, eso significa cobrar y no entregar.
+            if (! empty($data['external_reference'])) {
+                $payload['external_reference'] = $data['external_reference'];
+            }
+
+            if (! empty($data['metadata'])) {
+                $payload['metadata'] = $data['metadata'];
+            }
+
+            $payment = $client->create($payload);
 
             return [
                 'id'                 => $payment->id,
@@ -161,7 +176,17 @@ class MercadoPagoService
         $secret = config('mercadopago.webhook_secret');
 
         if (! $secret) {
-            return true; // Sin secret configurado, skip validacion (dev)
+            // Cómodo en local, pero en producción significa aceptar notificaciones sin
+            // verificar de quién vienen. Se deja pasar para no tumbar un flujo que ya
+            // esté funcionando, pero tiene que verse en los logs.
+            if (app()->environment('production')) {
+                Log::error(
+                    'MercadoPago: MERCADOPAGO_WEBHOOK_SECRET vacio en produccion. '
+                    . 'Las notificaciones se estan aceptando sin validar la firma.'
+                );
+            }
+
+            return true;
         }
 
         // Parsear ts y v1 del header
@@ -218,7 +243,12 @@ class MercadoPagoService
         };
     }
 
-    private function generateReference(Payment $payment): string
+    /**
+     * Formato `NEXOS-{id local}-{timestamp}`. Lo parsea
+     * `ProcessMercadoPagoNotification::findLocalPayment()`, así que el segundo segmento
+     * debe seguir siendo el id local.
+     */
+    public function generateReference(Payment $payment): string
     {
         return 'NEXOS-' . $payment->id . '-' . time();
     }

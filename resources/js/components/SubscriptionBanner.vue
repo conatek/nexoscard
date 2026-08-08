@@ -19,26 +19,42 @@
 
 <script>
 import { useAuth } from '@/stores/auth';
-import subscriptionService from '@/services/subscriptionService.js';
+import { useSubscription } from '@/stores/subscription';
 
 export default {
     name: 'SubscriptionBanner',
 
     data() {
+        // El estado vive en el store para que el checkout pueda refrescarlo tras un pago
+        // aprobado: este componente se monta una vez y no se vuelve a crear al navegar.
         return {
-            status: null,
-            daysRemaining: null,
-            loaded: false,
+            subscriptionState: useSubscription().state,
             dismissed: false,
         };
     },
 
     computed: {
+        status() {
+            return this.subscriptionState.status;
+        },
+
+        daysRemaining() {
+            return this.subscriptionState.daysRemaining;
+        },
+
+        loaded() {
+            return this.subscriptionState.loaded;
+        },
+
         visible() {
             if (!this.loaded || this.dismissed) return false;
             const auth = useAuth();
             if (auth.isMaster()) return false;
             if (this.status === 'active') return false;
+            // Sin estado no hay nada que decir. Antes se pintaba igual, y salia una
+            // franja vacia sin mensaje ni boton.
+            if (!this.status) return false;
+
             return true;
         },
 
@@ -92,33 +108,28 @@ export default {
         },
     },
 
+    watch: {
+        // Si el estado cambia (por ejemplo al pagar), un banner cerrado a mano debe
+        // volver a aparecer: el mensaje ya no es el mismo que se descartó.
+        status(nuevo) {
+            const descartado = sessionStorage.getItem('banner_dismissed');
+
+            if (descartado && descartado !== nuevo) {
+                this.dismissed = false;
+                sessionStorage.removeItem('banner_dismissed');
+            }
+        },
+    },
+
     async created() {
         const auth = useAuth();
         if (auth.isMaster()) return;
 
-        // Revisar dismiss en sessionStorage
-        const dismissedKey = sessionStorage.getItem('banner_dismissed');
-        if (dismissedKey) {
+        if (sessionStorage.getItem('banner_dismissed')) {
             this.dismissed = true;
         }
 
-        try {
-            const { data } = await subscriptionService.current();
-            if (data.subscription) {
-                this.status = data.subscription.status;
-                this.daysRemaining = data.days_remaining;
-
-                // Resetear dismiss si el estado cambio
-                if (dismissedKey && dismissedKey !== this.status) {
-                    this.dismissed = false;
-                    sessionStorage.removeItem('banner_dismissed');
-                }
-            }
-        } catch {
-            // Silenciar errores
-        } finally {
-            this.loaded = true;
-        }
+        await useSubscription().refresh();
     },
 
     methods: {

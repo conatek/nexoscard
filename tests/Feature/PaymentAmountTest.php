@@ -63,6 +63,10 @@ class PaymentAmountTest extends TestCase
         ]);
         $mock->shouldReceive('mapStatus')->andReturn('approved');
         $mock->shouldReceive('mapPaymentMethod')->andReturn('credit_card');
+        // La referencia que enlaza el pago local con el webhook; aquí solo importa que
+        // exista, se prueba a fondo en PaymentProcessStatesTest.
+        $mock->shouldReceive('generateReference')
+            ->andReturnUsing(fn ($payment) => 'NEXOS-' . $payment->id . '-1700000000');
 
         $this->app->instance(MercadoPagoService::class, $mock);
     }

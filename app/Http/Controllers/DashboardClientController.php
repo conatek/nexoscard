@@ -25,7 +25,9 @@ class DashboardClientController extends Controller
 
         $company->loadCount(['cards', 'services', 'products']);
         $firstCard = $company->cards()->where('is_active', true)->first();
-        $subscription = $company->activeSubscription();
+        // La más reciente aunque esté vencida: el panel de cuenta muestra el estado y el
+        // CTA de activar, que es justo lo que necesita quien ya se venció.
+        $subscription = $company->latestSubscription();
         $subscription?->load('plan');
 
         $plan = $subscription?->plan;

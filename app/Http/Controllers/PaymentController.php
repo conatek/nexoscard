@@ -96,6 +96,14 @@ class PaymentController extends Controller
             'payer_email'           => $request->payer_email,
             'identification_type'   => $request->identification_type,
             'identification_number' => $request->identification_number,
+            // Dos vías para que el webhook reconozca este pago aunque todavía no se haya
+            // guardado el id de MercadoPago más abajo.
+            'external_reference'    => $this->mpService->generateReference($payment),
+            'metadata'              => [
+                'payment_id' => $payment->id,
+                'company_id' => $company->id,
+                'plan_id'    => $plan->id,
+            ],
         ]);
 
         // Mapear estado

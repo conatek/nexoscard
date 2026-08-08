@@ -23,6 +23,12 @@ class AppSettingSeeder extends Seeder
                 'description' => 'Dias antes del vencimiento en que se envia recordatorio (separados por coma)',
             ],
             [
+                'key'         => 'renewal_reminder_days',
+                'value'       => '15,3',
+                'type'        => 'string',
+                'description' => 'Dias antes de la renovacion en que se avisa a quien ya paga (separados por coma)',
+            ],
+            [
                 'key'         => 'grace_period_days',
                 'value'       => '10',
                 'type'        => 'integer',

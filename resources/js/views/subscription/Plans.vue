@@ -166,8 +166,14 @@ export default {
     },
 
     computed: {
+        // "Plan actual" solo mientras el plan realmente esta vigente. Desde que el
+        // endpoint tambien reporta los estados vencidos, comparar solo los ids marcaba
+        // como plan actual el de un cliente expirado.
         isCurrentPlan() {
-            return this.currentPlan && this.plan && this.currentPlan.id === this.plan.id;
+            if (!this.currentPlan || !this.plan) return false;
+            if (!['trial', 'active'].includes(this.subscriptionStatus)) return false;
+
+            return this.currentPlan.id === this.plan.id;
         },
 
         // Estar en trial también "es" el plan actual, pero todavía debe poder pagar.

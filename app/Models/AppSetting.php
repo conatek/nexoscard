@@ -41,8 +41,28 @@ class AppSetting extends Model
      */
     public static function getTrialReminderDays(): array
     {
-        $raw = (string) static::get('trial_reminder_days', '3,1');
+        return static::parseReminderDays((string) static::get('trial_reminder_days', '3,1'));
+    }
 
+    /**
+     * Días antes de la renovación en los que se avisa a quien ya paga.
+     *
+     * La cadencia es más holgada que la del trial (15 y 3, no 3 y 1) porque renovar cuesta
+     * dinero: hay que dar margen para decidirlo, no avisar la víspera. El plan es anual y
+     * **no se renueva solo**, así que sin este aviso el cliente se entera de que venció
+     * cuando su tarjeta ya está fuera de línea.
+     */
+    public static function getRenewalReminderDays(): array
+    {
+        return static::parseReminderDays((string) static::get('renewal_reminder_days', '15,3'));
+    }
+
+    /**
+     * Las cadencias se guardan como lista separada por comas ("3,1") para que el Master
+     * pueda ajustarlas desde el panel sin tocar código.
+     */
+    private static function parseReminderDays(string $raw): array
+    {
         $days = array_filter(
             array_map('intval', explode(',', $raw)),
             fn (int $d) => $d > 0

@@ -43,18 +43,21 @@ class ProcessMercadoPagoNotification implements ShouldQueue
             return;
         }
 
-        // Idempotencia: no re-procesar pagos ya aprobados
-        if ($localPayment->status === 'approved') {
-            Log::info("MercadoPago: payment #{$localPayment->id} ya esta aprobado, omitiendo");
-            return;
-        }
-
         // Mapear estado y metodo de pago
         $internalStatus = $mpService->mapStatus($mpPayment['status']);
         $paymentMethod  = $mpService->mapPaymentMethod(
             $mpPayment['payment_method_id'] ?? '',
             $mpPayment['payment_type_id'] ?? ''
         );
+
+        // Idempotencia: MercadoPago reenvia la misma notificacion varias veces, asi que
+        // se corta cuando el estado no cambia. Antes se cortaba ante *cualquier* pago ya
+        // aprobado, y eso se tragaba en silencio los reembolsos y contracargos: el cliente
+        // se quedaba con el año de servicio y en la base figuraba cobrado.
+        if ($localPayment->status === $internalStatus) {
+            Log::info("MercadoPago: payment #{$localPayment->id} ya esta en '{$internalStatus}', omitiendo");
+            return;
+        }
 
         // Actualizar payment local
         $localPayment->update([
@@ -77,7 +80,48 @@ class ProcessMercadoPagoNotification implements ShouldQueue
             $this->activateSubscription($localPayment, $subscriptionService);
         }
 
+        if ($internalStatus === 'refunded') {
+            $this->handleRefund($localPayment);
+        }
+
         Log::info("MercadoPago: payment #{$localPayment->id} actualizado a '{$internalStatus}'");
+    }
+
+    /**
+     * Un reembolso o contracargo deja una suscripción vigente pagada con dinero que ya no
+     * está. Se pasa a `past_due` en vez de cancelarla:
+     *
+     * - Cancelar de golpe tumba la tarjeta del cliente en el acto, y una disputa puede
+     *   resolverse a favor del comercio; el daño de equivocarse ahí es alto.
+     * - Dejarla intacta regala hasta un año de servicio y depende de que alguien mire el
+     *   log.
+     *
+     * `past_due` es exactamente el estado que ya existe para "hay que cobrar de nuevo":
+     * la tarjeta sigue publicada los días de gracia, el cliente ve el banner de renovar,
+     * y si nadie hace nada el comando diario la expira sola. No hace falta maquinaria
+     * nueva ni una intervención manual para que la historia termine bien.
+     */
+    private function handleRefund(Payment $payment): void
+    {
+        if (! $payment->subscription_id) {
+            return;
+        }
+
+        $subscription = $payment->subscription;
+
+        // Si ya no está vigente no hay nada que degradar: puede haberse renovado con otro
+        // pago posterior, y en ese caso tumbarla sería cobrar dos veces el error.
+        if (! $subscription || ! $subscription->isActive()) {
+            return;
+        }
+
+        $subscription->update(['status' => 'past_due']);
+
+        Log::warning(
+            "MercadoPago: payment #{$payment->id} reembolsado. La suscripcion "
+            . "#{$subscription->id} de la empresa #{$payment->company_id} pasa a past_due; "
+            . 'la tarjeta sigue publicada durante los dias de gracia.'
+        );
     }
 
     private function findLocalPayment(array $mpPayment): ?Payment

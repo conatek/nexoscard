@@ -71,12 +71,16 @@
                 </div>
                 <h3 class="result-title">{{ resultTitle }}</h3>
                 <p class="result-message">{{ resultMessage }}</p>
-                <router-link v-if="paymentResult.status === 'approved'" :to="{ name: 'home' }" class="btn-result">
+                <!-- Un pago rechazado se reintenta; cualquier otro desenlace (aprobado,
+                     pendiente o un estado inesperado) sale al panel. Antes el estado
+                     pendiente se quedaba sin ningun boton y dejaba al usuario encerrado
+                     en la pantalla de resultado. -->
+                <button v-if="paymentResult.status === 'declined'" class="btn-result btn-retry" @click="resetPayment">
+                    <i class="fa fa-redo me-2"></i> {{ retryLabel }}
+                </button>
+                <router-link v-else :to="{ name: 'home' }" class="btn-result">
                     <i class="fa fa-home me-2"></i> Ir al panel
                 </router-link>
-                <button v-else-if="paymentResult.status === 'declined'" class="btn-result btn-retry" @click="resetPayment">
-                    <i class="fa fa-redo me-2"></i> Intentar de nuevo
-                </button>
             </div>
 
             <!-- Formulario de pago (Brick) -->
@@ -109,6 +113,58 @@
 <script>
 import planService from '@/services/planService.js';
 import paymentService from '@/services/paymentService.js';
+import { useSubscription } from '@/stores/subscription';
+
+/**
+ * Motivos de rechazo de MercadoPago (`status_detail`) traducidos a algo accionable.
+ *
+ * Todos los rechazos mostraban el mismo "no pudo ser procesado", aunque el gateway dice
+ * exactamente que paso. No es lo mismo "no te alcanza el cupo" que "escribiste mal el
+ * CVV": llevan a acciones distintas, y es la causa numero uno de tickets de soporte en
+ * pagos con tarjeta.
+ *
+ * `reintentable` distingue el error que se corrige en el mismo formulario del que exige
+ * otra tarjeta o una llamada al banco, para no invitar a repetir algo que va a fallar
+ * igual.
+ */
+const MOTIVOS_RECHAZO = {
+    // Datos mal escritos: se corrigen aqui mismo.
+    cc_rejected_bad_filled_card_number:   { texto: 'Revisa el numero de la tarjeta: no coincide con ninguna tarjeta valida.', reintentable: true },
+    cc_rejected_bad_filled_date:          { texto: 'Revisa la fecha de vencimiento de la tarjeta.', reintentable: true },
+    cc_rejected_bad_filled_security_code: { texto: 'El codigo de seguridad no es correcto. Revisalo e intenta de nuevo.', reintentable: true },
+    cc_rejected_bad_filled_other:         { texto: 'Alguno de los datos de la tarjeta no es correcto. Revisalos e intenta de nuevo.', reintentable: true },
+    cc_rejected_invalid_installments:     { texto: 'Tu tarjeta no admite esa cantidad de cuotas. Elige otra opcion.', reintentable: true },
+
+    // El banco decide: no se arregla reintentando igual.
+    cc_rejected_insufficient_amount:      { texto: 'Tu tarjeta no tiene cupo suficiente para este pago.', reintentable: false },
+    cc_rejected_call_for_authorize:       { texto: 'Tu banco debe autorizar este pago. Llamalos, autorizalo y vuelve a intentar.', reintentable: true },
+    cc_rejected_card_disabled:            { texto: 'Tu tarjeta esta inactiva. Llama a tu banco para activarla o usa otra.', reintentable: false },
+    cc_rejected_card_error:               { texto: 'Tu banco no pudo procesar el pago. Intenta de nuevo o usa otra tarjeta.', reintentable: true },
+    cc_rejected_card_type_not_allowed:    { texto: 'Ese tipo de tarjeta no esta habilitado para este pago. Prueba con otra.', reintentable: false },
+    rejected_by_bank:                     { texto: 'Tu banco rechazo el pago. Comunicate con ellos o usa otra tarjeta.', reintentable: false },
+
+    // Riesgo y limites: reintentar empeora las cosas.
+    cc_rejected_high_risk:                { texto: 'El pago fue rechazado por seguridad. Prueba con otra tarjeta o escribenos y te ayudamos.', reintentable: false },
+    cc_rejected_blacklist:                { texto: 'No pudimos procesar el pago con esa tarjeta. Prueba con otra o escribenos.', reintentable: false },
+    cc_rejected_max_attempts:             { texto: 'Se alcanzo el limite de intentos con esta tarjeta. Espera un momento o usa otra.', reintentable: false },
+    cc_amount_rate_limit_exceeded:        { texto: 'El monto supera el limite permitido para esta tarjeta.', reintentable: false },
+    rejected_insufficient_data:           { texto: 'Faltan datos del titular para completar el pago. Revisalos e intenta de nuevo.', reintentable: true },
+
+    // Caso feliz disfrazado: ya pagaste.
+    cc_rejected_duplicated_payment:       { texto: 'Ya hay un pago igual en proceso. Revisa tu plan antes de volver a pagar.', reintentable: false },
+
+    // El problema no es del cliente ni de su tarjeta.
+    internal_error:                       { texto: 'Hubo un problema al procesar el pago. Intenta de nuevo en unos minutos.', reintentable: true },
+    cc_rejected_other_reason:             { texto: 'Tu banco rechazo el pago sin dar un motivo. Intenta de nuevo o usa otra tarjeta.', reintentable: true },
+};
+
+/** Estados pendientes, que tampoco significan lo mismo entre si. */
+const MOTIVOS_PENDIENTE = {
+    pending_contingency:       'Estamos procesando tu pago. Te avisamos por correo en cuanto se confirme, normalmente en unos minutos.',
+    pending_review_manual:     'Tu pago esta en revision. Te avisamos por correo apenas se resuelva, en menos de dos dias habiles.',
+    pending_waiting_transfer:  'Falta completar la transferencia desde tu banco. Tu plan se activa en cuanto se acredite.',
+    pending_waiting_payment:   'Falta completar el pago. Tu plan se activa en cuanto se acredite.',
+};
 
 export default {
     name: 'Checkout',
@@ -140,14 +196,41 @@ export default {
             const map = { approved: 'Pago aprobado', pending: 'Pago pendiente', declined: 'Pago no aprobado' };
             return map[this.paymentResult.status] || 'Estado desconocido';
         },
+        // El motivo exacto lo manda MercadoPago en `status_detail` y el backend ya lo
+        // reenvia; antes se ignoraba y todos los rechazos decian lo mismo.
+        rejectionReason() {
+            return MOTIVOS_RECHAZO[this.paymentResult?.status_detail] || null;
+        },
+
         resultMessage() {
             if (!this.paymentResult) return '';
-            const map = {
-                approved: 'Tu plan ha sido activado exitosamente. Ya puedes disfrutar de todas las funcionalidades.',
-                pending: 'Tu pago esta siendo procesado. Te notificaremos cuando se confirme.',
-                declined: 'Tu pago no pudo ser procesado. Puedes intentar nuevamente.',
-            };
-            return map[this.paymentResult.status] || 'No pudimos determinar el estado de tu pago.';
+
+            const { status, status_detail: detail } = this.paymentResult;
+
+            if (status === 'approved') {
+                return 'Tu plan ha sido activado exitosamente. Ya puedes disfrutar de todas las funcionalidades.';
+            }
+
+            if (status === 'pending') {
+                return MOTIVOS_PENDIENTE[detail]
+                    || 'Tu pago esta siendo procesado. Te avisamos por correo cuando se confirme.';
+            }
+
+            if (status === 'declined') {
+                return this.rejectionReason?.texto
+                    || 'Tu pago no pudo ser procesado. Puedes intentar nuevamente o usar otra tarjeta.';
+            }
+
+            return 'No pudimos determinar el estado de tu pago. Escribenos y lo revisamos contigo.';
+        },
+
+        // Con un rechazo que no se arregla repitiendo (sin cupo, tarjeta inactiva, limite
+        // de intentos) el boton de reintentar solo genera otro rechazo: mejor ofrecer
+        // cambiar de tarjeta.
+        retryLabel() {
+            return this.rejectionReason && !this.rejectionReason.reintentable
+                ? 'Probar con otra tarjeta'
+                : 'Intentar de nuevo';
         },
     },
 
@@ -245,11 +328,40 @@ export default {
                 });
 
                 this.paymentResult = data;
+
+                // El banner se monta una sola vez fuera del router-view: sin esto seguia
+                // diciendo "tu periodo ha expirado" encima del "pago aprobado".
+                if (data.status === 'approved') {
+                    await useSubscription().refresh();
+                }
             } catch (err) {
-                this.error = err.response?.data?.message || 'Error al procesar el pago.';
+                const respuesta = err.response?.data;
+
+                this.error = respuesta?.message || 'Error al procesar el pago.';
+
+                // La oferta vencio mientras llenaba el formulario. Recargar el plan es lo
+                // unico que desatasca: el Brick se creo con el importe viejo y reintentar
+                // sin esto vuelve a fallar con el mismo 422, en bucle.
+                if (respuesta?.price_changed) {
+                    await this.reloadPlanAfterPriceChange();
+                }
             } finally {
                 this.processing = false;
             }
+        },
+
+        /**
+         * Vuelve a montar el Brick con el precio nuevo, porque el importe se fija al
+         * crearlo y no se puede cambiar en caliente.
+         */
+        async reloadPlanAfterPriceChange() {
+            if (this.brickController) {
+                this.brickController.unmount();
+                this.brickController = null;
+            }
+
+            this.loadingBrick = true;
+            await this.loadPlan();
         },
 
         resetPayment() {

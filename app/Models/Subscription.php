@@ -33,25 +33,43 @@ class Subscription extends Model
         'reminders_sent'       => 'array',
     ];
 
+    /** Avisos de fin de prueba, anclados a `trial_ends_at`. */
+    public const REMINDER_TRIAL = 'trial';
+
+    /** Avisos de renovación de un plan pagado, anclados a `current_period_end`. */
+    public const REMINDER_RENEWAL = 'renovacion';
+
     /**
      * Los recordatorios se marcan por día de antelación ("3", "1") junto con la fecha de
      * vencimiento a la que corresponden: si la suscripción se renueva, los avisos del
      * ciclo anterior no deben bloquear los del nuevo.
+     *
+     * Cada tipo se ancla a su propia fecha. Un aviso de renovación anclado a
+     * `trial_ends_at` (null en una suscripción pagada) daría siempre la misma clave
+     * `sin-fecha` y solo se enviaría el primero, para siempre.
+     *
+     * El formato del trial se deja **exactamente como estaba**, sin prefijo: cambiarlo
+     * invalidaría las claves ya guardadas y reenviaría el aviso a todas las pruebas en
+     * curso el día del despliegue.
      */
-    private function reminderKey(int $days): string
+    private function reminderKey(int $days, string $type): string
     {
-        return $days . '@' . ($this->trial_ends_at?->toDateString() ?? 'sin-fecha');
+        if ($type === self::REMINDER_TRIAL) {
+            return $days . '@' . ($this->trial_ends_at?->toDateString() ?? 'sin-fecha');
+        }
+
+        return $type . ':' . $days . '@' . ($this->current_period_end?->toDateString() ?? 'sin-fecha');
     }
 
-    public function wasReminderSent(int $days): bool
+    public function wasReminderSent(int $days, string $type = self::REMINDER_TRIAL): bool
     {
-        return in_array($this->reminderKey($days), $this->reminders_sent ?? [], true);
+        return in_array($this->reminderKey($days, $type), $this->reminders_sent ?? [], true);
     }
 
-    public function markReminderSent(int $days): void
+    public function markReminderSent(int $days, string $type = self::REMINDER_TRIAL): void
     {
         $sent = $this->reminders_sent ?? [];
-        $sent[] = $this->reminderKey($days);
+        $sent[] = $this->reminderKey($days, $type);
 
         $this->update(['reminders_sent' => array_values(array_unique($sent))]);
     }
