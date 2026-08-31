@@ -37,11 +37,27 @@
     <tr><td style="padding: 4px 0; font-size: 14px; color: #475569;">&#10003;&nbsp;&nbsp;Compartir tu tarjeta al instante</td></tr>
 </table>
 
-<table role="presentation" style="margin: 0 auto 16px;">
+<table role="presentation" style="margin: 0 auto 24px;">
     <tr>
         <td style="background-color: #7c3aed; border-radius: 10px; padding: 14px 32px;">
             <a href="{{ url('/') }}" style="color: #ffffff; text-decoration: none; font-weight: 600; font-size: 15px; display: inline-block;">
                 Explorar NexosCard
+            </a>
+        </td>
+    </tr>
+</table>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 10px; margin: 0 0 8px;">
+    <tr>
+        <td style="padding: 20px 24px;">
+            <p style="margin: 0 0 6px; font-size: 13px; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">
+                Guia de usuario
+            </p>
+            <p style="margin: 0 0 14px; font-size: 14px; color: #475569; line-height: 1.6;">
+                Preparamos una guia paso a paso para que armes y compartas tu primera tarjeta en minutos.
+            </p>
+            <a href="{{ config('mail.user_guide_url') }}" style="color: #7c3aed; text-decoration: underline; font-weight: 600; font-size: 14px;">
+                Ver la guia de usuario &rarr;
             </a>
         </td>
     </tr>

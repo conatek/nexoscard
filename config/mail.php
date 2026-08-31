@@ -128,4 +128,17 @@ return [
 
     'logo_url' => env('MAIL_LOGO_URL', 'https://nexoscard.com/images/nexos-logo-email.png'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Guia de usuario
+    |--------------------------------------------------------------------------
+    |
+    | Documento alojado fuera de la aplicacion que se enlaza desde el correo de
+    | bienvenida. Va en configuracion y no en la plantilla para poder cambiar el
+    | enlace sin tocar codigo ni desplegar.
+    |
+    */
+
+    'user_guide_url' => env('MAIL_USER_GUIDE_URL', 'https://drive.google.com/file/d/1_ovXfdCCvApJNj_JeuM_5Klj55jOn0Ru/view'),
+
 ];
