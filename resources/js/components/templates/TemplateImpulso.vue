@@ -245,6 +245,8 @@
  * Colores, tamaños, iconos, radios y transparencias van codificados aquí (no en el schema).
  */
 
+import { extractYouTubeId } from '@/utils/youtube.js'
+
 // Presets por rubro: texto del CTA de WhatsApp + las 6 tiles de la grilla (orden fila a fila).
 // keys: about | link1 | qr | services | link2 | maps
 const RUBROS = {
@@ -406,8 +408,10 @@ export default {
             return this.customization?.video?.mostrar !== false && !!this.videoId
         },
 
+        // Acepta la URL tal como la copia el usuario (watch, youtu.be, shorts, embed)
+        // o el ID pelado. Ver @/utils/youtube.js
         videoId() {
-            return this.customization?.video?.urlId || ''
+            return extractYouTubeId(this.customization?.video?.urlId)
         },
 
         whatsappLink() {

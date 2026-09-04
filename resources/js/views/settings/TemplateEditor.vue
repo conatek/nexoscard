@@ -214,9 +214,13 @@
                                         <input
                                             type="text"
                                             class="form-control"
+                                            :placeholder="field.placeholder || ''"
                                             :value="getValue(sectionKey, fieldKey)"
                                             @input="setValue(sectionKey, fieldKey, $event.target.value)"
                                         >
+                                        <small v-if="field.help" class="form-text text-muted">
+                                            {{ field.help }}
+                                        </small>
                                     </template>
 
                                     <!-- Image Input -->

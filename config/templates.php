@@ -1133,7 +1133,9 @@ return [
                 ],
                 'urlId' => [
                     'type' => 'text',
-                    'label' => 'ID del video de YouTube',
+                    'label' => 'Video de YouTube',
+                    'placeholder' => 'https://www.youtube.com/watch?v=...',
+                    'help' => 'Pega la URL tal como la ves en el navegador o en el botón "Compartir". También funcionan los enlaces youtu.be y los Shorts.',
                     'value' => '',
                 ],
             ],
