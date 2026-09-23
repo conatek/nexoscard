@@ -139,6 +139,6 @@ return [
     |
     */
 
-    'user_guide_url' => env('MAIL_USER_GUIDE_URL', 'https://drive.google.com/file/d/1_ovXfdCCvApJNj_JeuM_5Klj55jOn0Ru/view'),
+    'user_guide_url' => env('MAIL_USER_GUIDE_URL', 'https://drive.google.com/file/d/1_ovXfdCCvApJNj_JeuM_5Klj55jOn0Ru/preview'),
 
 ];
