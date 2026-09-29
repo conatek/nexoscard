@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Company;
 use Illuminate\Validation\Rule;
 
 class UpdateCompanyRequest extends FormRequest
@@ -24,6 +25,7 @@ class UpdateCompanyRequest extends FormRequest
                 'string',
                 'max:80',
                 'alpha_dash',
+                Rule::notIn(Company::RESERVED_SLUGS),
                 Rule::unique('companies', 'slug')->ignore($companyId),
             ],
             'logo' => ['nullable', 'image', 'max:5120'],
@@ -46,6 +48,7 @@ class UpdateCompanyRequest extends FormRequest
         return [
             'slug.alpha_dash' => 'El slug solo puede contener letras, números, guiones (-) y underscores (_).',
             'slug.unique'     => 'Este slug ya está en uso. Elige otro.',
+            'slug.not_in'     => 'Este slug está reservado por la plataforma. Elige otro.',
         ];
     }
 }

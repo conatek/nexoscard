@@ -121,6 +121,16 @@ Route::get('/{companySlug}/{cardSlug}', function (
     return view('app');
 })->where(['companySlug' => '[a-z0-9\-_]+', 'cardSlug' => '[a-z0-9\-_]+']);
 
+// Landings públicas: OG tags para que el enlace compartido por WhatsApp muestre vista previa
+Route::get('/{landing}', function (string $landing) {
+    return view('app', [
+        'ogTitle'       => 'NEXOS Card | Tu tarjeta digital profesional',
+        'ogDescription' => 'Tu presencia profesional y comercial en un solo enlace. Pruébala gratis, sin tarjeta de crédito.',
+        'ogImage'       => asset('images/landing/og-landing.jpg'),
+        'ogUrl'         => url($landing),
+    ]);
+})->where('landing', 'landing|landing-test');
+
 // Catch-all para la SPA
 Route::get('/{any}', function () {
     return view('app');

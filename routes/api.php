@@ -31,6 +31,9 @@ Route::prefix('public')->middleware('public.active')->group(function () {
     Route::get('/{companySlug}/{cardSlug}',  [PublicCardController::class, 'card']);
 });
 
+// Precio y días de prueba que muestra la landing pública
+Route::get('/landing', [PlanController::class, 'landing']);
+
 // Rutas públicas de plantillas (sin auth - para consultar schemas)
 Route::get('/templates', [CompanySettingController::class, 'templates']);
 Route::get('/templates/{templateName}/schema', [CompanySettingController::class, 'schema']);

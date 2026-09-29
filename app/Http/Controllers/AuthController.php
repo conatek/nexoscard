@@ -86,7 +86,7 @@ class AuthController extends Controller
         $baseSlug = Str::slug($request->name);
         $slug = $baseSlug;
         $counter = 1;
-        while (Company::where('slug', $slug)->exists()) {
+        while (in_array($slug, Company::RESERVED_SLUGS, true) || Company::where('slug', $slug)->exists()) {
             $slug = $baseSlug . '-' . $counter++;
         }
 

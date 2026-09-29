@@ -9,6 +9,16 @@ class Company extends Model
 {
     use HasFactory;
 
+    /**
+     * Slugs que no puede usar una empresa. La tarjeta pública vive en /{slug}, así que una
+     * empresa con uno de estos slugs quedaría tapada por la ruta de la SPA del mismo nombre.
+     */
+    public const RESERVED_SLUGS = [
+        'acceso-denegado', 'admin', 'api', 'build', 'checkout', 'empresas', 'inicio', 'landing',
+        'landing-test', 'login', 'mi-suscripcion', 'planes', 'politica-privacidad', 'register',
+        'storage', 'terminos-condiciones',
+    ];
+
     protected $fillable = [
         'user_id',
         'name',
