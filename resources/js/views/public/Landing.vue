@@ -5,14 +5,18 @@
 
         <!-- ===================== Navegación flotante ===================== -->
         <nav class="lt-nav" :class="{ 'is-scrolled': scrolled }" aria-label="Secciones">
-            <router-link to="/landing-test" class="lt-nav-brand" aria-label="Nexos Card">
+            <router-link to="/inicio" class="lt-nav-brand" aria-label="Nexos Card">
                 <img :src="img('logo-mark')" alt="">
                 <span>NEXOS Card</span>
             </router-link>
             <div class="lt-nav-links">
                 <a v-for="l in navLinks" :key="l.id" :href="`#${l.id}`" @click.prevent="goTo(l.id)">{{ l.label }}</a>
             </div>
-            <router-link to="/register" class="lt-btn lt-btn-primary lt-btn-sm">Crear Mi Tarjeta</router-link>
+            <div class="lt-nav-actions">
+                <router-link v-if="isAuthenticated" to="/" class="lt-btn lt-btn-glass lt-btn-sm">Mi panel</router-link>
+                <router-link v-else to="/login" class="lt-btn lt-btn-glass lt-btn-sm">Iniciar Sesión</router-link>
+                <router-link to="/register" class="lt-btn lt-btn-primary lt-btn-sm">Crear Mi Tarjeta</router-link>
+            </div>
         </nav>
 
         <!-- ===================== Hero ===================== -->
@@ -76,7 +80,7 @@
                 </div>
             </div>
 
-            <button type="button" class="lt-scroll-cue" aria-label="Ver más" @click="goTo('funciones')">
+            <button type="button" class="lt-scroll-cue" aria-label="Ver más" @click="goTo('que-incluye')">
                 <span></span>
             </button>
         </header>
@@ -91,7 +95,7 @@
         </div>
 
         <!-- ===================== Todo lo que incluye ===================== -->
-        <section id="funciones" class="lt-section">
+        <section id="que-incluye" class="lt-section">
             <div class="lt-container">
                 <header class="lt-head" v-reveal>
                     <span class="lt-eyebrow">Todo lo que incluye</span>
@@ -401,6 +405,7 @@
 
 <script>
 import api from '@/services/api.js';
+import { useAuth } from '@/stores/auth';
 import {
     FALLBACK, DEMO_URL, CLIENTS_COUNT, hero, features, steps, testimonials, planPerks, planItems,
     socials, money, landingImage, buildFaqs, buildContactItems, fetchLandingData, defaultPricing,
@@ -410,7 +415,7 @@ import {
 const HIGHLIGHT_WORDS = 4; // "en un solo enlace" va con degradado
 
 export default {
-    name: 'LandingShowcase',
+    name: 'Landing',
 
     directives: {
         // Aparición al entrar en pantalla. El valor opcional es un retraso en ms para
@@ -444,7 +449,7 @@ export default {
             // Tarjetas que ocupan dos columnas en el bento: QR, WhatsApp, Video y Hosting.
             wideFeatures: [0, 1, 6, 7],
             navLinks: [
-                { id: 'funciones',    label: 'Funciones' },
+                { id: 'que-incluye',  label: 'Qué incluye' },
                 { id: 'como-funciona', label: 'Cómo funciona' },
                 { id: 'testimonios',  label: 'Testimonios' },
                 { id: 'precio',       label: 'Precio' },
@@ -465,6 +470,10 @@ export default {
     computed: {
         year() {
             return new Date().getFullYear();
+        },
+        // Quien ya tiene sesión ve "Mi panel" en lugar de "Iniciar Sesión".
+        isAuthenticated() {
+            return useAuth().isAuthenticated.value;
         },
         heroWords() {
             return this.hero.title.split(' ');
@@ -959,6 +968,12 @@ export default {
     display: flex;
     gap: 0.25rem;
     margin-left: auto;
+}
+
+.lt-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .lt-nav-links a {
@@ -2347,7 +2362,7 @@ export default {
         display: none;
     }
 
-    .lt-nav .lt-btn {
+    .lt-nav-actions {
         margin-left: auto;
     }
 
@@ -2390,6 +2405,23 @@ export default {
 
     .lt-nav-brand span {
         font-size: 0.95rem;
+    }
+
+    .lt-nav {
+        gap: 0.75rem;
+        padding-left: 0.75rem;
+    }
+
+    .lt-nav-actions .lt-btn-sm {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* Teléfonos angostos: el logo queda solo con el símbolo para que quepan los dos botones */
+@media (max-width: 480px) {
+    .lt-nav-brand span {
+        display: none;
     }
 
     .lt-hero-inner,

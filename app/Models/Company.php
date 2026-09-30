@@ -14,9 +14,9 @@ class Company extends Model
      * empresa con uno de estos slugs quedaría tapada por la ruta de la SPA del mismo nombre.
      */
     public const RESERVED_SLUGS = [
-        'acceso-denegado', 'admin', 'api', 'build', 'checkout', 'empresas', 'inicio', 'landing',
-        'landing-test', 'login', 'mi-suscripcion', 'planes', 'politica-privacidad', 'register',
-        'storage', 'terminos-condiciones',
+        'acceso-denegado', 'admin', 'api', 'build', 'checkout', 'empresas', 'inicio', 'login',
+        'mi-suscripcion', 'planes', 'politica-privacidad', 'register', 'storage',
+        'terminos-condiciones',
     ];
 
     protected $fillable = [

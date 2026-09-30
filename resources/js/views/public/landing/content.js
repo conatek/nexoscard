@@ -1,7 +1,6 @@
 /**
- * Contenido compartido por las landings públicas (/landing y /landing-test). Las dos
- * muestran la misma información con estilos distintos: el texto vive aquí para que un
- * cambio de copy no tenga que hacerse dos veces.
+ * Contenido de la landing pública (/inicio). El texto vive aquí, separado del diseño,
+ * para que un cambio de copy no obligue a tocar la vista.
  */
 
 // Valores de la página original de Canva. Se usan mientras carga /api/landing o si falla,
@@ -37,7 +36,7 @@ export const features = [
     { icon: 'fas fa-briefcase',        title: 'Servicios',           text: 'Presenta todos tus servicios' },
     { icon: 'fas fa-hashtag',          title: 'Redes Sociales',      text: 'Todas tus redes en un solo lugar' },
     { icon: 'fas fa-map-marker-alt',   title: 'Google Maps',         text: 'Lleva a tus clientes hasta tu negocio' },
-    { icon: 'far fa-play-circle',      title: 'Video Corporativo',   text: 'Presenta tu empresa de forma profesional' },
+    { icon: 'far fa-play-circle',      title: 'Video Corporativo',   text: 'Enlaza tu video y presenta tu empresa de forma profesional' },
     { icon: 'fas fa-cloud-upload-alt', title: 'Hosting Incluido',    text: 'Tu tarjeta siempre disponible en línea' },
     { icon: 'fas fa-sync-alt',         title: 'Actualizaciones',     text: 'Actualiza tu información cuando lo necesites' },
     { icon: 'fas fa-mobile-alt',       title: '100% Responsive',     text: 'Se ve perfecta en cualquier pantalla' },
@@ -182,7 +181,7 @@ export function defaultPricing() {
     };
 }
 
-// Las tipografías de cada landing solo hacen falta en ella; no se cargan en el resto de la app.
+// Las tipografías de la landing solo hacen falta en ella; no se cargan en el resto de la app.
 export function loadFonts(id, href) {
     if (document.getElementById(id)) return;
     const link = document.createElement('link');

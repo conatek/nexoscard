@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 /**
  * La tarjeta pública vive en /{slug}. Una empresa con el slug de una ruta de la SPA
- * (/landing, /politica-privacidad…) quedaría tapada por esa ruta y su tarjeta sería
+ * (/inicio, /politica-privacidad…) quedaría tapada por esa ruta y su tarjeta sería
  * inalcanzable, así que esos slugs no se pueden asignar ni al registrarse ni al editar.
  */
 class ReservedCompanySlugTest extends TestCase
@@ -42,15 +42,15 @@ class ReservedCompanySlugTest extends TestCase
     public function test_registro_esquiva_un_slug_reservado(): void
     {
         $this->postJson('/api/register', [
-            'name'                  => 'Landing',
-            'email'                 => 'landing@test.com',
+            'name'                  => 'Inicio',
+            'email'                 => 'inicio@test.com',
             'password'              => 'secret123',
             'password_confirmation' => 'secret123',
         ])->assertCreated();
 
-        $slug = User::where('email', 'landing@test.com')->first()->company->slug;
+        $slug = User::where('email', 'inicio@test.com')->first()->company->slug;
 
-        $this->assertSame('landing-1', $slug);
+        $this->assertSame('inicio-1', $slug);
     }
 
     public function test_editar_empresa_rechaza_un_slug_reservado(): void

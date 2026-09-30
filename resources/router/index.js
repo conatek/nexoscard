@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Landing  from '../views/Landing.vue';
 import Login    from '../views/Login.vue';
 import Register from '../views/Register.vue';
 import Home     from '../views/Home.vue';
@@ -48,8 +47,7 @@ import MySubscription   from '../js/views/subscription/MySubscription.vue';
 // Vistas publicas
 import CompanyPublic from '../js/views/public/CompanyPublic.vue';
 import CardPublic    from '../js/views/public/CardPublic.vue';
-import LandingPage   from '../js/views/public/LandingPage.vue';
-import LandingShowcase from '../js/views/public/LandingShowcase.vue';
+import Landing       from '../js/views/public/Landing.vue';
 import PrivacyPolicy   from '../js/views/legal/PrivacyPolicy.vue';
 import TermsConditions from '../js/views/legal/TermsConditions.vue';
 
@@ -59,22 +57,6 @@ const routes = [
         path: '/inicio',
         name: 'landing',
         component: Landing,
-        meta: { layout: 'public' },
-    },
-
-    // Landing replicada de nexoscard.site (Canva). Convive con /inicio mientras el cliente
-    // decide cual conservar. Su slug esta en Company::RESERVED_SLUGS.
-    {
-        path: '/landing',
-        name: 'landing.site',
-        component: LandingPage,
-        meta: { layout: 'public' },
-    },
-    // Alternativa de alto impacto con la misma informacion, para que el cliente compare.
-    {
-        path: '/landing-test',
-        name: 'landing.showcase',
-        component: LandingShowcase,
         meta: { layout: 'public' },
     },
 

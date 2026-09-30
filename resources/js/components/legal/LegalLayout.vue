@@ -2,7 +2,7 @@
     <div class="legal-page">
         <header class="legal-header">
             <div class="legal-header-inner">
-                <router-link to="/landing" class="legal-brand" aria-label="NexosCard">
+                <router-link to="/inicio" class="legal-brand" aria-label="NexosCard">
                     <img :src="logoUrl" alt="Nexos Card" class="legal-logo">
                 </router-link>
                 <router-link to="/login" class="legal-login">Iniciar sesión</router-link>
