@@ -298,6 +298,7 @@ const routes = [
         path: '/:pathMatch(.*)*',
         name: 'not-found',
         component: NotFound,
+        meta: { layout: 'public' },
     },
 ];
 

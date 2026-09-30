@@ -12,11 +12,7 @@
     </div>
 
     <!-- Error 404 -->
-    <div v-else-if="notFound" class="card-not-found">
-        <div class="nf-icon">🪪</div>
-        <h2>Tarjeta no encontrada</h2>
-        <p>Esta tarjeta no existe o no está disponible.</p>
-    </div>
+    <PageNotFound v-else-if="notFound" kind="card" />
 
     <!-- Tarjeta con plantilla dinámica -->
     <div v-else class="public-card-wrapper">
@@ -44,11 +40,13 @@ import TemplateCyber from '@/components/templates/TemplateCyber.vue';
 import TemplateVibrant from '@/components/templates/TemplateVibrant.vue';
 import TemplateImpulso from '@/components/templates/TemplateImpulso.vue';
 import ScrollHint from '@/components/shared/ScrollHint.vue';
+import PageNotFound from '@/components/PageNotFound.vue';
 
 export default {
     name: 'CardPublic',
 
     components: {
+        PageNotFound,
         ScrollHint,
         TemplateModern,
         TemplateClassic,

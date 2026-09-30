@@ -4,23 +4,14 @@
         <div class="auth-form-container">
             <div class="auth-form-wrapper">
                 <!-- Mobile Logo -->
-                <div class="mobile-logo">
-                    <svg viewBox="0 0 40 40" fill="none">
-                        <rect width="40" height="40" rx="10" fill="url(#mobile-logo-gradient-reg)"/>
-                        <path d="M12 20C12 15.58 15.58 12 20 12C24.42 12 28 15.58 28 20C28 24.42 24.42 28 20 28" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-                        <circle cx="20" cy="20" r="4" fill="white"/>
-                        <defs>
-                            <linearGradient id="mobile-logo-gradient-reg" x1="0" y1="0" x2="40" y2="40">
-                                <stop stop-color="#8b5cf6"/>
-                                <stop offset="1" stop-color="#ec4899"/>
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
+                <router-link to="/inicio" class="mobile-logo" aria-label="Nexos Card">
+                    <img :src="logoUrl" alt="">
+                    <span>NEXOS Card</span>
+                </router-link>
 
                 <div class="auth-header">
                     <h1>Crear Cuenta</h1>
-                    <p>Registrate y comienza a crear tus tarjetas digitales</p>
+                    <p>Regístrate y comienza a crear tus tarjetas digitales</p>
                 </div>
 
                 <!-- Error Alert -->
@@ -58,7 +49,7 @@
                     <!-- Email Field -->
                     <div class="form-group">
                         <label for="email" class="form-label">
-                            Correo electronico
+                            Correo electrónico
                         </label>
                         <div class="input-wrapper">
                             <svg class="input-icon" viewBox="0 0 20 20" fill="currentColor">
@@ -83,7 +74,7 @@
                         <!-- Password Field -->
                         <div class="form-group">
                             <label for="password" class="form-label">
-                                Contrasena
+                                Contraseña
                             </label>
                             <div class="input-wrapper">
                                 <svg class="input-icon" viewBox="0 0 20 20" fill="currentColor">
@@ -95,7 +86,7 @@
                                     :type="showPassword ? 'text' : 'password'"
                                     class="form-input"
                                     :class="{ 'has-error': errors.password }"
-                                    placeholder="Minimo 8 caracteres"
+                                    placeholder="Mínimo 6 caracteres"
                                     required
                                 >
                                 <button type="button" class="toggle-password" @click="showPassword = !showPassword">
@@ -115,7 +106,7 @@
                         <!-- Confirm Password Field -->
                         <div class="form-group">
                             <label for="password_confirmation" class="form-label">
-                                Confirmar contrasena
+                                Confirmar contraseña
                             </label>
                             <div class="input-wrapper">
                                 <svg class="input-icon" viewBox="0 0 20 20" fill="currentColor">
@@ -126,7 +117,7 @@
                                     id="password_confirmation"
                                     :type="showPassword ? 'text' : 'password'"
                                     class="form-input"
-                                    placeholder="Repetir contrasena"
+                                    placeholder="Repetir contraseña"
                                     required
                                 >
                             </div>
@@ -143,8 +134,8 @@
                 <!-- Login Link -->
                 <div class="auth-footer">
                     <p>
-                        Ya tienes una cuenta?
-                        <router-link to="/login" class="auth-link">Inicia sesion</router-link>
+                        ¿Ya tienes una cuenta?
+                        <router-link to="/login" class="auth-link">Inicia sesión</router-link>
                     </p>
                 </div>
 
@@ -158,107 +149,21 @@
             </div>
         </div>
 
-        <!-- Right Side - Illustration -->
-        <div class="auth-illustration">
-            <div class="illustration-content">
-                <!-- Decorative Background Elements -->
-                <div class="bg-shapes">
-                    <div class="shape shape-1"></div>
-                    <div class="shape shape-2"></div>
-                    <div class="shape shape-3"></div>
-                </div>
-
-                <!-- Main SVG Illustration -->
-                <svg class="auth-svg" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Background Circle -->
-                    <circle cx="200" cy="200" r="150" fill="white" opacity="0.1"/>
-
-                    <!-- User Profile/Creation Icon -->
-                    <g transform="translate(130, 80)">
-                        <!-- Card Background -->
-                        <rect x="10" y="30" width="120" height="160" rx="12" fill="white" opacity="0.95"/>
-
-                        <!-- Avatar Circle -->
-                        <circle cx="70" cy="80" r="35" fill="#f3e8ff"/>
-                        <circle cx="70" cy="70" r="15" fill="#8b5cf6"/>
-                        <ellipse cx="70" cy="95" rx="20" ry="12" fill="#8b5cf6"/>
-
-                        <!-- Name lines -->
-                        <rect x="35" y="130" width="70" height="8" rx="4" fill="#e2e8f0"/>
-                        <rect x="45" y="148" width="50" height="6" rx="3" fill="#f1f5f9"/>
-
-                        <!-- Plus badge -->
-                        <circle cx="115" cy="45" r="20" fill="#ec4899"/>
-                        <path d="M108 45h14M115 38v14" stroke="white" stroke-width="3" stroke-linecap="round"/>
-                    </g>
-
-                    <!-- Floating Elements -->
-                    <g class="floating-element" style="animation-delay: 0s">
-                        <circle cx="70" cy="180" r="25" fill="white" opacity="0.2"/>
-                        <path d="M62 180l6 6 12-12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </g>
-
-                    <g class="floating-element" style="animation-delay: 0.3s">
-                        <circle cx="330" cy="150" r="22" fill="white" opacity="0.2"/>
-                        <path d="M322 150h16M330 142v16" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-                    </g>
-
-                    <g class="floating-element" style="animation-delay: 0.6s">
-                        <circle cx="320" cy="280" r="20" fill="white" opacity="0.2"/>
-                        <path d="M312 280l8-8m0 0l8 8m-8-8v16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </g>
-
-                    <!-- Small Cards -->
-                    <g class="floating-card" style="animation-delay: 0.2s">
-                        <rect x="40" y="280" width="70" height="45" rx="8" fill="white" opacity="0.15"/>
-                        <circle cx="60" cy="295" r="8" fill="white" opacity="0.3"/>
-                        <rect x="75" y="290" width="25" height="4" rx="2" fill="white" opacity="0.3"/>
-                        <rect x="75" y="300" width="18" height="3" rx="1.5" fill="white" opacity="0.2"/>
-                    </g>
-
-                    <g class="floating-card" style="animation-delay: 0.5s">
-                        <rect x="290" cy="220" width="70" height="45" rx="8" fill="white" opacity="0.15"/>
-                        <circle cx="310" cy="235" r="8" fill="white" opacity="0.3"/>
-                        <rect x="325" y="230" width="25" height="4" rx="2" fill="white" opacity="0.3"/>
-                        <rect x="325" y="240" width="18" height="3" rx="1.5" fill="white" opacity="0.2"/>
-                    </g>
-
-                    <!-- Decorative Dots -->
-                    <circle cx="90" cy="120" r="4" fill="white" opacity="0.4"/>
-                    <circle cx="310" cy="100" r="5" fill="white" opacity="0.3"/>
-                    <circle cx="100" cy="320" r="3" fill="white" opacity="0.5"/>
-                    <circle cx="350" cy="200" r="4" fill="white" opacity="0.3"/>
-
-                    <!-- Connection arcs -->
-                    <path d="M100 250 Q 150 230 200 250" stroke="white" stroke-width="1" opacity="0.15" fill="none"/>
-                    <path d="M200 320 Q 250 300 300 320" stroke="white" stroke-width="1" opacity="0.15" fill="none"/>
-                </svg>
-
-                <!-- Brand -->
-                <div class="illustration-brand">
-                    <svg class="brand-logo" viewBox="0 0 40 40" fill="none">
-                        <rect width="40" height="40" rx="10" fill="white" opacity="0.2"/>
-                        <path d="M12 20C12 15.58 15.58 12 20 12C24.42 12 28 15.58 28 20C28 24.42 24.42 28 20 28" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-                        <circle cx="20" cy="20" r="4" fill="white"/>
-                    </svg>
-                    <span class="brand-name">NexosCard</span>
-                </div>
-
-                <div class="illustration-text">
-                    <h2>Unete a nosotros</h2>
-                    <p>Crea tarjetas de presentacion digitales profesionales para tu empresa y equipo.</p>
-                </div>
-            </div>
-        </div>
+        <AuthShowcase variant="register" />
     </div>
 </template>
 
 <script>
 import { useAuth } from '@/stores/auth';
+import AuthShowcase from '@/components/auth/AuthShowcase.vue';
 
 export default {
+    components: { AuthShowcase },
+
     data() {
         return {
+            // Enlazado dinámico: con un src literal, Vite intenta importar el archivo de public/.
+            logoUrl: '/images/landing/logo-mark.webp',
             form: {
                 name: '',
                 email: '',
@@ -325,11 +230,20 @@ export default {
 .mobile-logo {
     display: none;
     margin-bottom: 2rem;
+    align-items: center;
+    gap: 0.5rem;
+    color: #1e293b;
+    text-decoration: none;
 }
 
-.mobile-logo svg {
-    width: 48px;
-    height: 48px;
+.mobile-logo img {
+    width: 40px;
+    height: 40px;
+}
+
+.mobile-logo span {
+    font-family: 'Rammetto One', 'Outfit', sans-serif;
+    font-size: 1.15rem;
 }
 
 .auth-header {
@@ -545,124 +459,15 @@ export default {
     height: 16px;
 }
 
-/* Right Side - Illustration */
-.auth-illustration {
-    flex: 0 0 45%;
-    background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem;
-    position: relative;
-    overflow: hidden;
-}
-
-.illustration-content {
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    color: white;
-}
-
-/* Background Shapes */
-.bg-shapes {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-}
-
-.shape {
-    position: absolute;
-    border-radius: 50%;
-    background: white;
-    opacity: 0.05;
-}
-
-.shape-1 {
-    width: 400px;
-    height: 400px;
-    top: -100px;
-    right: -100px;
-}
-
-.shape-2 {
-    width: 300px;
-    height: 300px;
-    bottom: -50px;
-    left: -50px;
-}
-
-.shape-3 {
-    width: 200px;
-    height: 200px;
-    top: 50%;
-    left: 10%;
-}
-
-.auth-svg {
-    width: 100%;
-    max-width: 350px;
-    height: auto;
-    margin-bottom: 2rem;
-}
-
-.floating-element {
-    animation: float 3s ease-in-out infinite;
-}
-
-.floating-card {
-    animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-
-.illustration-brand {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-}
-
-.brand-logo {
-    width: 40px;
-    height: 40px;
-}
-
-.brand-name {
-    font-size: 1.5rem;
-    font-weight: 700;
-}
-
-.illustration-text h2 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 0.75rem;
-}
-
-.illustration-text p {
-    font-size: 1rem;
-    opacity: 0.9;
-    max-width: 300px;
-    margin: 0 auto;
-    line-height: 1.6;
-}
-
 /* Responsive */
 @media (max-width: 992px) {
-    .auth-illustration {
-        display: none;
-    }
 
     .auth-form-container {
         padding: 2rem;
     }
 
     .mobile-logo {
-        display: block;
+        display: inline-flex;
     }
 }
 

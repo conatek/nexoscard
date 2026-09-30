@@ -10,11 +10,7 @@
     <p>Esta página no está publicada en este momento.</p>
   </div>
 
-  <div v-else-if="notFound" class="card-not-found">
-    <div class="nf-icon">🏢</div>
-    <h2>Empresa no encontrada</h2>
-    <p>Esta página no existe o no está disponible.</p>
-  </div>
+  <PageNotFound v-else-if="notFound" kind="company" />
 
   <div v-else class="cp-root" :style="cssVars">
 
@@ -115,6 +111,7 @@
 
 <script>
 import publicCardService from '@/services/publicCardService.js';
+import PageNotFound from '@/components/PageNotFound.vue';
 
 const defaultDesign = {
   primary_color: '#3B82F6', secondary_color: '#1E40AF',
@@ -125,6 +122,8 @@ const defaultDesign = {
 
 export default {
   name: 'CompanyPublic',
+
+  components: { PageNotFound },
 
   data() {
     return { loading: true, notFound: false, unavailable: false, company: {} };
