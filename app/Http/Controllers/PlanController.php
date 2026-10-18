@@ -44,7 +44,7 @@ class PlanController extends Controller
             ] : null,
             'trial_days' => AppSetting::getTrialDays(),
             'contact'    => AppSetting::publicContact(),
-            'user_guide_url' => config('mail.user_guide_url'),
+            'user_guide_url' => url('/guia-usuario'),
         ]);
     }
 }

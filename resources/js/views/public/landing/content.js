@@ -11,12 +11,14 @@ export const FALLBACK = {
     price:     39000,
     discount:  43,
     trialDays: 7,
-    whatsapp:  '573043903089',
-    email:     'soporte@nexoscard.com',
-    guideUrl:  'https://drive.google.com/file/d/1_ovXfdCCvApJNj_JeuM_5Klj55jOn0Ru/preview',
+    whatsapp:  '573206221447',
+    email:     'infonexoscard@gmail.com',
 };
 
 export const DEMO_URL = '/comercial/asistente-virtual';
+
+// Guía de primeros pasos (antes, un PDF en Drive; ahora una página de la app).
+export const GUIDE_PATH = '/guia-usuario';
 
 export const CLIENTS_COUNT = 25;
 
@@ -100,13 +102,6 @@ export function landingImage(name) {
     return `/images/landing/${name}.webp`;
 }
 
-// El visor de Drive (/preview o /view) no descarga; el botón "Descarga la Guía" sí, así
-// que se arma el enlace de descarga a partir del id del archivo.
-export function guideDownloadUrl(guideUrl) {
-    const id = guideUrl.match(/\/d\/([\w-]+)/)?.[1];
-    return id ? `https://drive.google.com/uc?export=download&id=${id}` : guideUrl;
-}
-
 export function buildFaqs({ planName, price, trialDays }) {
     return [
         { q: '¿Qué es Nexos Card?', a: 'Es una tarjeta digital interactiva que reúne toda tu información profesional en un solo lugar y permite que tus clientes guarden tu contacto directamente en su agenda móvil con un solo toque.' },
@@ -119,7 +114,7 @@ export function buildFaqs({ planName, price, trialDays }) {
     ];
 }
 
-export function buildContactItems({ whatsappUrl, email, guideUrl }) {
+export function buildContactItems({ whatsappUrl, email }) {
     return [
         {
             key: 'whatsapp', icon: 'fab fa-whatsapp', title: 'Atención inmediata por WhatsApp',
@@ -138,15 +133,15 @@ export function buildContactItems({ whatsappUrl, email, guideUrl }) {
             note: 'La plantilla de cada tarjeta es diferente porque cada una está enfocada según el rubro de cada empresa o negocio.',
         },
         {
-            key: 'guide', icon: 'fas fa-file-pdf', title: 'Guía rápida paso a paso',
-            text: 'Descarga nuestra guía interactiva en PDF y aprende a crear tu tarjeta en minutos.',
-            label: 'Descarga la Guía PDF', href: guideDownloadUrl(guideUrl),
+            key: 'guide', icon: 'fas fa-book-open', title: 'Guía rápida paso a paso',
+            text: 'Consulta nuestra guía interactiva y aprende a crear tu tarjeta en minutos.',
+            label: 'Ver la guía paso a paso', to: GUIDE_PATH,
         },
     ];
 }
 
 /**
- * Precio vigente, días de prueba, contacto y guía desde /api/landing. Devuelve null si
+ * Precio vigente, días de prueba y contacto desde /api/landing. Devuelve null si
  * falla: la página se queda con FALLBACK.
  */
 export async function fetchLandingData(api) {
@@ -164,7 +159,6 @@ export async function fetchLandingData(api) {
             trialDays: data.trial_days || FALLBACK.trialDays,
             whatsapp:  data.contact?.support_whatsapp || FALLBACK.whatsapp,
             email:     data.contact?.support_email || FALLBACK.email,
-            guideUrl:  data.user_guide_url || FALLBACK.guideUrl,
         };
     } catch {
         return null;

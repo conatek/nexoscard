@@ -37,6 +37,6 @@
 </table>
 
 <p style="margin: 0; font-size: 13px; color: #94a3b8; text-align: center;">
-    ¿Necesitas ayuda? Escribenos a <a href="mailto:soporte@nexoscard.com" style="color: #7c3aed;">soporte@nexoscard.com</a>
+    ¿Necesitas ayuda? Escribenos a <a href="{{ 'mailto:' . \App\Models\AppSetting::getSupportEmail() }}" style="color: #7c3aed;">{{ \App\Models\AppSetting::getSupportEmail() }}</a>
 </p>
 @endsection

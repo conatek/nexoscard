@@ -48,6 +48,7 @@ import MySubscription   from '../js/views/subscription/MySubscription.vue';
 import CompanyPublic from '../js/views/public/CompanyPublic.vue';
 import CardPublic    from '../js/views/public/CardPublic.vue';
 import Landing       from '../js/views/public/Landing.vue';
+import UserGuide     from '../js/views/public/UserGuide.vue';
 import PrivacyPolicy   from '../js/views/legal/PrivacyPolicy.vue';
 import TermsConditions from '../js/views/legal/TermsConditions.vue';
 
@@ -57,6 +58,14 @@ const routes = [
         path: '/inicio',
         name: 'landing',
         component: Landing,
+        meta: { layout: 'public' },
+    },
+
+    // --- Guia de primeros pasos (su slug esta en Company::RESERVED_SLUGS) ---
+    {
+        path: '/guia-usuario',
+        name: 'guide',
+        component: UserGuide,
         meta: { layout: 'public' },
     },
 

@@ -23,7 +23,9 @@ class Product extends Model
 
     protected $casts = [
         'price'     => 'decimal:2',
-        'discount'  => 'decimal:2',
+        // float y no decimal:2: el decimal llega al front como el texto "0.00", que en JS es
+        // verdadero, y las vistas mostraban «-0.00%» o un precio tachado sin haber descuento.
+        'discount'  => 'float',
         'is_active' => 'boolean',
         'order'     => 'integer',
     ];

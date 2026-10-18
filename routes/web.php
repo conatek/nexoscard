@@ -127,10 +127,20 @@ Route::get('/{home?}', function () {
     return view('app', [
         'ogTitle'       => 'NEXOS Card | Tu tarjeta digital profesional',
         'ogDescription' => 'Tu presencia profesional y comercial en un solo enlace. Pruébala gratis, sin tarjeta de crédito.',
-        'ogImage'       => asset('images/landing/og-landing.jpg'),
+        'ogImage'       => asset('images/landing/og-inicio.jpg'),
         'ogUrl'         => url('inicio'),
     ]);
 })->where('home', 'inicio');
+
+// Guía de primeros pasos: también se comparte por WhatsApp, con su propia vista previa.
+Route::get('/guia-usuario', function () {
+    return view('app', [
+        'ogTitle'       => 'Guía de primeros pasos | NEXOS Card',
+        'ogDescription' => 'Crea tu primera tarjeta digital en pocos minutos, paso a paso.',
+        'ogImage'       => asset('images/landing/og-inicio.jpg'),
+        'ogUrl'         => url('guia-usuario'),
+    ]);
+});
 
 // Catch-all para la SPA
 Route::get('/{any}', function () {

@@ -36,13 +36,13 @@ class AppSettingSeeder extends Seeder
             ],
             [
                 'key'         => 'support_whatsapp',
-                'value'       => '573022218054',
+                'value'       => '573206221447',
                 'type'        => 'string',
                 'description' => 'Numero de WhatsApp de soporte y cotizaciones, con indicativo y sin signos (ej: 573001234567)',
             ],
             [
                 'key'         => 'support_email',
-                'value'       => 'soporte@nexoscard.com',
+                'value'       => 'infonexoscard@gmail.com',
                 'type'        => 'string',
                 'description' => 'Email de soporte mostrado en correos',
             ],

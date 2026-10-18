@@ -56,7 +56,7 @@
             <p style="margin: 0 0 14px; font-size: 14px; color: #475569; line-height: 1.6;">
                 Preparamos una guia paso a paso para que armes y compartas tu primera tarjeta en minutos.
             </p>
-            <a href="{{ config('mail.user_guide_url') }}" style="color: #7c3aed; text-decoration: underline; font-weight: 600; font-size: 14px;">
+            <a href="{{ url('/guia-usuario') }}" style="color: #7c3aed; text-decoration: underline; font-weight: 600; font-size: 14px;">
                 Ver la guia de usuario &rarr;
             </a>
         </td>

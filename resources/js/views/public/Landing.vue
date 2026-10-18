@@ -61,9 +61,9 @@
 
                     <p class="lt-hero-note lt-intro" style="--i: 14">
                         <span>*Pruébala <strong>GRATIS</strong>. No necesitas tarjeta de crédito.</span>
-                        <a :href="guideUrl" target="_blank" rel="noopener" class="lt-link">
-                            <i class="far fa-file-pdf" aria-hidden="true"></i> Guía rápida PDF paso a paso
-                        </a>
+                        <router-link :to="guidePath" class="lt-link">
+                            <i class="fas fa-book-open" aria-hidden="true"></i> Guía rápida paso a paso
+                        </router-link>
                     </p>
                 </div>
 
@@ -291,9 +291,9 @@
                             <div><p>{{ q.a }}</p></div>
                         </div>
                     </div>
-                    <a :href="guideUrl" target="_blank" rel="noopener" class="lt-link lt-acc-guide">
-                        <i class="far fa-file-pdf" aria-hidden="true"></i> Guía rápida PDF paso a paso
-                    </a>
+                    <router-link :to="guidePath" class="lt-link lt-acc-guide">
+                        <i class="fas fa-book-open" aria-hidden="true"></i> Guía rápida paso a paso
+                    </router-link>
                 </div>
             </div>
         </section>
@@ -407,7 +407,7 @@
 import api from '@/services/api.js';
 import { useAuth } from '@/stores/auth';
 import {
-    FALLBACK, DEMO_URL, CLIENTS_COUNT, hero, features, steps, testimonials, planPerks, planItems,
+    FALLBACK, DEMO_URL, GUIDE_PATH, CLIENTS_COUNT, hero, features, steps, testimonials, planPerks, planItems,
     socials, money, landingImage, buildFaqs, buildContactItems, fetchLandingData, defaultPricing,
     loadFonts,
 } from './landing/content.js';
@@ -439,12 +439,12 @@ export default {
             planItems,
             socials,
             demoUrl:      DEMO_URL,
+            guidePath:    GUIDE_PATH,
             clientsCount: CLIENTS_COUNT,
             pricing:      defaultPricing(),
             trialDays:    FALLBACK.trialDays,
             whatsapp:     FALLBACK.whatsapp,
             email:        FALLBACK.email,
-            guideUrl:     FALLBACK.guideUrl,
 
             // Tarjetas que ocupan dos columnas en el bento: QR, WhatsApp, Video y Hosting.
             wideFeatures: [0, 1, 6, 7],
@@ -492,7 +492,7 @@ export default {
             return buildFaqs({ planName: this.pricing.name, price: this.pricing.price, trialDays: this.trialDays });
         },
         contactItems() {
-            return buildContactItems({ whatsappUrl: this.whatsappUrl, email: this.email, guideUrl: this.guideUrl });
+            return buildContactItems({ whatsappUrl: this.whatsappUrl, email: this.email });
         },
         stats() {
             return [
@@ -536,7 +536,6 @@ export default {
             this.trialDays = data.trialDays;
             this.whatsapp  = data.whatsapp;
             this.email     = data.email;
-            this.guideUrl  = data.guideUrl;
         }
     },
 

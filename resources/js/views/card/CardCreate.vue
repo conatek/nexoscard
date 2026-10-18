@@ -306,7 +306,10 @@ export default {
         },
 
         slugify(v) {
-            return v.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-_]/g, '');
+            // NFD separa la tilde de su letra («ó» -> «o» + tilde) y la tilde se descarta:
+            // así «Gómez» da «gomez» y no «gmez».
+            return v.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-_]/g, '');
         },
 
         onFileSelected(e) {
