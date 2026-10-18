@@ -15,7 +15,7 @@ export const FALLBACK = {
     email:     'infonexoscard@gmail.com',
 };
 
-export const DEMO_URL = '/comercial/asistente-virtual';
+export const DEMO_URL = '/tarjeta/demo';
 
 // Guía de primeros pasos (antes, un PDF en Drive; ahora una página de la app).
 export const GUIDE_PATH = '/guia-usuario';
