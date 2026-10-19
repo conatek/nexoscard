@@ -16,14 +16,10 @@
             <section class="profile-section">
                 <div class="avatar-box" v-if="showAvatar">
                     <img
-                        v-if="card?.photo_path"
                         :src="card.photo_path"
                         :style="avatarStyle"
                         :alt="card?.first_name"
                     >
-                    <div v-else class="avatar-fallback" :style="avatarStyle">
-                        <i class="bi bi-person"></i>
-                    </div>
                 </div>
 
                 <div class="title-group">
@@ -152,8 +148,10 @@ export default {
             }
         },
 
+        // La foto se ve si la casilla «Mostrar Foto de Perfil» está marcada Y la tarjeta tiene foto.
+        // Sin foto no se dibuja un ícono de relleno: en una tarjeta publicada parece una falla.
         showAvatar() {
-            return this.customization?.avatar?.mostrar !== false
+            return this.customization?.avatar?.mostrar !== false && !!this.card?.photo_path
         },
 
         avatarStyle() {
@@ -365,14 +363,6 @@ export default {
 .avatar-box {
     display: flex;
     justify-content: center;
-}
-
-.avatar-fallback {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5rem;
-    color: #999;
 }
 
 .quick-contact {

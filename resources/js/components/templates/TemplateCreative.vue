@@ -18,15 +18,11 @@
 
                 <div class="avatar-wrapper" :style="avatarWrapperStyle" v-if="showAvatar">
                     <img
-                        v-if="card?.photo_path"
                         :src="card.photo_path"
                         :alt="`${card.first_name} ${card.last_name}`"
                         class="avatar-image"
                         :style="avatarStyle"
                     >
-                    <div v-else class="avatar-placeholder" :style="avatarStyle">
-                        <i class="bi bi-person"></i>
-                    </div>
                 </div>
             </header>
 
@@ -118,8 +114,10 @@ export default {
         },
 
         // Avatar
+        // La foto se ve si la casilla «Mostrar Foto de Perfil» está marcada Y la tarjeta tiene foto.
+        // Sin foto no se dibuja un ícono de relleno: en una tarjeta publicada parece una falla.
         showAvatar() {
-            return this.customization?.avatar?.mostrar !== false
+            return this.customization?.avatar?.mostrar !== false && !!this.card?.photo_path
         },
         avatarSize() {
             return this.customization?.avatar?.tamano ?? 120
@@ -309,18 +307,9 @@ export default {
     border-radius: 50%;
 }
 
-.avatar-image, .avatar-placeholder {
+.avatar-image {
     border-radius: 50%;
     object-fit: cover;
-}
-
-.avatar-placeholder {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #334155;
-    font-size: 3rem;
-    color: rgba(255,255,255,0.5);
 }
 
 .personal-info {

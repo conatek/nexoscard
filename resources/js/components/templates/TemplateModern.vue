@@ -36,16 +36,12 @@
             <!-- Contenedor de la foto -->
             <div class="photo-container" v-if="showPhoto">
                 <img
-                    v-if="card?.photo_path"
                     :src="card.photo_path"
                     :alt="`${card.first_name} ${card.last_name}`"
                     class="profile-photo"
                     :class="{ 'with-shadow': customization?.photo?.sombra }"
                     :style="photoStyle"
                 >
-                <div v-else class="photo-placeholder" :class="{ 'with-shadow': customization?.photo?.sombra }" :style="photoStyle">
-                    <i class="bi bi-person-fill"></i>
-                </div>
             </div>
         </section>
 
@@ -288,7 +284,6 @@ export default {
             modalOpen: false,
             modalType: null,
             modalData: null,
-            showPlaceholder: true,
         }
     },
 
@@ -305,10 +300,10 @@ export default {
             return this.customization?.header?.contenido || 'logo'
         },
 
-        // Si mostrar la foto de perfil
+        // La foto se ve si la casilla «Mostrar Foto de Perfil» está marcada Y la tarjeta tiene foto.
+        // Sin foto no se dibuja un ícono de relleno: en una tarjeta publicada parece una falla.
         showPhoto() {
-            const mostrar = this.customization?.photo?.mostrar
-            return mostrar !== false && (this.card?.photo_path || this.showPlaceholder)
+            return this.customization?.photo?.mostrar !== false && !!this.card?.photo_path
         },
 
         // Si mostrar la sección hero (cabecera visible O foto visible)
@@ -646,8 +641,7 @@ export default {
     z-index: 1;
 }
 
-.profile-photo,
-.photo-placeholder {
+.profile-photo {
     width: var(--photo-tamano, 150px);
     height: var(--photo-tamano, 150px);
     border-radius: var(--photo-radio, 15px);
@@ -657,17 +651,7 @@ export default {
     object-fit: cover;
 }
 
-.photo-placeholder {
-    background: #e0e0e0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3rem;
-    color: #999;
-}
-
-.profile-photo.with-shadow,
-.photo-placeholder.with-shadow {
+.profile-photo.with-shadow {
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
 }
 

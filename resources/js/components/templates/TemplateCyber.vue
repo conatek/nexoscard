@@ -13,14 +13,10 @@
             <div class="cyber-content">
                 <div class="avatar-container" v-if="showAvatar">
                     <img
-                        v-if="card?.photo_path"
                         :src="card.photo_path"
                         :style="avatarStyle"
                         :alt="card?.first_name"
                     >
-                    <div v-else class="avatar-placeholder" :style="avatarStyle">
-                        <i class="bi bi-person-bounding-box"></i>
-                    </div>
                 </div>
 
                 <h1 :style="nameStyle">> {{ card?.first_name }} <span class="last-name">{{ card?.last_name }}</span><span class="cursor" :style="cursorStyle">_</span></h1>
@@ -108,8 +104,10 @@ export default {
             }
         },
 
+        // La foto se ve si la casilla «Mostrar Foto de Perfil» está marcada Y la tarjeta tiene foto.
+        // Sin foto no se dibuja un ícono de relleno: en una tarjeta publicada parece una falla.
         showAvatar() {
-            return this.customization?.avatar?.mostrar !== false
+            return this.customization?.avatar?.mostrar !== false && !!this.card?.photo_path
         },
 
         avatarStyle() {
@@ -292,14 +290,6 @@ export default {
 .avatar-container img {
     object-fit: cover;
     display: block;
-}
-
-.avatar-placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3rem;
-    background-color: rgba(255, 255, 255, 0.05);
 }
 
 .last-name {
