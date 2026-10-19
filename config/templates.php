@@ -633,7 +633,7 @@ return [
                 '_label' => 'Foto de Perfil',
                 'mostrar' => [
                     'type' => 'toggle',
-                    'label' => 'Mostrar Foto',
+                    'label' => 'Mostrar Foto de Perfil',
                     'value' => true,
                 ],
                 'tamano' => [
@@ -708,10 +708,10 @@ return [
                 ],
             ],
             'avatar' => [
-                '_label' => 'Fotografía',
+                '_label' => 'Foto de Perfil',
                 'mostrar' => [
                     'type' => 'toggle',
-                    'label' => 'Mostrar Fotografía',
+                    'label' => 'Mostrar Foto de Perfil',
                     'value' => true,
                 ],
                 'tamano' => [
@@ -828,7 +828,7 @@ return [
                 '_label' => 'Foto de Perfil',
                 'mostrar' => [
                     'type' => 'toggle',
-                    'label' => 'Mostrar Foto',
+                    'label' => 'Mostrar Foto de Perfil',
                     'value' => true,
                 ],
                 'tamano' => [
@@ -941,7 +941,7 @@ return [
                 '_label' => 'Foto de Perfil',
                 'mostrar' => [
                     'type' => 'toggle',
-                    'label' => 'Mostrar Foto',
+                    'label' => 'Mostrar Foto de Perfil',
                     'value' => true,
                 ],
                 'tamano' => [
@@ -1030,7 +1030,7 @@ return [
                 '_label' => 'Foto de Perfil',
                 'mostrar' => [
                     'type' => 'toggle',
-                    'label' => 'Mostrar Foto',
+                    'label' => 'Mostrar Foto de Perfil',
                     'value' => true,
                 ],
                 'tamano' => [
@@ -1067,7 +1067,8 @@ return [
         /*
         | Plantilla "Impulso": diseño mayormente fijo (Open Sans, colores/tamaños/radios
         | codificados en el componente). El cliente solo edita: color de fondo, rubro,
-        | orientación del logo, video y los 2 enlaces de la grilla. El resto de datos
+        | si se muestra la foto de perfil, orientación del logo, video y los 2 enlaces
+        | de la grilla. El resto de datos
         | (contacto, redes, dirección, ciudad/país) provienen de card/company.
         */
         'impulso' => [
@@ -1106,6 +1107,14 @@ return [
                     'type' => 'color',
                     'label' => 'Color de luz 2',
                     'value' => '#2f6fed',
+                ],
+            ],
+            'avatar' => [
+                '_label' => 'Foto de Perfil',
+                'mostrar' => [
+                    'type' => 'toggle',
+                    'label' => 'Mostrar Foto de Perfil',
+                    'value' => true,
                 ],
             ],
             'cabecera' => [

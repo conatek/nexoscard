@@ -396,6 +396,7 @@
                             ref="cropper"
                             :src="cropperSrc"
                             :stencil-props="{ aspectRatio: cropperAspectRatio }"
+                            :canvas="lienzoMax"
                             class="cropper"
                         />
                     </div>
@@ -416,6 +417,7 @@
 import Swal from 'sweetalert2'
 import { Cropper } from 'vue-advanced-cropper'
 import 'vue-advanced-cropper/dist/style.css'
+import { LIENZO_MAX, exportarRecorte } from '@/utils/imagen.js'
 import settingService from '../../services/settingService'
 import companyService from '../../services/companyService'
 import cardService from '../../services/cardService'
@@ -456,6 +458,8 @@ export default {
             cropperSrc: null,
             cropperAspectRatio: 16 / 9,
             cropperTarget: null, // { sectionKey, fieldKey }
+            cropperSourceType: null, // MIME del original: decide PNG o JPEG al recortar
+            lienzoMax: LIENZO_MAX,
             imageUploading: false,
         }
     },
@@ -749,6 +753,7 @@ export default {
         onImageSelected(e, sectionKey, fieldKey, aspectRatio) {
             const file = e.target.files[0]
             if (!file) return
+            this.cropperSourceType = file.type
             this.cropperSrc = URL.createObjectURL(file)
             this.cropperAspectRatio = aspectRatio || 16 / 9
             this.cropperTarget = { sectionKey, fieldKey }
@@ -756,32 +761,31 @@ export default {
             e.target.value = ''
         },
 
-        confirmCrop() {
+        async confirmCrop() {
             const { canvas } = this.$refs.cropper.getResult()
-            canvas.toBlob(async (blob) => {
-                this.cropperOpen = false
-                this.imageUploading = true
+            // Una imagen sin fondo (PNG/WebP) conserva su transparencia; ver @/utils/imagen.js
+            const file = await exportarRecorte(canvas, this.cropperSourceType, 'hero-bg')
+            this.cropperOpen = false
+            this.imageUploading = true
 
-                try {
-                    const file = new File([blob], 'hero-bg.jpg', { type: 'image/jpeg' })
-                    const { data } = await settingService.uploadImage(this.companyId, file)
-                    this.setValue(this.cropperTarget.sectionKey, this.cropperTarget.fieldKey, data.url)
-                } catch (error) {
-                    console.error('Error subiendo imagen:', error)
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Error al subir la imagen',
-                    })
-                } finally {
-                    this.imageUploading = false
-                    this.cropperTarget = null
-                    if (this.cropperSrc) {
-                        URL.revokeObjectURL(this.cropperSrc)
-                        this.cropperSrc = null
-                    }
+            try {
+                const { data } = await settingService.uploadImage(this.companyId, file)
+                this.setValue(this.cropperTarget.sectionKey, this.cropperTarget.fieldKey, data.url)
+            } catch (error) {
+                console.error('Error subiendo imagen:', error)
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al subir la imagen',
+                })
+            } finally {
+                this.imageUploading = false
+                this.cropperTarget = null
+                if (this.cropperSrc) {
+                    URL.revokeObjectURL(this.cropperSrc)
+                    this.cropperSrc = null
                 }
-            }, 'image/jpeg', 0.85)
+            }
         },
 
         cancelCrop() {

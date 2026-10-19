@@ -42,7 +42,7 @@
                             <div class="form-group">
                                 <label class="form-label">Slug (URL publica) <span class="required">*</span></label>
                                 <div class="input-with-prefix">
-                                    <span class="input-prefix">dominio.com/</span>
+                                    <span class="input-prefix">{{ publicHost }}/</span>
                                     <input v-model="form.slug" type="text" class="form-input" :class="{ 'has-error': errors.slug }"
                                         @input="form.slug = slugify(form.slug)" />
                                 </div>
@@ -239,6 +239,8 @@ export default {
 
     data() {
         return {
+            // Dominio real de la tarjeta pública (nexoscard.com en producción).
+            publicHost: window.location.host,
             loading: false,
             errors: {},
             generalError: null,

@@ -15,22 +15,14 @@
 
         <!-- ============ CABECERA ADAPTATIVA ============ -->
         <header class="imp-header">
-            <!-- A) Solo empresa: logo grande centrado -->
-            <template v-if="headerLayout === 'solo-empresa'">
-                <div class="imp-logo-wrap imp-logo-lg">
-                    <img v-if="company?.logo_path" :src="company.logo_path" :alt="company.name" class="imp-logo">
-                    <h2 v-else class="imp-company-name">{{ company?.name }}</h2>
-                </div>
-            </template>
-
-            <!-- B) Empresa + asesor (logo cuadrado/vertical/redondo) -->
-            <template v-else-if="headerLayout === 'logo-asesor'">
+            <!-- A) Empresa + asesor (logo cuadrado/vertical/redondo); sin foto, el logo queda solo en la fila -->
+            <template v-if="headerLayout === 'logo-asesor'">
                 <div class="imp-logo-photo-row">
                     <div class="imp-logo-wrap imp-logo-md">
                         <img v-if="company?.logo_path" :src="company.logo_path" :alt="company.name" class="imp-logo">
                         <h2 v-else class="imp-company-name">{{ company?.name }}</h2>
                     </div>
-                    <img v-if="card?.photo_path" :src="card.photo_path" :alt="fullName" class="imp-advisor-photo">
+                    <img v-if="hasFoto" :src="card.photo_path" :alt="fullName" class="imp-advisor-photo">
                 </div>
                 <h3 class="imp-advisor-name">
                     <span class="imp-name-first">{{ firstNamePart }}</span>
@@ -39,13 +31,13 @@
                 <p v-if="card?.job_title" class="imp-advisor-role">{{ card.job_title }}</p>
             </template>
 
-            <!-- C) Logo horizontal (banner) + asesor -->
+            <!-- B) Logo horizontal (banner) + asesor -->
             <template v-else-if="headerLayout === 'horizontal-asesor'">
                 <div class="imp-logo-wrap imp-logo-banner">
                     <img v-if="company?.logo_path" :src="company.logo_path" :alt="company.name" class="imp-logo">
                     <h2 v-else class="imp-company-name">{{ company?.name }}</h2>
                 </div>
-                <img v-if="card?.photo_path" :src="card.photo_path" :alt="fullName" class="imp-advisor-photo imp-advisor-photo-center">
+                <img v-if="hasFoto" :src="card.photo_path" :alt="fullName" class="imp-advisor-photo imp-advisor-photo-center">
                 <h3 class="imp-advisor-name">
                     <span class="imp-name-first">{{ firstNamePart }}</span>
                     <span v-if="lastNamePart" class="imp-name-last">{{ ' ' + lastNamePart }}</span>
@@ -53,9 +45,9 @@
                 <p v-if="card?.job_title" class="imp-advisor-role">{{ card.job_title }}</p>
             </template>
 
-            <!-- D) Solo asesor -->
+            <!-- C) Solo asesor (hay foto pero no logo) -->
             <template v-else>
-                <img v-if="card?.photo_path" :src="card.photo_path" :alt="fullName" class="imp-advisor-photo imp-advisor-photo-center">
+                <img v-if="hasFoto" :src="card.photo_path" :alt="fullName" class="imp-advisor-photo imp-advisor-photo-center">
                 <h3 class="imp-advisor-name">
                     <span class="imp-name-first">{{ firstNamePart }}</span>
                     <span v-if="lastNamePart" class="imp-name-last">{{ ' ' + lastNamePart }}</span>
@@ -168,7 +160,7 @@
                 <div v-if="company?.logo_path" class="dm-about-logo">
                     <img :src="company.logo_path" :alt="company.name">
                 </div>
-                <h4 class="dm-about-name">{{ headerLayout === 'solo-asesor' || headerLayout === 'logo-asesor' || headerLayout === 'horizontal-asesor' ? (fullName || company?.name) : company?.name }}</h4>
+                <h4 class="dm-about-name">{{ fullName || company?.name }}</h4>
                 <div v-if="card?.description" class="dm-about-desc" v-html="card.description"></div>
                 <div v-if="company?.address" class="dm-about-item">
                     <i class="bi bi-geo-alt-fill"></i>
@@ -385,19 +377,18 @@ export default {
             return !!this.company?.logo_path
         },
 
-        // El bloque de asesor (foto + nombre + cargo) se muestra cuando la tarjeta tiene foto.
-        // Sin foto, la cabecera es "solo empresa" (logo únicamente), como en la referencia.
-        hasAsesor() {
-            return !!this.card?.photo_path
+        // La foto se ve si la casilla «Mostrar Foto de Perfil» está marcada Y la tarjeta tiene foto,
+        // como en las demás plantillas.
+        hasFoto() {
+            return this.customization?.avatar?.mostrar !== false && !!this.card?.photo_path
         },
 
+        // El nombre y el cargo se muestran siempre: sin ellos no se sabe de quién es la tarjeta.
+        // Lo que cambia es la cabecera: sin logo y con foto, la foto va sola arriba; en cualquier
+        // otro caso, el logo (o el nombre de la empresa) y, si se muestra, la foto a su lado.
         headerLayout() {
-            if (this.hasLogo && this.hasAsesor) {
-                return this.customization?.cabecera?.logoHorizontal ? 'horizontal-asesor' : 'logo-asesor'
-            }
-            if (this.hasLogo) return 'solo-empresa'
-            if (this.hasAsesor) return 'solo-asesor'
-            return 'solo-empresa'
+            if (!this.hasLogo && this.hasFoto) return 'solo-asesor'
+            return this.customization?.cabecera?.logoHorizontal ? 'horizontal-asesor' : 'logo-asesor'
         },
 
         cityCountry() {
@@ -668,12 +659,6 @@ export default {
     height: 100%;
     object-fit: contain;
 }
-
-.imp-logo-lg {
-    min-height: 190px;
-    max-height: 240px;
-}
-.imp-logo-lg .imp-logo { max-height: 240px; }
 
 .imp-logo-md {
     max-width: 62%;
