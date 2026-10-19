@@ -141,6 +141,7 @@
                             ref="cropper"
                             :src="cropperSrc"
                             :stencil-props="{ aspectRatio: selectedRatio }"
+                            :canvas="lienzoMax"
                             class="cropper"
                         />
                     </div>
@@ -161,6 +162,7 @@
 import { Cropper } from 'vue-advanced-cropper';
 import 'vue-advanced-cropper/dist/style.css';
 import RichEditor from '@/components/shared/RichEditor.vue';
+import { LIENZO_MAX, exportarRecorte, tipoDeUrl } from '@/utils/imagen.js';
 import serviceService from '@/services/serviceService.js';
 import companyService from '@/services/companyService.js';
 
@@ -177,6 +179,8 @@ export default {
             generalError: null,
             imagePreview: null,
             imageFile: null,
+            imageSourceType: null,   // MIME del original: decide PNG o JPEG al recortar
+            lienzoMax: LIENZO_MAX,
             cropperOpen: false,
             cropperSrc: null,
             enableCropper: true,
@@ -204,6 +208,7 @@ export default {
         onFileSelected(e) {
             const file = e.target.files[0];
             if (!file) return;
+            this.imageSourceType = file.type;
             if (this.enableCropper) {
                 this.cropperSrc = URL.createObjectURL(file);
                 this.cropperOpen = true;
@@ -219,14 +224,13 @@ export default {
             this.cropperOpen = true;
         },
 
-        confirmCrop() {
+        async confirmCrop() {
             const { canvas } = this.$refs.cropper.getResult();
-            canvas.toBlob((blob) => {
-                this.imageFile = new File([blob], 'image.jpg', { type: 'image/jpeg' });
-                if (this.imagePreview) URL.revokeObjectURL(this.imagePreview);
-                this.imagePreview = URL.createObjectURL(blob);
-                this.cropperOpen = false;
-            }, 'image/jpeg', 0.85);
+            // Una imagen sin fondo (PNG/WebP) conserva su transparencia; ver @/utils/imagen.js
+            this.imageFile = await exportarRecorte(canvas, this.imageSourceType, 'image');
+            if (this.imagePreview) URL.revokeObjectURL(this.imagePreview);
+            this.imagePreview = URL.createObjectURL(this.imageFile);
+            this.cropperOpen = false;
         },
 
         cancelCrop() {
@@ -466,6 +470,13 @@ textarea.form-input {
     max-width: 160px;
     object-fit: cover;
     border-radius: 6px;
+    /* Cuadricula para que se note el fondo transparente de los PNG */
+    background-image:
+        linear-gradient(45deg, #e2e8f0 25%, transparent 25%, transparent 75%, #e2e8f0 75%),
+        linear-gradient(45deg, #e2e8f0 25%, transparent 25%, transparent 75%, #e2e8f0 75%);
+    background-size: 12px 12px;
+    background-position: 0 0, 6px 6px;
+    background-color: #ffffff;
 }
 
 .btn-crop {
