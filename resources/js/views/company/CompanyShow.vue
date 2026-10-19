@@ -481,7 +481,7 @@ export default {
         },
 
         formatPrice(price) {
-            return parseFloat(price).toFixed(2);
+            return new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(price);
         },
 
         confirmDeleteCard(card) {
