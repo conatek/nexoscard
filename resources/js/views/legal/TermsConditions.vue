@@ -1,5 +1,5 @@
 <template>
-    <LegalLayout title="Términos y Condiciones" updated="septiembre de 2026">
+    <LegalLayout title="Términos y Condiciones" updated="octubre de 2026">
         <p>
             Estos Términos y Condiciones regulan el uso de NEXOS Card, la plataforma para crear,
             editar y compartir tarjetas de contacto digitales e interactivas. Al registrarte o usar
@@ -74,24 +74,32 @@
             tarjeta.
         </p>
 
-        <h2>10. Tratamiento de datos</h2>
+        <h2>10. Marcas de terceros</h2>
+        <p>
+            Nexos Card es un software de uso independiente. Los logotipos de redes sociales u otras
+            marcas de terceros mostrados en la plataforma se utilizan exclusivamente con fines
+            ilustrativos para demostrar integraciones y funcionalidades, sin implicar afiliación
+            oficial, respaldo o relación corporativa con dichas marcas.
+        </p>
+
+        <h2>11. Tratamiento de datos</h2>
         <p>
             El tratamiento de la información personal se rige por nuestra
             <router-link to="/politica-privacidad">Política de Privacidad</router-link>.
         </p>
 
-        <h2>11. Cambios a estos términos</h2>
+        <h2>12. Cambios a estos términos</h2>
         <p>
             NEXOS Card podrá actualizar estos Términos y Condiciones cuando sea necesario. La versión
             vigente estará disponible en esta misma página.
         </p>
 
-        <h2>12. Legislación aplicable</h2>
+        <h2>13. Legislación aplicable</h2>
         <p>
             Estos términos se rigen por las leyes de la República de Colombia.
         </p>
 
-        <h2>13. Contacto</h2>
+        <h2>14. Contacto</h2>
         <p>
             Para consultas relacionadas con estos Términos y Condiciones puedes comunicarte con NEXOS
             Card a través de los canales de contacto disponibles en nuestra página.

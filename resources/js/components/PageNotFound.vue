@@ -85,6 +85,7 @@
         </main>
 
         <footer class="nf-footer">
+            <SupportInfo class="nf-support" />
             <span>© {{ year }} Nexos Card</span>
             <router-link to="/politica-privacidad">Política de Privacidad</router-link>
             <router-link to="/terminos-condiciones">Términos y Condiciones</router-link>
@@ -95,6 +96,7 @@
 <script>
 import { useAuth } from '@/stores/auth';
 import { loadFonts } from '@/views/public/landing/content.js';
+import SupportInfo from '@/components/shared/SupportInfo.vue';
 
 // El texto depende de qué se buscaba: quien llega a una tarjeta o empresa inexistente casi
 // siempre viene de un enlace que alguien le compartió, y lo útil es decirle qué hacer.
@@ -115,6 +117,8 @@ const COPY = {
 
 export default {
     name: 'PageNotFound',
+
+    components: { SupportInfo },
 
     props: {
         kind: {
@@ -438,6 +442,11 @@ export default {
     border-top: 1px solid var(--nf-line);
     font-size: 0.85rem;
     color: var(--nf-muted);
+}
+
+.nf-support {
+    flex-basis: 100%;
+    text-align: center;
 }
 
 .nf-footer a {

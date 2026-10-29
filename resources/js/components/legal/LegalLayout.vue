@@ -22,6 +22,7 @@
         </main>
 
         <footer class="legal-footer">
+            <SupportInfo class="legal-support" />
             <nav class="legal-footer-links">
                 <router-link to="/politica-privacidad">Política de Privacidad</router-link>
                 <span aria-hidden="true">·</span>
@@ -33,8 +34,11 @@
 </template>
 
 <script>
+import SupportInfo from '@/components/shared/SupportInfo.vue';
+
 export default {
     name: 'LegalLayout',
+    components: { SupportInfo },
     props: {
         title:   { type: String, required: true },
         updated: { type: String, required: true },
@@ -187,6 +191,12 @@ export default {
 
 .legal-footer p {
     margin: 0.5rem 0 0;
+}
+
+.legal-support {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f1f5f9;
 }
 
 .legal-footer-links {

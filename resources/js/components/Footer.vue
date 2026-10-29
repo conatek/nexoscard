@@ -37,6 +37,9 @@
             </div>
         </div>
 
+        <!-- Atención y soporte: en desktop bajo la franja de marca, en mobile sobre la barra de pestañas -->
+        <SupportInfo class="footer-support" inline />
+
         <!-- Mobile tab bar -->
         <nav class="footer-mobile">
             <router-link :to="companyRoute" class="tab-item" :class="{ active: isCompanyActive }">
@@ -87,9 +90,12 @@
 <script>
 import { useAuth } from '@/stores/auth';
 import api from '@/services/api.js';
+import SupportInfo from '@/components/shared/SupportInfo.vue';
 
 export default {
     name: 'AppFooter',
+
+    components: { SupportInfo },
 
     emits: ['openAccount'],
 
@@ -137,17 +143,25 @@ export default {
 .app-footer {
     position: relative;
     background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-    height: 60px;
+    height: auto; /* base.css lo fija en 60px y cortaría la fila de soporte */
     overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
 .footer-desktop {
-    flex: 1;
+    height: 60px;
     display: flex;
     flex-direction: column;
     position: relative;
+}
+
+.footer-support {
+    justify-content: center;
+    padding: 0 1.5rem 0.75rem;
+    font-size: 0.75rem;
+    color: #64748b;
+    text-align: center;
 }
 
 .footer-mobile {
@@ -281,6 +295,12 @@ export default {
 
     .footer-desktop {
         display: none;
+    }
+
+    .footer-support {
+        padding: 0.75rem 1rem;
+        border-top: 1px solid #e2e8f0;
+        background: #f8fafc;
     }
 
     .footer-mobile {

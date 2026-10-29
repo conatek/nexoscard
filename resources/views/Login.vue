@@ -103,6 +103,8 @@
                     </svg>
                     Volver al inicio
                 </router-link>
+
+                <SupportInfo class="auth-support" />
             </div>
         </div>
     </div>
@@ -111,9 +113,10 @@
 <script>
 import { useAuth } from '@/stores/auth';
 import AuthShowcase from '@/components/auth/AuthShowcase.vue';
+import SupportInfo from '@/components/shared/SupportInfo.vue';
 
 export default {
-    components: { AuthShowcase },
+    components: { AuthShowcase, SupportInfo },
 
     data() {
         return {
@@ -406,6 +409,15 @@ export default {
 .back-link svg {
     width: 16px;
     height: 16px;
+}
+
+/* Atención y soporte */
+.auth-support {
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e2e8f0;
+    font-size: 0.8rem;
+    color: #64748b;
 }
 
 /* Responsive */

@@ -156,7 +156,6 @@
 </template>
 
 <script>
-import api from '@/services/api.js';
 import {
     FALLBACK, CLIENTS_COUNT, steps, testimonials, landingImage, fetchLandingData, loadFonts,
 } from '@/views/public/landing/content.js';
@@ -211,7 +210,7 @@ export default {
         }
 
         // Los días de prueba se editan desde el admin: el registro no debe prometer otro número.
-        const data = await fetchLandingData(api);
+        const data = await fetchLandingData();
         if (data) this.trialDays = data.trialDays;
     },
 

@@ -383,6 +383,7 @@
                         </div>
                         <p>La tarjeta digital que conecta tu negocio.</p>
                     </div>
+                    <SupportInfo class="lt-footer-support" />
                     <div class="lt-footer-social">
                         <span>Síguenos</span>
                         <a v-for="s in socials" :key="s.label" :href="s.href" target="_blank" rel="noopener" :aria-label="s.label">
@@ -404,18 +405,20 @@
 </template>
 
 <script>
-import api from '@/services/api.js';
 import { useAuth } from '@/stores/auth';
 import {
     FALLBACK, DEMO_URL, GUIDE_PATH, CLIENTS_COUNT, hero, features, steps, testimonials, planPerks, planItems,
     socials, money, landingImage, buildFaqs, buildContactItems, fetchLandingData, defaultPricing,
     loadFonts,
 } from './landing/content.js';
+import SupportInfo from '@/components/shared/SupportInfo.vue';
 
 const HIGHLIGHT_WORDS = 4; // "en un solo enlace" va con degradado
 
 export default {
     name: 'Landing',
+
+    components: { SupportInfo },
 
     directives: {
         // Aparición al entrar en pantalla. El valor opcional es un retraso en ms para
@@ -530,7 +533,7 @@ export default {
         this.onScroll();
         this.watchStats();
 
-        const data = await fetchLandingData(api);
+        const data = await fetchLandingData();
         if (data) {
             if (data.pricing) this.pricing = data.pricing;
             this.trialDays = data.trialDays;
@@ -2207,6 +2210,11 @@ export default {
 .lt-footer-top p {
     margin: 0.75rem 0 0;
     color: var(--lt-muted);
+}
+
+.lt-footer-support {
+    color: var(--lt-muted);
+    font-size: 0.95rem;
 }
 
 .lt-footer-social {

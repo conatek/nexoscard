@@ -44,7 +44,7 @@ class GuideAndSupportContactTest extends TestCase
         $this->assertContains('guia-usuario', Company::RESERVED_SLUGS);
     }
 
-    public function test_la_migracion_reemplaza_el_correo_y_el_whatsapp_de_produccion(): void
+    public function test_la_migracion_del_19_de_octubre_reemplaza_el_correo_y_el_whatsapp(): void
     {
         // Lo que tenía producción antes del cambio.
         AppSetting::set('support_email', 'soporte@nexoscard.co');
@@ -66,7 +66,8 @@ class GuideAndSupportContactTest extends TestCase
         DB::table('app_settings')->where('key', 'support_email')->delete();
         cache()->forget('app_setting_support_email');
 
-        $this->assertSame('infonexoscard@gmail.com', AppSetting::getSupportEmail());
+        // Desde el 2026-10-29 el correo por defecto es el del dominio propio.
+        $this->assertSame('info@nexoscard.com', AppSetting::getSupportEmail());
     }
 
     public function test_el_correo_de_bienvenida_enlaza_la_guia_de_la_app(): void
@@ -90,7 +91,7 @@ class GuideAndSupportContactTest extends TestCase
 
     public function test_el_correo_de_prueba_vencida_usa_el_correo_configurado(): void
     {
-        AppSetting::set('support_email', 'infonexoscard@gmail.com');
+        AppSetting::set('support_email', 'info@nexoscard.com');
         $company = Company::create(['name' => 'Acme', 'slug' => 'acme']);
         $user = User::create([
             'name'       => 'Laura',
@@ -101,7 +102,24 @@ class GuideAndSupportContactTest extends TestCase
 
         $html = (new TrialExpiredMail($user, $company))->render();
 
-        $this->assertStringContainsString('mailto:infonexoscard@gmail.com', $html);
+        $this->assertStringContainsString('mailto:info@nexoscard.com', $html);
         $this->assertStringNotContainsString('soporte@nexoscard', $html);
+    }
+
+    public function test_la_migracion_del_29_de_octubre_pasa_el_correo_al_dominio_propio(): void
+    {
+        // Lo que tenía producción antes del cambio.
+        AppSetting::set('support_email', 'infonexoscard@gmail.com');
+        $this->assertSame('infonexoscard@gmail.com', AppSetting::getSupportEmail());   // queda en caché
+
+        $migration = require database_path('migrations/2026_10_29_000001_update_support_email_setting.php');
+        $migration->up();
+
+        $this->assertSame('info@nexoscard.com', AppSetting::getSupportEmail());
+        $this->getJson('/api/landing')->assertJsonPath('contact.support_email', 'info@nexoscard.com');
+
+        $migration->down();
+
+        $this->assertSame('infonexoscard@gmail.com', AppSetting::getSupportEmail());
     }
 }

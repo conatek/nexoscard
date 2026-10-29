@@ -3,6 +3,8 @@
  * para que un cambio de copy no obligue a tocar la vista.
  */
 
+import { getLandingData } from '@/utils/supportContact.js';
+
 // Valores de la página original de Canva. Se usan mientras carga /api/landing o si falla,
 // para que la página nunca se vea sin precio ni contacto.
 export const FALLBACK = {
@@ -12,7 +14,7 @@ export const FALLBACK = {
     discount:  43,
     trialDays: 7,
     whatsapp:  '573206221447',
-    email:     'infonexoscard@gmail.com',
+    email:     'info@nexoscard.com',
 };
 
 export const DEMO_URL = '/tarjeta/demo';
@@ -142,11 +144,11 @@ export function buildContactItems({ whatsappUrl, email }) {
 
 /**
  * Precio vigente, días de prueba y contacto desde /api/landing. Devuelve null si
- * falla: la página se queda con FALLBACK.
+ * falla: la página se queda con FALLBACK. La petición se comparte con el pie de página.
  */
-export async function fetchLandingData(api) {
+export async function fetchLandingData() {
     try {
-        const { data } = await api.get('/landing');
+        const data = await getLandingData();
 
         return {
             pricing: data.plan ? {

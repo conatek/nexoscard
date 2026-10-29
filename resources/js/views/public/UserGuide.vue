@@ -349,6 +349,7 @@
                         </div>
                         <p>La tarjeta digital que conecta tu negocio.</p>
                     </div>
+                    <SupportInfo class="lt-footer-support" />
                     <div class="lt-footer-social">
                         <span>Síguenos</span>
                         <a v-for="so in socials" :key="so.label" :href="so.href" target="_blank" rel="noopener" :aria-label="so.label">
@@ -381,16 +382,16 @@
 </template>
 
 <script>
-import api from '@/services/api.js';
 import { useAuth } from '@/stores/auth';
 import { FALLBACK, socials, landingImage, fetchLandingData, loadFonts } from './landing/content.js';
+import SupportInfo from '@/components/shared/SupportInfo.vue';
 import { guideImage, heroChips, missionOne, buildWelcome, buildSteps, upgrade } from './guide/content.js';
 import GuideClip from './guide/GuideClip.vue';
 
 export default {
     name: 'UserGuide',
 
-    components: { GuideClip },
+    components: { GuideClip, SupportInfo },
 
     directives: {
         // Aparición al entrar en pantalla, igual que en la página de inicio.
@@ -475,7 +476,7 @@ export default {
             this.$nextTick(() => this.goTo(this.$route.hash.slice(1), false));
         }
 
-        const data = await fetchLandingData(api);
+        const data = await fetchLandingData();
         if (data) {
             this.trialDays = data.trialDays;
             this.whatsapp  = data.whatsapp;
@@ -1078,6 +1079,11 @@ export default {
 .lt-footer-top p {
     margin: 0.75rem 0 0;
     color: var(--lt-muted);
+}
+
+.lt-footer-support {
+    color: var(--lt-muted);
+    font-size: 0.95rem;
 }
 
 .lt-footer-social {

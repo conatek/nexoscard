@@ -81,7 +81,7 @@ class AppSetting extends Model
 
     public static function getSupportEmail(): string
     {
-        return (string) static::get('support_email', 'infonexoscard@gmail.com');
+        return (string) static::get('support_email', 'info@nexoscard.com');
     }
 
     /**

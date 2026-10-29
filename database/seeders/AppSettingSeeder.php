@@ -42,7 +42,7 @@ class AppSettingSeeder extends Seeder
             ],
             [
                 'key'         => 'support_email',
-                'value'       => 'infonexoscard@gmail.com',
+                'value'       => 'info@nexoscard.com',
                 'type'        => 'string',
                 'description' => 'Email de soporte mostrado en correos',
             ],
